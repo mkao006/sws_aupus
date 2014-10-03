@@ -77,32 +77,36 @@ rawAupus =
 save(rawAupus, file = "aupusData.RData")
 
 ## This is not required for primary commodities
-getInputData = function(countryCode, itemCode, conn){
+getInputFromProcess = function(countryCode, itemCode, conn){
     tmp = dbGetQuery(conn, paste0("SELECT * FROM input_from_procv
                                   WHERE area = '", countryCode, "'
                                   AND item_child in (",
                                   paste0(itemCode, collapse = ", "), ")"))
     colnames(tmp)[1:3] =
-        c("areaCode", "itemCode", "elementCode")
+        c("areaCode", "itemParentCode", "itemChildCode")
     melted = melt(tmp,
-        id.var = c("areaCode", "itemCode", "elementCode"))
+        id.var = c("areaCode", "itemParentCode",
+            "itemChildCode"))
     melted$Year =
         as.numeric(gsub("[^0-9]", "", melted$variable))
     melted$type = gsub("[0-9|_]", "", melted$variable)
     melted$variable = NULL
-    casted = data.table(dcast(melted, areaCode + itemCode +
-                                  Year ~ elementCode + type,
+    casted = data.table(dcast(melted, areaCode + itemParentCode +
+                                  itemChildCode +
+                                  Year ~ type,
         value.var = "value"))
     valueCol = grep("NUM", colnames(casted), value = TRUE)
     casted[, (valueCol) :=
                lapply(valueCol, function(x) as.numeric(casted[[x]]))]
-    setnames(casted, old = grep("NUM", colnames(input), value = TRUE),
+    setnames(casted, old = grep("NUM", colnames(casted), value = TRUE),
              new = gsub("NUM", "INPUT", 
-                 grep("NUM", colnames(input), value = TRUE)))
+                 grep("NUM", colnames(casted), value = TRUE)))
     casted
 }
-input = getInputData(testCountryCode, testItemCode, conn)
+input = getInputFromProcess(testCountryCode, testItemCode, conn)
 save(input, file = "input.RData")
+
+dbGetQuery(conn, "SELECT * FROM input_from_procv WHERE ROWNUM <= 5")
 
 
 getRatios = function(countryCode, itemCode, conn){
@@ -172,6 +176,82 @@ getRatios = function(countryCode, itemCode, conn){
 }
 ratio = getRatios(testCountryCode, testItemCode, conn)
 save(ratio, file = "ratio.RData")
+
+
+getShare = function(countryCode, itemCode, conn){
+    ## This is a temporary solution
+    years = 1961:2015
+    
+    ## country and year specific
+    base = dbGetQuery(conn, paste0("SELECT *
+                                   FROM aupus_item_tree_shares
+                                   WHERE area in (", countryCode, ")
+                                   AND item_child in (",
+                                   paste0(itemCode, collapse = ", "), ")
+                                   AND yr != 0"))
+    colnames(base) =
+        c("areaCode", "itemParentCode", "itemChildCode", "Year",
+          "share", "aupusRequired")
+    print(str(base))
+
+    ## year wild card
+    wildCardYear = dbGetQuery(conn,
+        paste0("SELECT area, item_parent, item_child, aupus_share
+                FROM aupus_item_tree_shares
+                WHERE area in (", countryCode, ")
+                AND yr = 0
+                AND item_child in (",
+               paste0(itemCode, collapse = ", "), ")"))
+    colnames(wildCardYear) =
+        c("areaCode", "itemParentCode", "itemChildCode",
+          "wildCardYearShare")
+    expandedWildCardYear =
+        as.data.frame(sapply(wildCardYear,
+                             function(x){
+                                 rep(x, length(years))
+                             }
+                             )
+                      )
+    expandedWildCardYear$Year = rep(years, each = NROW(wildCardYear))
+    print(str(expandedWildCardYear))
+    
+    ## global wild card
+    wildCardGlobal = dbGetQuery(conn,
+        paste0("SELECT item_parent, item_child, aupus_share
+                FROM aupus_item_tree_shares
+                WHERE area = 0
+                AND item_child in (",
+                paste0(itemCode, collapse = ", "), ")"))
+    colnames(wildCardGlobal) =
+        c("itemParentCode", "itemChildCode", "wildCardGlobalShare")
+    wildCardGlobal$areaCode = countryCode
+    expandedWildCardGlobal =
+        as.data.frame(sapply(wildCardGlobal,
+                             function(x){
+                                 rep(x, length(years))
+                                         }
+                             )
+                      )
+    expandedWildCardGlobal$Year = rep(years, each = NROW(wildCardGlobal))
+    print(str(expandedWildCardGlobal))
+    ## Now merge the whole lot
+    final =
+        data.table(
+            Reduce(function(x, y) merge(x, y, all = TRUE),
+                   list(base, expandedWildCardYear,
+                        expandedWildCardGlobal))
+            )
+    print(str(final))
+    final[is.na(share), share := wildCardYearShare]
+    final[is.na(share), share := wildCardGlobalShare]
+    final[, `:=`(c("wildCardYearShare", "wildCardGlobalShare"), NULL)]
+    final
+}
+
+shares = getShare(testCountryCode, testItemCode, conn)
+save(shares, file = "share.RData")
+
+dbGetQuery(conn, "SELECT * FROM aupus_item_tree_shares WHERE ROWNUM <= 5")
 
 
 ## Should also merge the input, by we will not do this for now for the
