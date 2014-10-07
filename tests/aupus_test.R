@@ -251,16 +251,45 @@ getShare = function(countryCode, itemCode, conn){
 shares = getShare(testCountryCode, testItemCode, conn)
 save(shares, file = "share.RData")
 
-dbGetQuery(conn, "SELECT * FROM aupus_item_tree_shares WHERE ROWNUM <= 5")
-
 
 ## Should also merge the input, by we will not do this for now for the
 ## primary commodity.
+load("swsItemTable.RData")
+load("aupusData.RData")
+load("input.RData")
+load("ratio.RData")
+load("share.RData")
+
+
+setnames(input, "itemChildCode", "itemCode")
+setnames(shares, "itemChildCode", "itemCode")
+
+## Need to remove 0M for al the data.
+treeData = merge(input, shares,
+    by = c("areaCode", "itemCode", "itemParentCode", "Year"),
+    all = TRUE, allow.cartesian = TRUE)
+treeData[INPUT == 0 & SYMB == "M", INPUT := as.numeric(NA)]
+
 mergedAupus =
     Reduce(f = function(x, y){
-        merge(x, y, by = c("areaCode", "itemCode", "Year"), all = TRUE)
+        merge(x, y, by = c("areaCode", "itemCode", "Year"), all = TRUE,
+              allow.cartesian = TRUE)
     },
-           x = list(rawAupus, input, ratio))
+           x = list(rawAupus, ratio))
+
+library(faoswsExtra)
+calculateInputFromProcessing = function(){
+    tmp =
+        merge(mergedAupus[, list(areaCode, itemCode, Year, `131_NUM`)],
+              treeData[, list(areaCode, itemCode, itemParentCode,
+                              Year, INPUT, share)],
+              all.y = TRUE, allow.cartesian = TRUE)
+    tmp2 =
+        tmp[, list(input = sumWithNA(`131_NUM` * share/100)),
+            by = c("areaCode", "itemCode", "Year")]
+    tmp2
+}
+          
 
 
 
@@ -284,20 +313,29 @@ calculateEle31 = function(){
     }
 }
 
-   
-calculateEle41 = function(){
-    if(!missing(ratio41)){
-        if(!manual(ele41)){
-            ele41 = ratio41 * 100
-        }
-    } else {
-        if(!manual(ele41)){
-            ele41 = 0
-        }
-    }
+
+is.calculated = function(symb){
+    symb %in% "C"
 }
 
-    
+calculateEle41 = function(ratio41Num, ratio41Symb,
+    element41Num, element41Symb, data){
+    ## Do the new calculation
+    newCalculation = data[, ratio41Num, with = FALSE] * 100
+
+    ## if new calculation is not possible, then set as zero
+    newCalculation[is.na(newCalculation)] = 0
+    ## Find the index for which the values were previously calculated
+    previousCalculation =
+        is.calculated(data[, element41Symb, with = FALSE])
+    ## Replace data which were previously calculated.
+    ## TODO: Remove the hard coded names.
+    data[previousCalculation,
+         `41_NUM` := newCalculation[previousCalculation]]
+    data
+}
+
+
 calculateEle314151 = function(){
     if(length(is.na(elements)) > 1){
         ## give warning
@@ -308,13 +346,20 @@ calculateEle314151 = function(){
     }
 }
 
-calculateEle616263 = function(){
-    if(!is.na(ele61) & !is.na(ele62)){
-        ele63 = ele62 * 1000/ele61
-    } else {
-        ele63 = 0
-    }
+
+calculateEle63 = function(element61Num, element62Num,
+    element63Num, data){
+    ## Calculate element 63 from element 61 and 62
+    newCalculation = data[, element61Num, with = FALSE] *
+        1000/data[, element62Num, with = FALSE]
+    ## If any one of them is missing, then the new calculatino would
+    ## be missing. Therefore, replace with zero.
+    newCalculation[is.na(newCalculation)] = 0
+    ## asssign the calculation.
+    data[, element63Num := newCalculation]
 }
+
+
 
 
 ## This is the reverse of the standardization
@@ -561,14 +606,44 @@ balance = function(){
     }
 }
 
-calculateTrend = function(){
-    if(item in c(0:1299, 1455:1700)){
-        if(element not in c(31, 41, 51, 71)){
-            modified.na.locf
-        } else if(element in c(31, 41, 51)){
-            modified.na.locf(maxgap = 1)
-        }
+
+modified.na.locf = function(num, symb, justOnce, ...){
+    validNum = num
+    validNum[!symb %in% c("T", "C", "M")] = NA
+    if(!justOnce){
+        trendedNum = na.locf(validNum, na.rm = FALSE, ...)
+        trendedNum[!is.na(num)] = num[!is.na(num)]
+    } else {
+        trendedNum = c(NA, validNum)
+        trendedNum[which(is.na(trendedNum))] =
+            trendedNum[which(is.na(trendedNum)) - 1]
+        trendedNum = trendNum[-1]
     }
+    trendedNum
+}
+    
+
+calculateTrend = function(element, elementNum, elementSymb, data){
+    setnames(x = data, old = c(elementNum, elementSymb),
+             new = c("elementNum", "elementSymb"))
+    if(!element %in% c(31, 41, 51)){
+        data[itemCode %in% c(0:1299, 1455:1700),
+             elementNum :=
+                 modified.na.locf(elementNum, elementSymb, FALSE),
+             by = c("areaCode", "itemCode")]
+    } else if(element %in% c(31, 41, 51)){
+        data[itemCode %in% c(0:1299, 1455:1700),
+             elementNum : =
+                 modified.na.locf(elementNum, elementSymb, TRUE),
+             by = c("areaCode", "itemCode")]
+    } else if(element == 71){
+        data[itemCode %in% c(12, 13),
+             elementNum :=
+                 modified.na.locf(elementNum, elementSymb, FALSE),
+             by = c("areaCode", "itemCode")]        
+    }
+    setnames(x = data, new = c(elementNum, elementSymb),
+             old = c("elementNum", "elementSymb"))
 }
         
         
