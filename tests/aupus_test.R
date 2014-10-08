@@ -335,15 +335,69 @@ calculateEle41 = function(ratio41Num, ratio41Symb,
     data
 }
 
+numberOfMissingElement = function(...){
+    listOfElements = list(...)
+    rowSums(sapply(listOfElements,
+                   FUN = function(x){
+                       as.numeric(is.na(x))
+                                     }
+                   )
+            )
+}
 
-calculateEle314151 = function(){
-    if(length(is.na(elements)) > 1){
-        ## give warning
-    } else if(length(is.na(elements)) == 1){
-        ## calculate the missing element
-    } else if(length(is.na(elements)) == 0){
-        ## Re-calculate trended value (31, 41, 51)
+
+numberOfTrendingElement = function(...){
+    listOfElements = list(...)
+    rowSums(sapply(listOfElements,
+                   FUN = function(x){
+                       as.numeric(x == "T")
+                                     }
+                   )
+            )
+}
+
+
+calculateEle314151 = function(element31Num, element41Num, element51Num,
+    element31Symb, element41Symb, element51Symb, data){
+    ## Calculate condition statistics
+    data[, numberOfMissingElements :=
+             numberOfMissingElement(element31Num, element41Num,
+                                    element51Num)]
+    data[, numberOfTrendingElements :=
+             numberOfTrendingElement(element31Symb, element41Symb,
+                                     element51Symb)]    
+    ## Start the balancing if there is only one missing value
+    data[is.na(element31Num) & numeberOfMissingElements == 1,
+         element31Num := element51Num/element41Num]
+    data[is.na(element41Num) & numeberOfMissingElements == 1,
+         element41Num := element51Num/element31Num]
+    data[is.na(element51Num) & numeberOfMissingElements == 1,
+         element51Num := element31Num * element41Num]
+
+    ## Recalculate the trend if there is only one trending value
+    trendOnce = function(Num, numberOfTrendingElemets){
+        trendeIndex = which(numberOfTrendingElemetns == 1) + 1
+        tmp = c(NA, Num)
+        newTrendIndex = intersect(trendIndex, which(is.na(tmp)))
+        tmp[newTrendIndex] = tmp[newTrendIndex - 1]
+        trendedOnce = tmp[-1]
+        trendedOnce
     }
+    data[, elemeent31Num :=
+             trendOnce(element31Num, numberOfTrendingElemetns),
+         by = c("itemCode", "Year")]
+    data[, elemeent41Num :=
+             trendOnce(element41Num, numberOfTrendingElemetns),
+         by = c("itemCode", "Year")]
+    data[, elemeent51Num :=
+             trendOnce(element51Num, numberOfTrendingElemetns),
+         by = c("itemCode", "Year")]
+    data[, `:=`(c(numberOfMissingElements, numberOfTrendingElements),
+                NULL)]
+    
+
+    ## NOTE (Michael): For the case which trend sequentially, does the
+    ## algorithm trend then balance?
 }
 
 
@@ -370,25 +424,21 @@ calculateEle66 = function(){
 
 
 calculateEle71 = function(){
-    if(item != ESCR + stimulants such as coffee)
-        break
-    if(item in ESCR){
-        ele71 = ele51 + ele61 - ele91 - ele101 - ele121 -
-            ele131 - ele141 - ele151
-    } else {
-        ele71 = ele161 - ele101
-    }
+    data[itemCode == 58, element71Num := element51Num + element61Num -
+             element91Num - element101Num - element121Num -
+                 element131Num - element141Num - element151Num]
+    data[itemCode %in% c(59, 60, 61),
+         element71Num := element161Num - element101Num]
+    ## NOTE (Michael): What about element 57?
 }
 
 calculateEle919293 = function(){
-    if(item in c(42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52))
-        break
-
-    if(!is.na(ele91) & !is.na(ele92)){
-        ele93 = ele92 * 1000/elel91
-    } else {
-        ele93 = 0
-    }
+    data[!itemCode in c(42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52) &
+         !is.na(element91Num) & !is.na(element92Num),
+         element93Num := element91Num * 1000/element92Num]
+    data[!itemCode in c(42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52) &
+         is.na(element91Num) | is.na(element92Num),
+         element93Num := 0]
 }
 
 ## Same as element 66 and is reverse standardization
@@ -398,33 +448,31 @@ calculateEle96 = function(){
 }
 
 
-
-
 calculateEle101 = function(){
-    ## assumes total is calculated already
-    if(!missing(ratio)){
-        ele101 = ratio101 * stotal/100
-    }
+    ## Assumes total is calculated already.
+    ## NOTE (Michael): how to calculat total supply?
+    data[!is.na(ratio101Num),
+         element101Num := ratio101Num * stotal/100]
 }
 
 calculateEle111 = function(){
-    if(missing(ratio171)){
-        if(!missing(ratio111){
-            calculateEle101()
-        }
-       } else if(!missing(t1)){
-           tmp = c(ele21t1, ele31t1, ele21t0, ele31t0) * ratio171/1000
-           ele111 = tmp[isvalid(tmp)][1]
-       }
+    ## In this case it's the same to calculateEle101
+    ## NOTE (Michael): Do we use ratio 111 or 101?
+    data[is.na(ratio171Num) & !is.na(ratio111Num),
+         element101Num := ratio101Num * stotal/100]
+    ## NOTE (Michael): How do you define a 'valid value'?
+    if(!missing(t1)){
+        tmp = c(ele21t1, ele31t1, ele21t0, ele31t0) * ratio171/1000
+        ele111 = tmp[isvalid(tmp)][1]
     }
-}
+}    
 
 calculateEle121 = function(){
-    ele121 = ratio121 * stotal/100
+    data[, element121Num := ratio121Num * stotal/100]
 }
 
 calculateEle131 = function(){
-    ele131 = ratio131 * stotal/100
+    data[, element131Num := ratio131Num * stotal/100]
 }
 
 calculateEle141 = function(){
@@ -478,22 +526,32 @@ calculateEle141 = function(){
     }
 }
 
+
 calculateEle144 = function(){
-    ## total consumption has been calculated
-    if(item in ESCR){
-        ele144 = ele141/population * 1000
-    } else {
-        ele144 = ele141/population
-    }
+    ## Assumes total consumption (element141Num) has already been
+    ## calculated.
+    data[itemCode %in% c(46, 47, 48, 51, 52, 58, 59, 60, 61),
+         element144Num = element141Num/population * 1000]
+    data[!itemCode %in% c(46, 47, 48, 51, 52, 58, 59, 60, 61),
+         element144Num = element141Num/population]
 }
 
+
 calculateEle151 = function(){
-    if(item != 1687){
-        ele151 = ratio151 * totals/100
-    } else {
-        ele151 = ele131i1684 - ele51i1687
-    }
+    data[itemCode != 1697, element151Num := ratioNum151 * stotal/100]
+
+    tmp = merge(data[itemCode == 1684,
+        list(itemCode, Year, element131Num)],
+        data[itemCode == 1687, list(itemCode, Year, element51Num)],
+        all = TRUE, by = c("itemCode", "Year"))
+    tmp[, element151Calculated := element131Num - element51Num]
+    tmp[, `:=`(c(element131Num, element51Num), NULL)]
+    tmp[, itemCode:= 1687]
+    data = merge(data, tmp, all = TRUE, by = c("itemCode", "Year"))
+    data[itemCode == 1687, element151Num := element151Calculated]
+    data[, element151Calculated := NULL]
 }
+
 
 calculateEle161 = function(){
     if(item == sugar57){
@@ -502,61 +560,81 @@ calculateEle161 = function(){
         ## unclear
     }
 }
-        
+
 calculateEle171 = function(){
-    if(item == 57)
-        ele171 = ele101 + ele121 + ele131 + ele141 + ele151
+    data[itemCode == 57, element171Num := element101Num +
+             element121Num + element131Num + element141Num +
+                 element151Num]
 }
+
+
 
 
 
 calculateEle174 = function(){
     ## Assumes 171 calculated
-    if(item == 57)
-        ele174 = ele171 * population
+    data[itemCode == 57, element174Num := element171Num * population]
 }
 
 calculateEle181 = function(){
     ## Only in balance
 }
 
+
+
 calculateEle261 = function(){
-    ele261 = ratio261 * ele141/fd
+    data[, element261Num := ration261Num * element141Num/100]
 }
 
 
 calculateEle264 = function(){
-    population = na.omit(21, 11)[1]
-    ele264 = ((ele261/365) * 1000)/population
+    data[, validPopulation := element21Num]
+    data[is.na(validPopulation), validPopulation := element11Num]
+    data[, element264Num := element261Num/365 * 1000/validPopulation]
 }
 
+
 calculateEle271 = function(){
-    ele271 = ratio271 * ele141/fd
+    data[, element271Num := ration271Num * element141Num/1000]
 }
+
 
 
 calculateEle274 = function(){
-    population = na.omit(21, 11)[1]
-    ele274 = ((ele261/365) * 1000)/population
+    data[, validPopulation := element21Num]
+    data[is.na(validPopulation), validPopulation := element11Num]
+    data[, element274Num := element261Num/365 * 1000/validPopulation]
 }
 
-
 calculateEle281 = function(){
-    ele281 = ratio281 * ele141/fd
+    data[, element281Num := ration281Num * element141Num/1000]
 }
 
 
 calculateEle284 = function(){
-    population = na.omit(21, 11)[1]
-    ele284 = ((ele261/365) * 1000)/population
+    data[, validPopulation := element21Num]
+    data[is.na(validPopulation), validPopulation := element11Num]
+    data[, element284Num := element261Num/365 * 1000/validPopulation]
 }
 
 calculateEle541 = function(){
-    ele541 = sum(ele542, ele543, ele544, ele545, na.rm = TRUE)
+    data[, numberOfMissingElements :=
+             numberOfMissingElement(element542Num, element543Num,
+                                    element544Num, element545Num)]
+    data[, element541Num := element542Num + element543Num +
+             element544Num + element545Num]
+    data[numberOfMissingElements == 0, element541Num := 0]
+    data[, numberOfMissingElements := NULL]
 }
 
-calculate546 = function(){
-    ele546 = sum(ele541, ele151, ele191, na.rm = TRUE)
+calculateEle546 = function(){
+    data[, numberOfMissingElements :=
+             numberOfMissingElement(element541Num, element151Num,
+                                    element191Num)]
+    data[, element541Num := element541Num + element151Num +
+             element191Num]
+    data[numberOfMissingElements == 0, element541Num := 0]
+    data[, numberOfMissingElements := NULL]
 }
 
 
@@ -633,7 +711,7 @@ calculateTrend = function(element, elementNum, elementSymb, data){
              by = c("areaCode", "itemCode")]
     } else if(element %in% c(31, 41, 51)){
         data[itemCode %in% c(0:1299, 1455:1700),
-             elementNum : =
+             elementNum :=
                  modified.na.locf(elementNum, elementSymb, TRUE),
              by = c("areaCode", "itemCode")]
     } else if(element == 71){
