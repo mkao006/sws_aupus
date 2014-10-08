@@ -397,7 +397,7 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
     
 
     ## NOTE (Michael): For the case which trend sequentially, does the
-    ## algorithm trend then balance?
+    ##                 algorithm trend then balance?
 }
 
 
@@ -457,9 +457,8 @@ calculateEle101 = function(){
 
 calculateEle111 = function(){
     ## In this case it's the same to calculateEle101
-    ## NOTE (Michael): Do we use ratio 111 or 101?
     data[is.na(ratio171Num) & !is.na(ratio111Num),
-         element101Num := ratio101Num * stotal/100]
+         element101Num := ratio111Num * stotal/100]
     ## NOTE (Michael): How do you define a 'valid value'?
     if(!missing(t1)){
         tmp = c(ele21t1, ele31t1, ele21t0, ele31t0) * ratio171/1000
