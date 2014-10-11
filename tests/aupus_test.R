@@ -5,6 +5,7 @@ library(reshape2)
 library(RJDBC)
 library(data.table)
 library(FAOSTAT)
+library(faoswsExtra)
 options(java.parameters = "-Xmx3000m")
 
 ## Connect to the database
@@ -277,7 +278,7 @@ mergedAupus =
     },
            x = list(rawAupus, ratio))
 
-library(faoswsExtra)
+
 calculateInputFromProcessing = function(){
     tmp =
         merge(mergedAupus[, list(areaCode, itemCode, Year, `131_NUM`)],
@@ -310,57 +311,6 @@ calculateEle31 = function(){
 }
 
 
-is.calculated = function(symb){
-    symb %in% "C"
-}
-
-calculateEle41 = function(ratio41Num, 
-    element41Num, element41Symb, data){
-    setnames(data,
-             old = c(ratio41Num, element41Num, element41Symb),
-             new = c("ratio41Num", "element41Num", "element41Symb"))
-    ## Do the new calculation
-    newCalculation = data[, ratio41Num] * 100
-
-    ## if new calculation is not possible, then set as zero
-    newCalculation[is.na(newCalculation)] = 0
-    
-    ## Find the index for which the values were previously calculated
-    previousCalculation =
-        is.calculated(data[, element41Symb])
-    
-    ## Replace data which were previously calculated.
-    data[previousCalculation,
-         element41Num := newCalculation[previousCalculation]]
-    setnames(data,
-             new = c(ratio41Num, element41Num, element41Symb),
-             old = c("ratio41Num", "element41Num", "element41Symb"))    
-}
-
-## Function to find the number of elements which are missing from
-## multiple elements.
-numberOfMissingElement = function(...){
-    listOfElements = list(...)
-    rowSums(sapply(listOfElements,
-                   FUN = function(x){
-                       as.numeric(is.na(x))
-                                     }
-                   )
-            )
-}
-
-
-## Function to find the number of elements which are trended from
-## multiple elements.
-numberOfTrendingElement = function(...){
-    listOfElements = list(...)
-    rowSums(sapply(listOfElements,
-                   FUN = function(x){
-                       as.numeric(x == "T")
-                                     }
-                   )
-            )
-}
 
 ## Function to balance element 31, 41, 51 after each has been
 ## calculated/updated.
@@ -420,33 +370,11 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
 }
 
 
-calculateEle63 = function(element61Num, element62Num,
-    element63Num, data){
-    setnames(data,
-             old = c(element61Num, element62Num, element63Num),
-             new = c("element61Num", "element62Num", "element63Num"))
-    ## Calculate element 63 from element 61 and 62 if both are
-    ## available.
-    data[!is.na(element61Num) & !is.na(element62Num),
-         element63Num := element61Num * 1000/element62Num]
-    ## If any one of them is missing, then the new calculatino would
-    ## be missing. Therefore, replace with zero.
-    data[is.na(element61Num) | is.na(element62Num),
-         element63Num := 0]
-    setnames(data,
-             new = c(element61Num, element62Num, element63Num),
-             old = c("element61Num", "element62Num", "element63Num"))    
-}
-
-
-
-
 ## This is the reverse of the standardization
 calculateEle66 = function(){
     if(item != trade)
         break
 }
-
 
 calculateEle71 = function(element71Num, element51Num, element61Num,
     element91Num, element101Num, element121Num, element131Num,
@@ -477,28 +405,11 @@ calculateEle71 = function(element71Num, element51Num, element61Num,
                  "element161Num")             
 }
 
-calculateEle919293 = function(element91Num, element92Num, element93Num,
-    data){
-    setnames(data,
-             old = c(element91Num, element92Num, element93Num),
-             new = c("element91Num", "element92Num", "element93Num"))
-    data[!itemCode in c(42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52) &
-         !is.na(element91Num) & !is.na(element92Num),
-         element93Num := element91Num * 1000/element92Num]
-    data[!itemCode in c(42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52) &
-         is.na(element91Num) | is.na(element92Num),
-         element93Num := 0]
-    setnames(data,
-             new = c(element91Num, element92Num, element93Num),
-             old = c("element91Num", "element92Num", "element93Num"))    
-}
-
 ## Same as element 66 and is reverse standardization
 calculateEle96 = function(){
     if(item != trade)
         break
 }
-
 
 calculateEle101 = function(element101Num, ratio101Num, stotal, data){
     ## Assumes total is calculated already.
@@ -532,27 +443,6 @@ calculateEle111 = function(ratio171Num, ratio111Num, element111Num,
              old = c("ratio171Num", "ratio111Num", "element111Num",
                  "stotal"))    
 }    
-
-calculateEle121 = function(element121Num, ratio121Num, stotal, data){
-    setnames(data,
-             old = c(element121Num, ratio121Num, stotal),
-             new = c("element121Num", "ratio121Num", "stotal"))
-    data[, element121Num := ratio121Num * stotal/100]
-    setnames(data,
-             new = c(element121Num, ratio121Num, stotal),
-             old = c("element121Num", "ratio121Num", "stotal"))
-    
-}
-
-calculateEle131 = function(element131Num, ratio131Num, stotal, data){
-    setnames(data,
-             old = c(element131Num, ratio131Num, stotal),
-             new = c("element131Num", "ratio131Num", "stotal"))    
-    data[, element131Num := ratio131Num * stotal/100]
-    setnames(data,
-             new = c(element131Num, ratio131Num, stotal),
-             old = c("element131Num", "ratio131Num", "stotal"))        
-}
 
 calculateEle141 = function(){
     if(item != ESCR){
@@ -606,50 +496,6 @@ calculateEle141 = function(){
 }
 
 
-calculateEle144 = function(element144Num, element141Num, population,
-    data){
-    setnames(data,
-             old = c(element144Num, element141Num, population),
-             new = c("element144Num", "element141Num", "population"))
-    ## Assumes total consumption (element141Num) has already been
-    ## calculated.
-    data[itemCode %in% c(46, 47, 48, 51, 52, 58, 59, 60, 61),
-         element144Num = element141Num/population * 1000]
-    data[!itemCode %in% c(46, 47, 48, 51, 52, 58, 59, 60, 61),
-         element144Num = element141Num/population]
-    setnames(data,
-             new = c(element144Num, element141Num, population),
-             old = c("element144Num", "element141Num", "population"))    
-}
-
-
-calculateEle151 = function(element151Num, element131Num, element51Num,
-    ratio151Num, stotal, data){
-    setnames(data,
-             old = c(element151Num, element131Num, element51Num,
-                 ratio151Num, stotal),
-             new = c("element151Num", "element131Num", "element51Num",
-                 "ratio151Num", "stotal"))
-    data[itemCode != 1697, element151Num := ratio151Num * stotal/100]
-
-    tmp = merge(data[itemCode == 1684,
-        list(itemCode, Year, element131Num)],
-        data[itemCode == 1687, list(itemCode, Year, element51Num)],
-        all = TRUE, by = c("itemCode", "Year"))
-    tmp[, element151Calculated := element131Num - element51Num]
-    tmp[, `:=`(c(element131Num, element51Num), NULL)]
-    tmp[, itemCode:= 1687]
-    data = merge(data, tmp, all = TRUE, by = c("itemCode", "Year"))
-    data[itemCode == 1687, element151Num := element151Calculated]
-    data[, element151Calculated := NULL]
-    setnames(data,
-             new = c(element151Num, element131Num, element51Num,
-                 ratio151Num, stotal),
-             old = c("element151Num", "element131Num", "element51Num",
-                 "ratio151Num", "stotal"))    
-}
-
-
 calculateEle161 = function(){
     if(item == sugar57){
         ele161 = ele11 + ele71
@@ -657,169 +503,6 @@ calculateEle161 = function(){
         ## unclear
     }
 }
-
-calculateEle171 = function(element171Num, element101Num, element121Num,
-    element131Num, element141Num, element151Num, data){
-    setnames(data,
-             old = c(element171Num, element101Num, element121Num,
-                 element131Num, element141Num, element151Num),
-             new = c("element171Num", "element101Num", "element121Num",
-                 "element131Num", "element141Num", "element151Num"))
-    data[itemCode == 57, element171Num := element101Num +
-             element121Num + element131Num + element141Num +
-                 element151Num]
-    setnames(data,
-             old = c(element171Num, element101Num, element121Num,
-                 element131Num, element141Num, element151Num),
-             new = c("element171Num", "element101Num", "element121Num",
-                 "element131Num", "element141Num", "element151Num"))    
-}
-
-
-
-
-
-calculateEle174 = function(element174Num, elemenet171Num, population,
-    data){
-    setnames(data,
-             old = c(element174Num, elemenet171Num, population),
-             new = c("element174Num", "elemenet171Num", "population"))
-    ## Assumes 171 calculated
-    data[itemCode == 57, element174Num := element171Num * population]
-    setnames(data,
-             new = c(element174Num, elemenet171Num, population),
-             old = c("element174Num", "elemenet171Num", "population"))
-}
-
-
-calculateEle261 = function(element261Num, ratio261Num, element141Num,
-    data){
-    setnames(data,
-             old = c(element261Num, ratio261Num, element141Num),
-             new = c("element261Num", "ratio261Num", "element141Num"))
-    data[, element261Num := ration261Num * element141Num/100]
-    setnames(data,
-             new = c(element261Num, ratio261Num, element141Num),
-             old = c("element261Num", "ratio261Num", "element141Num"))
-}
-
-
-calculateEle264 = function(element21Num, element11Num, element264Num,
-    element261Num, data){
-    setnames(data,
-             old = c(element21Num, element11Num, element264Num,
-                 element261Num),
-             new = c("element21Num", "element11Num", "element264Num",
-                 "element261Num"))
-    data[, validPopulation := element21Num]
-    data[is.na(validPopulation), validPopulation := element11Num]
-    data[, element264Num := element261Num/365 * 1000/validPopulation]
-    setnames(data,
-             new = c(element21Num, element11Num, element264Num,
-                 element261Num),
-             old = c("element21Num", "element11Num", "element264Num",
-                 "element261Num"))
-}
-
-
-calculateEle271 = function(element271Num, ratio271Num, element141Num,
-    data){
-    setnames(data,
-             old = c(element271Num, ratio271Num, element141Num),
-             new = c("element271Num", "ratio271Num", "element141Num"))
-    data[, element271Num := ration271Num * element141Num/1000]
-    setnames(data,
-             new = c(element271Num, ratio271Num, element141Num),
-             old = c("element271Num", "ratio271Num", "element141Num"))
-}
-
-
-
-calculateEle274 = function(element21Num, element11Num, element274Num,
-    element271Num, data){
-    setnames(data,
-             old = c(element21Num, element11Num, element274Num,
-                 element271Num),
-             new = c("element21Num", "element11Num", "element274Num",
-                 "element271Num"))
-    data[, validPopulation := element21Num]
-    data[is.na(validPopulation), validPopulation := element11Num]
-    data[, element274Num := element271Num/365 * 1000/validPopulation]
-    setnames(data,
-             new = c(element21Num, element11Num, element274Num,
-                 element271Num),
-             nold = c("element21Num", "element11Num", "element274Num",
-                 "element271Num"))    
-}
-
-calculateEle281 = function(element281Num, ratio281Num, element141Num,
-    data){
-    setnames(data,
-             old = c(element281Num, ratio281Num, element141Num),
-             new = c("element281Num", "ratio281Num", "element141Num")
-    data[, element281Num := ration281Num * element141Num/1000]
-    setnames(data,
-             new = c(element281Num, ratio281Num, element141Num),
-             old = c("element281Num", "ratio281Num", "element141Num")
-}
-
-
-calculateEle284 = function(element21Num, element11Num, element284Num,
-    element281Num, data){
-    setnames(data,
-             old = c(element21Num, element11Num, element284Num,
-                 element281Num),
-             new = c("element21Num", "element11Num", "element284Num",
-                 "element281Num"))       
-    data[, validPopulation := element21Num]
-    data[is.na(validPopulation), validPopulation := element11Num]
-    data[, element284Num := element281Num/365 * 1000/validPopulation]
-    setnames(data,
-             new = c(element21Num, element11Num, element284Num,
-                 element281Num),
-             old = c("element21Num", "element11Num", "element284Num",
-                 "element281Num"))    
-}
-
-calculateEle541 = function(element542Num, element543Num, element544Num,
-    element545Num, data){
-    setnames(data,
-             old = c(element542Num, element543Num, element544Num,
-                 element545Num),
-             new = c("element542Num", "element543Num", "element544Num",
-                 "element545Num"))
-    data[, numberOfMissingElements :=
-             numberOfMissingElement(element542Num, element543Num,
-                                    element544Num, element545Num)]
-    data[, element541Num := element542Num + element543Num +
-             element544Num + element545Num]
-    data[numberOfMissingElements == 0, element541Num := 0]
-    data[, numberOfMissingElements := NULL]
-    setnames(data,
-             new = c(element542Num, element543Num, element544Num,
-                 element545Num),
-             old = c("element542Num", "element543Num", "element544Num",
-                 "element545Num"))    
-}
-
-calculateEle546 = function(element541Num, element151Num, element191Num,
-    data){
-    setnames(data,
-             old = c(element541Num, element151Num, element191Num),
-             new = c("element541Num", "element151Num", "element191Num"))
-    data[, numberOfMissingElements :=
-             numberOfMissingElement(element541Num, element151Num,
-                                    element191Num)]
-    data[, element541Num := element541Num + element151Num +
-             element191Num]
-    data[numberOfMissingElements == 0, element541Num := 0]
-    data[, numberOfMissingElements := NULL]
-    setnames(data,
-             new = c(element541Num, element151Num, element191Num),
-             old = c("element541Num", "element151Num", "element191Num"))
-}
-
-
 
 
 balance = function(){
@@ -867,52 +550,6 @@ balance = function(){
         ele181 = ele181 + balance
     }
 }
-
-
-modified.na.locf = function(num, symb, justOnce, ...){
-    validNum = num
-    validNum[!symb %in% c("T", "C", "M")] = NA
-    if(!justOnce){
-        trendedNum = na.locf(validNum, na.rm = FALSE, ...)
-        trendedNum[!is.na(num)] = num[!is.na(num)]
-    } else {
-        trendedNum = c(NA, validNum)
-        trendedNum[which(is.na(trendedNum))] =
-            trendedNum[which(is.na(trendedNum)) - 1]
-        trendedNum = trendNum[-1]
-    }
-    trendedNum
-}
-    
-
-calculateTrend = function(element, elementNum, elementSymb, data){
-    setnames(x = data, old = c(elementNum, elementSymb),
-             new = c("elementNum", "elementSymb"))
-    if(!element %in% c(31, 41, 51)){
-        data[itemCode %in% c(0:1299, 1455:1700),
-             elementNum :=
-                 modified.na.locf(elementNum, elementSymb, FALSE),
-             by = c("areaCode", "itemCode")]
-    } else if(element %in% c(31, 41, 51)){
-        data[itemCode %in% c(0:1299, 1455:1700),
-             elementNum :=
-                 modified.na.locf(elementNum, elementSymb, TRUE),
-             by = c("areaCode", "itemCode")]
-    } else if(element == 71){
-        data[itemCode %in% c(12, 13),
-             elementNum :=
-                 modified.na.locf(elementNum, elementSymb, FALSE),
-             by = c("areaCode", "itemCode")]        
-    }
-    setnames(x = data, new = c(elementNum, elementSymb),
-             old = c("elementNum", "elementSymb"))
-}
-        
-        
-        
-        
-
-
 
     
 ## Things to Note:
