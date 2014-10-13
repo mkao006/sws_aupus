@@ -7,6 +7,8 @@ library(data.table)
 library(FAOSTAT)
 library(faoswsExtra)
 options(java.parameters = "-Xmx3000m")
+sapply(dir("../codes/", full.names = TRUE), FUN = source)
+
 
 ## Connect to the database
 drv = JDBC(driverClass = "oracle.jdbc.driver.OracleDriver",
@@ -15,30 +17,12 @@ conn = dbConnect(drv, "jdbc:oracle:thin:@lprdbwo1:3310:fstp",
     user = "demo", password = "demo")
 
 
-inputData =
-    dbGetQuery(conn, "SELECT * FROM input_from_procv WHERE area = '9'")
-
-meltedInput = melt(inputData,
-    id.var = c("AREA", "ITEM_PARENT", "ITEM_CHILD"))
-
-share =
-    dbGetQuery(conn,
-               "SELECT * FROM aupus_item_tree_shares WHERE area = '9'")
-
-ratio =
-    dbGetQuery(conn,
-               "SELECT * FROM aupus_ratios WHERE area = '9'")
-
-
-
-dbGetQuery(conn, "SELECT COUNT(*) FROM item")
-
 swsItemTable = dbGetQuery(conn, "SELECT * FROM item")
 save(swsItemTable, file = "swsItemTable.RData")
 
+## Write a function for wild key matching in both ratio and share table
 
-
-## Test of Wheat Germany
+## Test of Germany
 testCountryCode = 79
 ## testItemCode = swsItemTable[swsItemTable$GRP_IND == "D", "ITEM"]
 testItemCode = 1:1000
@@ -53,7 +37,7 @@ getAupusData = function(countryCode, itemCode, elementCode, conn){
                                   paste0(itemCode, collapse = ", "), ")
                                   AND ele in (",
                                   paste0(elementCode, collapse = ", "), ")")
-    print(query)
+    ## print(query)
     tmp = dbGetQuery(conn, query)
     colnames(tmp)[1:3] =
         c("areaCode", "itemCode", "elementCode")
@@ -64,14 +48,13 @@ getAupusData = function(countryCode, itemCode, elementCode, conn){
     melted$type = gsub("[0-9|_]", "", melted$variable)
     melted$variable = NULL
     casted = data.table(dcast(melted, areaCode + itemCode +
-                                  Year ~ elementCode + type,
+                                  Year ~ type + elementCode,
         value.var = "value"))
     valueCol = grep("NUM", colnames(casted), value = TRUE)
     casted[, (valueCol) :=
                lapply(valueCol, function(x) as.numeric(casted[[x]]))]    
     casted
 }
-
 rawAupus =
     getAupusData(testCountryCode, testItemCode, aupusElements,
                  conn)
@@ -84,36 +67,36 @@ getInputFromProcess = function(countryCode, itemCode, conn){
                                   AND item_child in (",
                                   paste0(itemCode, collapse = ", "), ")"))
     colnames(tmp)[1:3] =
-        c("areaCode", "itemParentCode", "itemChildCode")
+        c("areaCode", "itemCode", "itemChildCode")
     melted = melt(tmp,
-        id.var = c("areaCode", "itemParentCode",
+        id.var = c("areaCode", "itemCode",
             "itemChildCode"))
     melted$Year =
         as.numeric(gsub("[^0-9]", "", melted$variable))
     melted$type = gsub("[0-9|_]", "", melted$variable)
     melted$variable = NULL
-    casted = data.table(dcast(melted, areaCode + itemParentCode +
-                                  itemChildCode +
+    casted = data.table(dcast(melted, areaCode + itemChildCode +
+                                  itemCode +
                                   Year ~ type,
         value.var = "value"))
     valueCol = grep("NUM", colnames(casted), value = TRUE)
     casted[, (valueCol) :=
                lapply(valueCol, function(x) as.numeric(casted[[x]]))]
-    setnames(casted, old = grep("NUM", colnames(casted), value = TRUE),
-             new = gsub("NUM", "INPUT", 
-                 grep("NUM", colnames(casted), value = TRUE)))
+    setnames(casted,
+             old = c(grep("NUM", colnames(casted), value = TRUE),
+                 "SYMB"),
+             new = c(gsub("NUM", "INPUT", 
+                 grep("NUM", colnames(casted), value = TRUE)),
+                 "SYMB_INPUT"))
     casted
 }
 input = getInputFromProcess(testCountryCode, testItemCode, conn)
 save(input, file = "input.RData")
 
-dbGetQuery(conn, "SELECT * FROM input_from_procv WHERE ROWNUM <= 5")
-
 
 getRatios = function(countryCode, itemCode, conn){
     ## This is a temporary solution
-    years = 1961:2015
-    
+    years = 1961:2015    
     ## country and year specific
     base = dbGetQuery(conn, paste0("SELECT area, item, ele, yr, ratio
                                    FROM aupus_ratios
@@ -123,7 +106,6 @@ getRatios = function(countryCode, itemCode, conn){
                                    AND yr != 0"))
     colnames(base) =
         c("areaCode", "itemCode", "elementCode", "Year", "ratio")
-
     ## year wild card
     wildCardYear = dbGetQuery(conn,
         paste0("SELECT area, item, ele, ratio FROM aupus_ratios
@@ -140,8 +122,6 @@ getRatios = function(countryCode, itemCode, conn){
                              )
                       )
     expandedWildCardYear$Year = rep(years, each = NROW(wildCardYear))
-
-    
     ## global wild card
     wildCardGlobal = dbGetQuery(conn,
         paste0("SELECT item, ele, ratio FROM aupus_ratios
@@ -158,7 +138,6 @@ getRatios = function(countryCode, itemCode, conn){
                              )
                       )
     expandedWildCardGlobal$Year = rep(years, each = NROW(wildCardGlobal))
-
     ## Now merge the whole lot
     final =
         data.table(
@@ -169,10 +148,10 @@ getRatios = function(countryCode, itemCode, conn){
     final[is.na(ratio), ratio := wildCardYearRatio]
     final[is.na(ratio), ratio := wildCardGlobalRatio]
     final[, `:=`(c("wildCardYearRatio", "wildCardGlobalRatio"), NULL)]
-    final[, elementCode := paste0(elementCode, "_RATIO")]
+    final[, elementCode := paste0("RATIO_", elementCode)]
     castedFinal =
-        dcast.data.table(final, areaCode + itemCode + Year ~ elementCode,
-                         value.var = "ratio")
+        dcast(final, areaCode + itemCode + Year ~ elementCode,
+              value.var = "ratio")
     castedFinal
 }
 ratio = getRatios(testCountryCode, testItemCode, conn)
@@ -191,9 +170,9 @@ getShare = function(countryCode, itemCode, conn){
                                    paste0(itemCode, collapse = ", "), ")
                                    AND yr != 0"))
     colnames(base) =
-        c("areaCode", "itemParentCode", "itemChildCode", "Year",
+        c("areaCode", "itemCode", "itemChildCode", "Year",
           "share", "aupusRequired")
-    print(str(base))
+    ## print(str(base))
 
     ## year wild card
     wildCardYear = dbGetQuery(conn,
@@ -204,7 +183,7 @@ getShare = function(countryCode, itemCode, conn){
                 AND item_child in (",
                paste0(itemCode, collapse = ", "), ")"))
     colnames(wildCardYear) =
-        c("areaCode", "itemParentCode", "itemChildCode",
+        c("areaCode", "itemCode", "itemChildCode",
           "wildCardYearShare")
     expandedWildCardYear =
         as.data.frame(sapply(wildCardYear,
@@ -214,7 +193,7 @@ getShare = function(countryCode, itemCode, conn){
                              )
                       )
     expandedWildCardYear$Year = rep(years, each = NROW(wildCardYear))
-    print(str(expandedWildCardYear))
+    ## print(str(expandedWildCardYear))
     
     ## global wild card
     wildCardGlobal = dbGetQuery(conn,
@@ -224,7 +203,7 @@ getShare = function(countryCode, itemCode, conn){
                 AND item_child in (",
                 paste0(itemCode, collapse = ", "), ")"))
     colnames(wildCardGlobal) =
-        c("itemParentCode", "itemChildCode", "wildCardGlobalShare")
+        c("itemCode", "itemChildCode", "wildCardGlobalShare")
     wildCardGlobal$areaCode = countryCode
     expandedWildCardGlobal =
         as.data.frame(sapply(wildCardGlobal,
@@ -234,7 +213,7 @@ getShare = function(countryCode, itemCode, conn){
                              )
                       )
     expandedWildCardGlobal$Year = rep(years, each = NROW(wildCardGlobal))
-    print(str(expandedWildCardGlobal))
+    ## print(str(expandedWildCardGlobal))
     ## Now merge the whole lot
     final =
         data.table(
@@ -242,7 +221,7 @@ getShare = function(countryCode, itemCode, conn){
                    list(base, expandedWildCardYear,
                         expandedWildCardGlobal))
             )
-    print(str(final))
+    ## print(str(final))
     final[is.na(share), share := wildCardYearShare]
     final[is.na(share), share := wildCardGlobalShare]
     final[, `:=`(c("wildCardYearShare", "wildCardGlobalShare"), NULL)]
@@ -262,54 +241,46 @@ load("ratio.RData")
 load("share.RData")
 
 
-setnames(input, "itemChildCode", "itemCode")
-setnames(shares, "itemChildCode", "itemCode")
-
-## Need to remove 0M for al the data.
+## Need to remove 0M for all the data.
 treeData = merge(input, shares,
-    by = c("areaCode", "itemCode", "itemParentCode", "Year"),
+    by = c("areaCode", "itemCode", "itemChildCode", "Year"),
     all = TRUE, allow.cartesian = TRUE)
-treeData[INPUT == 0 & SYMB == "M", INPUT := as.numeric(NA)]
+remove0M(treeData, value = "INPUT", flag = "SYMB_INPUT")
+
 
 mergedAupus =
     Reduce(f = function(x, y){
         merge(x, y, by = c("areaCode", "itemCode", "Year"), all = TRUE,
               allow.cartesian = TRUE)
-    },
-           x = list(rawAupus, ratio))
+    }, x = list(rawAupus, ratio))
+calculateInput =
+    merge(treeData,
+          mergedAupus[, list(areaCode, itemCode, Year, NUM_131)])
+inputFromProcess =
+    calculateInput[, list(INPUT_131= sum(share * NUM_131/100)),
+                   by = c("areaCode", "itemChildCode", "Year")]
+setnames(inputFromProcess, "itemChildCode", "itemCode")
+
+finalAupus = merge(mergedAupus, inputFromProcess, all.x = TRUE,
+                   by = c("areaCode", "itemCode", "Year"))
 
 
-calculateInputFromProcessing = function(){
-    tmp =
-        merge(mergedAupus[, list(areaCode, itemCode, Year, `131_NUM`)],
-              treeData[, list(areaCode, itemCode, itemParentCode,
-                              Year, INPUT, share)],
-              all.y = TRUE, allow.cartesian = TRUE)
-    tmp2 =
-        tmp[, list(input = sumWithNA(`131_NUM` * share/100)),
-            by = c("areaCode", "itemCode", "Year")]
-    tmp2
-}
-
-
-calculateEle31 = function(){
-    if(commodity = processed){
-        if(missing(ifp)){
-            ifp = sum(ele131 * share/100, na.rm = TRUE)
-        } else {
-            ifp = ifp
-        }
+## Need to double check whether the name input131Num is appropriate.
+calculateEle31 = function(element31Num, element31Symb, input131Num,
+    data){
+    setnames(data,
+             old = c("element31Num", "element31Symb", "input131Num"),
+             new = c(element31Num, element31Symb, input131Num))
+    if(commodity == processed){
+        data[is.calculatedelement31Symb & !is.na(input131Num),
+             element31Num := input131Num]
+        data[is.calculatedelement31Symb & is.na(input131Num),
+             element31Num := 0]
     }
-
-    if(!manual(ele31)){
-        if(!is.na(ifp)){
-            ele31 = ifp
-        } else {
-            ele31 = 0
-        }
-    }
+    setnames(data,
+             new = c("element31Num", "element31Symb", "input131Num"),
+             old = c(element31Num, element31Symb, input131Num))    
 }
-
 
 
 ## Function to balance element 31, 41, 51 after each has been
@@ -364,10 +335,14 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
                  element31Symb, element41Symb, element51Symb),
              old = c("element31Num", "element41Num", "element51Num",
                  "element31Symb", "element41Symb", "element51Symb"))
-
+    
     ## NOTE (Michael): For the case which trend sequentially, does the
     ##                 algorithm trend then balance?
+    
+    
+    
 }
+
 
 
 ## This is the reverse of the standardization
@@ -375,6 +350,7 @@ calculateEle66 = function(){
     if(item != trade)
         break
 }
+
 
 calculateEle71 = function(element71Num, element51Num, element61Num,
     element91Num, element101Num, element121Num, element131Num,
@@ -387,7 +363,7 @@ calculateEle71 = function(element71Num, element51Num, element61Num,
              new = c("element71Num", "element51Num", "element61Num",
                  "element91Num", "element101Num", "element121Num",
                  "element131Num", "element141Num", "element151Num",
-                 "element161Num")
+                 "element161Num"))
     data[itemCode == 58, element71Num := element51Num + element61Num -
              element91Num - element101Num - element121Num -
                  element131Num - element141Num - element151Num]
@@ -402,7 +378,7 @@ calculateEle71 = function(element71Num, element51Num, element61Num,
              old = c("element71Num", "element51Num", "element61Num",
                  "element91Num", "element101Num", "element121Num",
                  "element131Num", "element141Num", "element151Num",
-                 "element161Num")             
+                 "element161Num"))
 }
 
 ## Same as element 66 and is reverse standardization
@@ -542,7 +518,7 @@ balance = function(){
         }
     }
 
-
+    
     if(!missing(balele)){
         assign(balance)
     } else {
@@ -556,3 +532,9 @@ balance = function(){
 ## Need to write a function to check whether a cell is not null or zero.
 ##
 ## Need to check whether zero or na is replaced.
+##
+## Need to check how the symbols are applied. When we assign a value
+## of zero, do we assign the symbol 'M' or 'C'.
+##
+##
+             
