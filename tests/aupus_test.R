@@ -264,6 +264,12 @@ setnames(inputFromProcess, "itemChildCode", "itemCode")
 finalAupus = merge(mergedAupus, inputFromProcess, all.x = TRUE,
                    by = c("areaCode", "itemCode", "Year"))
 
+calculateEle11 = function(){
+}
+
+calculateEle21 = function(){
+}
+
 
 ## Need to double check whether the name input131Num is appropriate.
 calculateEle31 = function(element31Num, element31Symb, input131Num,
@@ -283,65 +289,6 @@ calculateEle31 = function(element31Num, element31Symb, input131Num,
 }
 
 
-## Function to balance element 31, 41, 51 after each has been
-## calculated/updated.
-calculateEle314151 = function(element31Num, element41Num, element51Num,
-    element31Symb, element41Symb, element51Symb, data){
-    setnames(data,
-             old = c(element31Num, element41Num, element51Num,
-                 element31Symb, element41Symb, element51Symb),
-             new = c("element31Num", "element41Num", "element51Num",
-                 "element31Symb", "element41Symb", "element51Symb"))
-
-    ## Calculate condition statistics
-    data[, numberOfMissingElements :=
-             numberOfMissingElement(element31Num, element41Num,
-                                    element51Num)]
-    data[, numberOfTrendingElements :=
-             numberOfTrendingElement(element31Symb, element41Symb,
-                                     element51Symb)]    
-
-    ## Start the balancing if there is only one missing value
-    data[is.na(element31Num) & numeberOfMissingElements == 1,
-         element31Num := element51Num/element41Num]
-    data[is.na(element41Num) & numeberOfMissingElements == 1,
-         element41Num := element51Num/element31Num]
-    data[is.na(element51Num) & numeberOfMissingElements == 1,
-         element51Num := element31Num * element41Num]
-
-    ## Recalculate the trend if there is only one trending value
-    trendOnce = function(Num, numberOfTrendingElemets){
-        trendeIndex = which(numberOfTrendingElemetns == 1) + 1
-        tmp = c(NA, Num)
-        newTrendIndex = intersect(trendIndex, which(is.na(tmp)))
-        tmp[newTrendIndex] = tmp[newTrendIndex - 1]
-        trendedOnce = tmp[-1]
-        trendedOnce
-    }
-    data[, elemeent31Num :=
-             trendOnce(element31Num, numberOfTrendingElemetns),
-         by = c("itemCode", "Year")]
-    data[, elemeent41Num :=
-             trendOnce(element41Num, numberOfTrendingElemetns),
-         by = c("itemCode", "Year")]
-    data[, elemeent51Num :=
-             trendOnce(element51Num, numberOfTrendingElemetns),
-         by = c("itemCode", "Year")]
-    data[, `:=`(c(numberOfMissingElements, numberOfTrendingElements),
-                NULL)]
-    
-    setnames(data,
-             new = c(element31Num, element41Num, element51Num,
-                 element31Symb, element41Symb, element51Symb),
-             old = c("element31Num", "element41Num", "element51Num",
-                 "element31Symb", "element41Symb", "element51Symb"))
-    
-    ## NOTE (Michael): For the case which trend sequentially, does the
-    ##                 algorithm trend then balance?
-    
-    
-    
-}
 
 
 
@@ -352,52 +299,10 @@ calculateEle66 = function(){
 }
 
 
-calculateEle71 = function(element71Num, element51Num, element61Num,
-    element91Num, element101Num, element121Num, element131Num,
-    element141Num, element151Num, element161Num, data){
-    setnames(data,
-             old = c(element71Num, element51Num, element61Num,
-                 element91Num, element101Num, element121Num,
-                 element131Num, element141Num, element151Num,
-                 element161Num),
-             new = c("element71Num", "element51Num", "element61Num",
-                 "element91Num", "element101Num", "element121Num",
-                 "element131Num", "element141Num", "element151Num",
-                 "element161Num"))
-    data[itemCode == 58, element71Num := element51Num + element61Num -
-             element91Num - element101Num - element121Num -
-                 element131Num - element141Num - element151Num]
-    data[itemCode %in% c(59, 60, 61),
-         element71Num := element161Num - element101Num]
-    ## NOTE (Michael): What about element 57?
-    setnames(data,
-             new = c(element71Num, element51Num, element61Num,
-                 element91Num, element101Num, element121Num,
-                 element131Num, element141Num, element151Num,
-                 element161Num),
-             old = c("element71Num", "element51Num", "element61Num",
-                 "element91Num", "element101Num", "element121Num",
-                 "element131Num", "element141Num", "element151Num",
-                 "element161Num"))
-}
-
 ## Same as element 66 and is reverse standardization
 calculateEle96 = function(){
     if(item != trade)
         break
-}
-
-calculateEle101 = function(element101Num, ratio101Num, stotal, data){
-    ## Assumes total is calculated already.
-    ## NOTE (Michael): how to calculat total supply?
-    setnames(data,
-             old = c(element101Num, ratio101Num, stotal),
-             new = c("element101Num", "ratio101Num", "stotal"))
-    data[!is.na(ratio101Num),
-         element101Num := ratio101Num * stotal/100]
-    setnames(data,
-             new = c(element101Num, ratio101Num, stotal),
-             old = c("element101Num", "ratio101Num", "stotal"))    
 }
 
 calculateEle111 = function(ratio171Num, ratio111Num, element111Num,
@@ -458,14 +363,12 @@ calculateEle141 = function(){
             }
             ele141 = rc + (ele71 * 1.07) + (tp * 1.07)
         }
-
         if(ele141 < 0){
             ele181 = ele141
             ele141 = 0
         } else {
             ele181 = NA
-        }
-        
+        }        
     } else if(item == ESCR tea){
         ele141 = ele11 + ele51 + ele61 - ele91 - ele95 - ele161
     }
