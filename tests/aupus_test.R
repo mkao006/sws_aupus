@@ -264,10 +264,96 @@ setnames(inputFromProcess, "itemChildCode", "itemCode")
 finalAupus = merge(mergedAupus, inputFromProcess, all.x = TRUE,
                    by = c("areaCode", "itemCode", "Year"))
 
-calculateEle11 = function(){
+
+
+library(igraph)
+
+constructGraph = function(shares, aupus){
+    aupusExtract = aupus[, list(itemCode, NUM_41)]
+    setnames(aupusExtract, "itemCode", "itemChildCode")
+    shareAupus = merge(shares, aupusExtract, by = "itemChildCode")
+    e = shareAupus[, list(itemChildCode, itemCode, share, NUM_41)]
+    v = aupus[, list(itemCode, NUM_61)]
+    missingNodes = 
+        data.table(itemCode =
+                       setdiff(unique(e$itemCode, e$itemChildCode),
+                               v$itemCode),
+                   NUM_61 = 0)
+    v = rbind(v, missingNodes)
+    graph =
+        graph.data.frame(d = e, vertices = v)
+    graph
 }
+standardization.graph =
+    constructGraph(shares[Year == 2000, ], mergedAupus[Year == 2000, ])
+
+
+subsetCommodityGraph = function(graph, commodity){
+    dist = shortest.paths(graph,
+        v = V(graph)[commodity], mode = "in")
+    sub.graph = induced.subgraph(graph,
+        V(graph)[colnames(dist)[is.finite(dist)]])
+    sub.graph
+}
+wheat.graph = subsetCommodityGraph(standardization.graph, "15")
+
+plot(wheat.graph,
+     vertex.label = paste0(V(wheat.graph)$name, "\n",
+         V(wheat.graph)$NUM_61),
+     vertex.label.cex = 0.6,
+     edge.label = paste0(E(wheat.graph)$share, "\n",
+                         E(wheat.graph)$NUM_41/1000),
+     edge.label.cex = 0.6)
+
+
+standardizeNode = function(graph, leave){
+    outEdges = E(graph)[from(V(graph)[leave])]
+    ## print(outEdges)
+    ## print(V(graph)[get.edges(graph, outEdges)[, 2]]$NUM_61)
+    standardized =
+        outEdges$share * V(graph)[leave]$NUM_61/outEdges$NUM_41
+    if(any(is.na(standardized)))
+        standardized[is.na(standardized)] = 0
+    V(graph)[get.edges(graph, outEdges)[, 2]]$NUM_61 =
+        V(graph)[get.edges(graph, outEdges)[, 2]]$NUM_61 +
+            standardized            
+    graph = graph - vertices(leave)
+    graph
+}
+wheatStdStarch.graph = standardizeNode(wheat.graph, "634")    
+
+plot(wheatStdStarch.graph,
+     vertex.label = paste0(V(wheatStdStarch.graph)$name, "\n",
+         V(wheatStdStarch.graph)$NUM_61),
+     vertex.label.cex = 0.6,
+     edge.label = paste0(E(wheatStdStarch.graph)$share, "\n",
+                         E(wheatStdStarch.graph)$NUM_41/1000),
+     edge.label.cex = 0.6)
+
+standardizeCommodityNetwork = function(graph){
+    while(length(E(graph)) > 0){
+        workingNode = names(which(degree(graph, mode = "in") == 0))[1]
+        ## print(workingNode)
+        graph = standardizeNode(graph, workingNode)
+        ## print(V(graph)$NUM_61)
+    }
+    V(graph)$NUM_61
+}
+standardizeCommodityNetwork(wheat.graph)
+
+
+standardizeCommodityNetwork(
+    subsetCommodityGraph(
+        constructGraph(shares = shares[Year == 2000, ],
+                       aupus = mergedAupus[Year == 2000, ]
+                       )
+      , "15"))
+
+
+
 
 calculateEle21 = function(){
+    data[itemCode == 1, element21Num := element11Num]    
 }
 
 
@@ -277,6 +363,8 @@ calculateEle31 = function(element31Num, element31Symb, input131Num,
     setnames(data,
              old = c("element31Num", "element31Symb", "input131Num"),
              new = c(element31Num, element31Symb, input131Num))
+    ## NOTE (Michael): Need to find how to identify processed
+    ##                 commodity.
     if(commodity == processed){
         data[is.calculatedelement31Symb & !is.na(input131Num),
              element31Num := input131Num]
@@ -292,17 +380,43 @@ calculateEle31 = function(element31Num, element31Symb, input131Num,
 
 
 
-## This is the reverse of the standardization
-calculateEle66 = function(){
-    if(item != trade)
-        break
+
+
+
+calculateEle66 = function(element66Num, data, shares){
+    ## NOTE (Michael): What are trade items?
+    setnames(data, old = element66Num, new = "element66Num")
+    data[itemCode %in% trade,
+         element66Num :=
+             standardizeCommodityNetwork(
+                 subsetCommodityGraph(
+                     constructGraph(shares = shares[Year == unique(.SD$Year), ],
+                                    aupus = data[Year == unique(.SD$Year), ],
+                                    as.character(unique(.SD$itemCode))
+                                    )
+                 )
+             ),
+         by = c("itemCode", "Year")]
+    setnames(data, new = element66Num, old = "element66Num")    
 }
 
 
-## Same as element 66 and is reverse standardization
-calculateEle96 = function(){
-    if(item != trade)
-        break
+
+calculateEle96 = function(element96, data, shares){
+    ## NOTE (Michael): What are trade items?
+    setnames(data, old = element96Num, new = "element96Num")
+    data[itemCode %in% trade,
+         element96Num :=
+             standardizeCommodityNetwork(
+                 subsetCommodityGraph(
+                     constructGraph(shares = shares[Year == unique(.SD$Year), ],
+                                    aupus = data[Year == unique(.SD$Year), ],
+                                    as.character(unique(.SD$itemCode))
+                                    )
+                 )
+             ),
+         by = c("itemCode", "Year")]
+    setnames(data, new = element96Num, old = "element96Num")    
 }
 
 calculateEle111 = function(ratio171Num, ratio111Num, element111Num,
@@ -324,6 +438,26 @@ calculateEle111 = function(ratio171Num, ratio111Num, element111Num,
              old = c("ratio171Num", "ratio111Num", "element111Num",
                  "stotal"))    
 }    
+
+
+calculateEle141 = function(element11Num, element51Num, element61Num,
+    element91Num, element95Num, element141Num, element161Num,
+    ratio141Num, stotal, data){
+    data[!itemCode %in% c(50, 58, 59, 60, 61),
+         element141Num := ratio141Num * stotal/100]
+    ## For commodity Jute (50)
+    ## Define: calcType
+    switch(calcTye,
+           `1` = {},
+           `2` = {},
+           `3` = {}
+    )
+    data[itemCode %in% c(58:61),
+         element141Num := element11Num + element51Num + element61Num -
+             element91Num - element95Num - element161Num]
+}
+
+
 
 calculateEle141 = function(){
     if(item != ESCR){
@@ -375,13 +509,14 @@ calculateEle141 = function(){
 }
 
 
-calculateEle161 = function(){
-    if(item == sugar57){
-        ele161 = ele11 + ele71
-    } else if(item in trade){
-        ## unclear
-    }
+calculateEle161 = function(element161Num, element11Num, element71Num){
+    data[itemCode == 57, element161Num := element11Num + element71Num]
+    ## NOTE (Michael): Need to find how to identify commodity that are
+    ##                 traded and also how it is treated.
+    data[itemCode %in% trade, ]
 }
+
+
 
 
 balance = function(){
