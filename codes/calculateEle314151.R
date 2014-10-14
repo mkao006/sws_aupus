@@ -25,22 +25,17 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
          element51Num := element31Num * element41Num]
 
     ## Recalculate the trend if there is only one trending value
-    trendOnce = function(Num, numberOfTrendingElemets){
-        trendeIndex = which(numberOfTrendingElemetns == 1) + 1
-        tmp = c(NA, Num)
-        newTrendIndex = intersect(trendIndex, which(is.na(tmp)))
-        tmp[newTrendIndex] = tmp[newTrendIndex - 1]
-        trendedOnce = tmp[-1]
-        trendedOnce
-    }
     data[, element31Num :=
-             trendOnce(element31Num, numberOfTrendingElements),
+             trendOnce(element31Num,
+                       which(numberOfTrendingElements == 1)),
          by = c("itemCode", "Year")]
     data[, element41Num :=
-             trendOnce(element41Num, numberOfTrendingElements),
+             trendOnce(element41Num,
+                       which(numberOfTrendingElements == 1)),
          by = c("itemCode", "Year")]
     data[, element51Num :=
-             trendOnce(element51Num, numberOfTrendingElements),
+             trendOnce(element51Num,
+                       which(numberOfTrendingElements == 1)),
          by = c("itemCode", "Year")]
     
     ## NOTE (Michael): Although not mentioned in the documentation,
