@@ -1,6 +1,7 @@
 ## Load the libraries
 ## library(faoswsExtra)
 ## library(data.table)
+library(igraph)
 library(reshape2)
 library(RJDBC)
 library(data.table)
@@ -16,8 +17,11 @@ drv = JDBC(driverClass = "oracle.jdbc.driver.OracleDriver",
 conn = dbConnect(drv, "jdbc:oracle:thin:@lprdbwo1:3310:fstp",
     user = "demo", password = "demo")
 
-
-swsItemTable = dbGetQuery(conn, "SELECT * FROM item")
+swsItemTable = data.table(dbGetQuery(conn,
+    "SELECT item, name_e, item_typ FROM item"))
+setnames(swsItemTable,
+         old = c("ITEM", "NAME_E", "ITEM_TYP"),
+         new = c("itemCode", "itemName", "itemType"))
 save(swsItemTable, file = "swsItemTable.RData")
 
 ## Write a function for wild key matching in both ratio and share table
@@ -247,12 +251,16 @@ treeData = merge(input, shares,
     all = TRUE, allow.cartesian = TRUE)
 remove0M(treeData, value = "INPUT", flag = "SYMB_INPUT")
 
-
+## TODO (Michael): Code the input from processing with network
+##                 approach as well.
 mergedAupus =
     Reduce(f = function(x, y){
-        merge(x, y, by = c("areaCode", "itemCode", "Year"), all = TRUE,
+        merge(x, y, by = intersect(colnames(x), colnames(y)), all = TRUE,
               allow.cartesian = TRUE)
     }, x = list(rawAupus, ratio))
+mergedAupus = merge(mergedAupus, swsItemTable, all.x = TRUE,
+    by = "itemCode")
+    
 calculateInput =
     merge(treeData,
           mergedAupus[, list(areaCode, itemCode, Year, NUM_131)])
@@ -263,91 +271,14 @@ setnames(inputFromProcess, "itemChildCode", "itemCode")
 
 finalAupus = merge(mergedAupus, inputFromProcess, all.x = TRUE,
                    by = c("areaCode", "itemCode", "Year"))
-
-
-
-library(igraph)
-
-constructGraph = function(shares, aupus){
-    aupusExtract = aupus[, list(itemCode, NUM_41)]
-    setnames(aupusExtract, "itemCode", "itemChildCode")
-    shareAupus = merge(shares, aupusExtract, by = "itemChildCode")
-    e = shareAupus[, list(itemChildCode, itemCode, share, NUM_41)]
-    v = aupus[, list(itemCode, NUM_61)]
-    missingNodes = 
-        data.table(itemCode =
-                       setdiff(unique(e$itemCode, e$itemChildCode),
-                               v$itemCode),
-                   NUM_61 = 0)
-    v = rbind(v, missingNodes)
-    graph =
-        graph.data.frame(d = e, vertices = v)
-    graph
-}
-standardization.graph =
-    constructGraph(shares[Year == 2000, ], mergedAupus[Year == 2000, ])
-
-
-subsetCommodityGraph = function(graph, commodity){
-    dist = shortest.paths(graph,
-        v = V(graph)[commodity], mode = "in")
-    sub.graph = induced.subgraph(graph,
-        V(graph)[colnames(dist)[is.finite(dist)]])
-    sub.graph
-}
-wheat.graph = subsetCommodityGraph(standardization.graph, "15")
-
-plot(wheat.graph,
-     vertex.label = paste0(V(wheat.graph)$name, "\n",
-         V(wheat.graph)$NUM_61),
-     vertex.label.cex = 0.6,
-     edge.label = paste0(E(wheat.graph)$share, "\n",
-                         E(wheat.graph)$NUM_41/1000),
-     edge.label.cex = 0.6)
-
-
-standardizeNode = function(graph, leave){
-    outEdges = E(graph)[from(V(graph)[leave])]
-    ## print(outEdges)
-    ## print(V(graph)[get.edges(graph, outEdges)[, 2]]$NUM_61)
-    standardized =
-        outEdges$share * V(graph)[leave]$NUM_61/outEdges$NUM_41
-    if(any(is.na(standardized)))
-        standardized[is.na(standardized)] = 0
-    V(graph)[get.edges(graph, outEdges)[, 2]]$NUM_61 =
-        V(graph)[get.edges(graph, outEdges)[, 2]]$NUM_61 +
-            standardized            
-    graph = graph - vertices(leave)
-    graph
-}
-wheatStdStarch.graph = standardizeNode(wheat.graph, "634")    
-
 plot(wheatStdStarch.graph,
      vertex.label = paste0(V(wheatStdStarch.graph)$name, "\n",
-         V(wheatStdStarch.graph)$NUM_61),
+         V(wheatStdStarch.graph)$standardizeElement),
      vertex.label.cex = 0.6,
      edge.label = paste0(E(wheatStdStarch.graph)$share, "\n",
-                         E(wheatStdStarch.graph)$NUM_41/1000),
+                         round(E(wheatStdStarch.graph)$extractionRate/
+                                   1000)),
      edge.label.cex = 0.6)
-
-standardizeCommodityNetwork = function(graph){
-    while(length(E(graph)) > 0){
-        workingNode = names(which(degree(graph, mode = "in") == 0))[1]
-        ## print(workingNode)
-        graph = standardizeNode(graph, workingNode)
-        ## print(V(graph)$NUM_61)
-    }
-    V(graph)$NUM_61
-}
-standardizeCommodityNetwork(wheat.graph)
-
-
-standardizeCommodityNetwork(
-    subsetCommodityGraph(
-        constructGraph(shares = shares[Year == 2000, ],
-                       aupus = mergedAupus[Year == 2000, ]
-                       )
-      , "15"))
 
 
 
@@ -376,48 +307,12 @@ calculateEle31 = function(element31Num, element31Symb, input131Num,
              old = c(element31Num, element31Symb, input131Num))    
 }
 
+system.time(
+    calculateEle6696(mergedAupus, shares,
+                     "NUM_41", "NUM_61", "NUM_66", "NUM_91", "NUM_96")
+)
 
 
-
-
-
-
-
-calculateEle66 = function(element66Num, data, shares){
-    ## NOTE (Michael): What are trade items?
-    setnames(data, old = element66Num, new = "element66Num")
-    data[itemCode %in% trade,
-         element66Num :=
-             standardizeCommodityNetwork(
-                 subsetCommodityGraph(
-                     constructGraph(shares = shares[Year == unique(.SD$Year), ],
-                                    aupus = data[Year == unique(.SD$Year), ],
-                                    as.character(unique(.SD$itemCode))
-                                    )
-                 )
-             ),
-         by = c("itemCode", "Year")]
-    setnames(data, new = element66Num, old = "element66Num")    
-}
-
-
-
-calculateEle96 = function(element96, data, shares){
-    ## NOTE (Michael): What are trade items?
-    setnames(data, old = element96Num, new = "element96Num")
-    data[itemCode %in% trade,
-         element96Num :=
-             standardizeCommodityNetwork(
-                 subsetCommodityGraph(
-                     constructGraph(shares = shares[Year == unique(.SD$Year), ],
-                                    aupus = data[Year == unique(.SD$Year), ],
-                                    as.character(unique(.SD$itemCode))
-                                    )
-                 )
-             ),
-         by = c("itemCode", "Year")]
-    setnames(data, new = element96Num, old = "element96Num")    
-}
 
 calculateEle111 = function(ratio171Num, ratio111Num, element111Num,
     stotal, data){
