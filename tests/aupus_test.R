@@ -1,5 +1,4 @@
 ## Load the libraries
-## library(faoswsExtra)
 ## library(data.table)
 library(igraph)
 library(reshape2)
