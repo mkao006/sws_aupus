@@ -6,7 +6,7 @@ library(reshape2)
 library(RJDBC)
 library(data.table)
 library(FAOSTAT)
-library(faoswsExtra)
+library(faoswsUtil)
 options(java.parameters = "-Xmx3000m")
 sapply(dir("../codes/", full.names = TRUE), FUN = source)
 
