@@ -406,9 +406,8 @@ calculateEle141 = function(){
 
 calculateEle161 = function(element161Num, element11Num, element71Num){
     data[itemCode == 57, element161Num := element11Num + element71Num]
-    ## NOTE (Michael): Need to find how to identify commodity that are
-    ##                 traded and also how it is treated.
-    data[itemCode %in% trade, ]
+    ## NOTE (Michael): Need to clarify how traded item are treated
+    data[itemType %in% c(2:13, 19:22, 25:30, 39), ]
 }
 
 
