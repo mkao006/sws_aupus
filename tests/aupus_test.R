@@ -97,6 +97,8 @@ input = getInputFromProcess(testCountryCode, testItemCode, conn)
 save(input, file = "input.RData")
 
 
+dbGetQuery(conn, "SELECT * FROM aupus_ratios WHERE ROWNUM <= 5")
+
 getRatios = function(countryCode, itemCode, conn){
     ## This is a temporary solution
     years = 1961:2015    
@@ -159,6 +161,8 @@ getRatios = function(countryCode, itemCode, conn){
 }
 ratio = getRatios(testCountryCode, testItemCode, conn)
 save(ratio, file = "ratio.RData")
+
+
 
 
 getShare = function(countryCode, itemCode, conn){
@@ -270,46 +274,16 @@ setnames(inputFromProcess, "itemChildCode", "itemCode")
 
 finalAupus = merge(mergedAupus, inputFromProcess, all.x = TRUE,
                    by = c("areaCode", "itemCode", "Year"))
-plot(wheatStdStarch.graph,
-     vertex.label = paste0(V(wheatStdStarch.graph)$name, "\n",
-         V(wheatStdStarch.graph)$standardizeElement),
-     vertex.label.cex = 0.6,
-     edge.label = paste0(E(wheatStdStarch.graph)$share, "\n",
-                         round(E(wheatStdStarch.graph)$extractionRate/
-                                   1000)),
-     edge.label.cex = 0.6)
 
-
-
-
-calculateEle21 = function(){
-    data[itemCode == 1, element21Num := element11Num]    
+calculateEle21 = function(element21Num, element11Num, data){
+    data[itemCode == 1, element21Num := element11Num]
+    ## NOTE (Michael): I think this means that the calculation is done
+    ##                 in the next year if seeding rates are
+    ##                 applicable.
 }
 
 
-## Need to double check whether the name input131Num is appropriate.
-calculateEle31 = function(element31Num, element31Symb, input131Num,
-    data){
-    setnames(data,
-             old = c("element31Num", "element31Symb", "input131Num"),
-             new = c(element31Num, element31Symb, input131Num))
-    ## NOTE (Michael): Need to find how to identify processed
-    ##                 commodity.
-    if(commodity == processed){
-        data[is.calculatedelement31Symb & !is.na(input131Num),
-             element31Num := input131Num]
-        data[is.calculatedelement31Symb & is.na(input131Num),
-             element31Num := 0]
-    }
-    setnames(data,
-             new = c("element31Num", "element31Symb", "input131Num"),
-             old = c(element31Num, element31Symb, input131Num))    
-}
 
-system.time(
-    calculateEle6696(mergedAupus, shares,
-                     "NUM_41", "NUM_61", "NUM_66", "NUM_91", "NUM_96")
-)
 
 
 
@@ -332,83 +306,6 @@ calculateEle111 = function(ratio171Num, ratio111Num, element111Num,
              old = c("ratio171Num", "ratio111Num", "element111Num",
                  "stotal"))    
 }    
-
-
-calculateEle141 = function(element11Num, element51Num, element61Num,
-    element91Num, element95Num, element141Num, element161Num,
-    ratio141Num, stotal, data){
-    data[!itemCode %in% c(50, 58, 59, 60, 61),
-         element141Num := ratio141Num * stotal/100]
-    ## For commodity Jute (50)
-    ## Define: calcType
-    switch(calcTye,
-           `1` = {},
-           `2` = {},
-           `3` = {}
-    )
-    data[itemCode %in% c(58:61),
-         element141Num := element11Num + element51Num + element61Num -
-             element91Num - element95Num - element161Num]
-}
-
-
-
-calculateEle141 = function(){
-    if(item != ESCR){
-        ele141 = ratio141 * stotal/100
-    } else if(item == jute){
-        tp = ele61 - ele91
-        if(calcType == 1){
-            tr = ele61s - ele91s
-            if(is.na(tr)){
-                if(!is.na(ifp)){
-                    tr = ifp
-                } else {
-                    tr = 0
-                }
-            }
-            ele141 = tr + (tp * 1.07)
-        } else if(calcType == 2){
-            ele141 = (ele51 * 1.02) + (tp * 1.07)
-        } else if(calcType == 3){
-            tr = ele61s - ele91s + ele51s
-            if(is.na(tr)){
-                if(!is.na(ifp)){
-                    tr = ifp
-                } else {
-                    tr = 0
-                }
-            }            
-            ele141 = tr + (tp * 1.07)
-        } else if(calcType == 4){
-            rc = ele141s + ele145s
-            if(is.na(rc)){
-                if(!is.na(ifp)){
-                    rc = ifp
-                } else {
-                    rc = 0
-                }
-            }
-            ele141 = rc + (ele71 * 1.07) + (tp * 1.07)
-        }
-        if(ele141 < 0){
-            ele181 = ele141
-            ele141 = 0
-        } else {
-            ele181 = NA
-        }        
-    } else if(item == ESCR tea){
-        ele141 = ele11 + ele51 + ele61 - ele91 - ele95 - ele161
-    }
-}
-
-
-calculateEle161 = function(element161Num, element11Num, element71Num){
-    data[itemCode == 57, element161Num := element11Num + element71Num]
-    ## NOTE (Michael): Need to clarify how traded item are treated
-    data[itemType %in% c(2:13, 19:22, 25:30, 39), ]
-}
-
 
 
 
