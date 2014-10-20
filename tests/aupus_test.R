@@ -1,5 +1,4 @@
 ## Load the libraries
-## library(data.table)
 library(igraph)
 library(reshape2)
 library(RJDBC)
@@ -7,7 +6,7 @@ library(data.table)
 library(FAOSTAT)
 library(faoswsUtil)
 options(java.parameters = "-Xmx3000m")
-sapply(dir("../codes/", full.names = TRUE), FUN = source)
+lapply(dir("../codes/", full.names = TRUE), FUN = source)
 
 
 ## Connect to the database
@@ -27,43 +26,20 @@ save(swsItemTable, file = "swsItemTable.RData")
 
 ## Test of Germany
 testCountryCode = 79
-## testItemCode = swsItemTable[swsItemTable$GRP_IND == "D", "ITEM"]
-testItemCode = 1:1000
+testItemCode = swsItemTable[swsItemTable$GRP_IND == "D", "ITEM"]
+## testItemCode = 1:1000
 aupusElements = c(11, 21, 31, 41, 51, 58, 61, 62, 66, 71, 91, 92, 95,
     96, 101, 111, 121, 131, 141, 144, 151, 161, 171, 174, 261, 274, 281,
     284, 541, 546)
 
-getAupusData = function(countryCode, itemCode, elementCode, conn){
-    query = paste0("SELECT * FROM tsv_ics_work_yr
-                                  WHERE area = '", countryCode, "'
-                                  AND item in (",
-                                  paste0(itemCode, collapse = ", "), ")
-                                  AND ele in (",
-                                  paste0(elementCode, collapse = ", "), ")")
-    ## print(query)
-    tmp = dbGetQuery(conn, query)
-    colnames(tmp)[1:3] =
-        c("areaCode", "itemCode", "elementCode")
-    melted = melt(tmp,
-        id.var = c("areaCode", "itemCode", "elementCode"))
-    melted$Year =
-        as.numeric(gsub("[^0-9]", "", melted$variable))
-    melted$type = gsub("[0-9|_]", "", melted$variable)
-    melted$variable = NULL
-    casted = data.table(dcast(melted, areaCode + itemCode +
-                                  Year ~ type + elementCode,
-        value.var = "value"))
-    valueCol = grep("NUM", colnames(casted), value = TRUE)
-    casted[, (valueCol) :=
-               lapply(valueCol, function(x) as.numeric(casted[[x]]))]    
-    casted
-}
+check = getAupusData(testCountryCode, conn)
+
+             
 rawAupus =
     getAupusData(testCountryCode, testItemCode, aupusElements,
                  conn)
 save(rawAupus, file = "aupusData.RData")
 
-## This is not required for primary commodities
 getInputFromProcess = function(countryCode, itemCode, conn){
     tmp = dbGetQuery(conn, paste0("SELECT * FROM input_from_procv
                                   WHERE area = '", countryCode, "'
@@ -97,146 +73,12 @@ input = getInputFromProcess(testCountryCode, testItemCode, conn)
 save(input, file = "input.RData")
 
 
-dbGetQuery(conn, "SELECT * FROM aupus_ratios WHERE ROWNUM <= 5")
-
-getRatios = function(countryCode, itemCode, conn){
-    ## This is a temporary solution
-    years = 1961:2015    
-    ## country and year specific
-    base = dbGetQuery(conn, paste0("SELECT area, item, ele, yr, ratio
-                                   FROM aupus_ratios
-                                   WHERE area in (", countryCode, ")
-                                   AND item in (",
-                                   paste0(itemCode, collapse = ", "), ")
-                                   AND yr != 0"))
-    colnames(base) =
-        c("areaCode", "itemCode", "elementCode", "Year", "ratio")
-    ## year wild card
-    wildCardYear = dbGetQuery(conn,
-        paste0("SELECT area, item, ele, ratio FROM aupus_ratios
-                WHERE area in (", countryCode, ")
-                AND yr = 0
-                AND item in (", paste0(itemCode, collapse = ", "), ")"))
-    colnames(wildCardYear) =
-        c("areaCode", "itemCode", "elementCode", "wildCardYearRatio")
-    expandedWildCardYear =
-        as.data.frame(sapply(wildCardYear,
-                             function(x){
-                                 rep(x, length(years))
-                             }
-                             )
-                      )
-    expandedWildCardYear$Year = rep(years, each = NROW(wildCardYear))
-    ## global wild card
-    wildCardGlobal = dbGetQuery(conn,
-        paste0("SELECT item, ele, ratio FROM aupus_ratios
-                WHERE area = 0 AND item in (",
-               paste0(itemCode, collapse = ", "), ")"))
-    colnames(wildCardGlobal) =
-        c("itemCode", "elementCode", "wildCardGlobalRatio")
-    wildCardGlobal$areaCode = countryCode
-    expandedWildCardGlobal =
-        as.data.frame(sapply(wildCardGlobal,
-                             function(x){
-                                 rep(x, length(years))
-                                         }
-                             )
-                      )
-    expandedWildCardGlobal$Year = rep(years, each = NROW(wildCardGlobal))
-    ## Now merge the whole lot
-    final =
-        data.table(
-            Reduce(function(x, y) merge(x, y, all = TRUE),
-                   list(base, expandedWildCardYear,
-                        expandedWildCardGlobal))
-            )
-    final[is.na(ratio), ratio := wildCardYearRatio]
-    final[is.na(ratio), ratio := wildCardGlobalRatio]
-    final[, `:=`(c("wildCardYearRatio", "wildCardGlobalRatio"), NULL)]
-    final[, elementCode := paste0("RATIO_", elementCode)]
-    castedFinal =
-        dcast(final, areaCode + itemCode + Year ~ elementCode,
-              value.var = "ratio")
-    castedFinal
-}
-ratio = getRatios(testCountryCode, testItemCode, conn)
+balanceElement = getBalanceElement(testCountryCode, conn)
+save(balanceElement, file = "balanceElement.RData")
+ratio = getRatio(testCountryCode, conn)
 save(ratio, file = "ratio.RData")
-
-
-
-
-getShare = function(countryCode, itemCode, conn){
-    ## This is a temporary solution
-    years = 1961:2015
-    
-    ## country and year specific
-    base = dbGetQuery(conn, paste0("SELECT *
-                                   FROM aupus_item_tree_shares
-                                   WHERE area in (", countryCode, ")
-                                   AND item_child in (",
-                                   paste0(itemCode, collapse = ", "), ")
-                                   AND yr != 0"))
-    colnames(base) =
-        c("areaCode", "itemCode", "itemChildCode", "Year",
-          "share", "aupusRequired")
-    ## print(str(base))
-
-    ## year wild card
-    wildCardYear = dbGetQuery(conn,
-        paste0("SELECT area, item_parent, item_child, aupus_share
-                FROM aupus_item_tree_shares
-                WHERE area in (", countryCode, ")
-                AND yr = 0
-                AND item_child in (",
-               paste0(itemCode, collapse = ", "), ")"))
-    colnames(wildCardYear) =
-        c("areaCode", "itemCode", "itemChildCode",
-          "wildCardYearShare")
-    expandedWildCardYear =
-        as.data.frame(sapply(wildCardYear,
-                             function(x){
-                                 rep(x, length(years))
-                             }
-                             )
-                      )
-    expandedWildCardYear$Year = rep(years, each = NROW(wildCardYear))
-    ## print(str(expandedWildCardYear))
-    
-    ## global wild card
-    wildCardGlobal = dbGetQuery(conn,
-        paste0("SELECT item_parent, item_child, aupus_share
-                FROM aupus_item_tree_shares
-                WHERE area = 0
-                AND item_child in (",
-                paste0(itemCode, collapse = ", "), ")"))
-    colnames(wildCardGlobal) =
-        c("itemCode", "itemChildCode", "wildCardGlobalShare")
-    wildCardGlobal$areaCode = countryCode
-    expandedWildCardGlobal =
-        as.data.frame(sapply(wildCardGlobal,
-                             function(x){
-                                 rep(x, length(years))
-                                         }
-                             )
-                      )
-    expandedWildCardGlobal$Year = rep(years, each = NROW(wildCardGlobal))
-    ## print(str(expandedWildCardGlobal))
-    ## Now merge the whole lot
-    final =
-        data.table(
-            Reduce(function(x, y) merge(x, y, all = TRUE),
-                   list(base, expandedWildCardYear,
-                        expandedWildCardGlobal))
-            )
-    ## print(str(final))
-    final[is.na(share), share := wildCardYearShare]
-    final[is.na(share), share := wildCardGlobalShare]
-    final[, `:=`(c("wildCardYearShare", "wildCardGlobalShare"), NULL)]
-    final
-}
-
-shares = getShare(testCountryCode, testItemCode, conn)
-save(shares, file = "share.RData")
+share = getShare("79", conn)
+save(share, file = "share.RData")
 
 
 ## Should also merge the input, by we will not do this for now for the
