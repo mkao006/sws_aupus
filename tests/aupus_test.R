@@ -20,66 +20,36 @@ swsItemTable = data.table(dbGetQuery(conn,
 setnames(swsItemTable,
          old = c("ITEM", "NAME_E", "ITEM_TYP"),
          new = c("itemCode", "itemName", "itemType"))
+setkeyv(swsItemTable, "itemCode")
 save(swsItemTable, file = "swsItemTable.RData")
-
-## Write a function for wild key matching in both ratio and share table
 
 ## Test of Germany
 testCountryCode = 79
 testItemCode = swsItemTable[swsItemTable$GRP_IND == "D", "ITEM"]
-## testItemCode = 1:1000
 aupusElements = c(11, 21, 31, 41, 51, 58, 61, 62, 66, 71, 91, 92, 95,
     96, 101, 111, 121, 131, 141, 144, 151, 161, 171, 174, 261, 274, 281,
     284, 541, 546)
 
-check = getAupusData(testCountryCode, conn)
-
-             
-rawAupus =
-    getAupusData(testCountryCode, testItemCode, aupusElements,
-                 conn)
-save(rawAupus, file = "aupusData.RData")
-
-getInputFromProcess = function(countryCode, itemCode, conn){
-    tmp = dbGetQuery(conn, paste0("SELECT * FROM input_from_procv
-                                  WHERE area = '", countryCode, "'
-                                  AND item_child in (",
-                                  paste0(itemCode, collapse = ", "), ")"))
-    colnames(tmp)[1:3] =
-        c("areaCode", "itemCode", "itemChildCode")
-    melted = melt(tmp,
-        id.var = c("areaCode", "itemCode",
-            "itemChildCode"))
-    melted$Year =
-        as.numeric(gsub("[^0-9]", "", melted$variable))
-    melted$type = gsub("[0-9|_]", "", melted$variable)
-    melted$variable = NULL
-    casted = data.table(dcast(melted, areaCode + itemChildCode +
-                                  itemCode +
-                                  Year ~ type,
-        value.var = "value"))
-    valueCol = grep("NUM", colnames(casted), value = TRUE)
-    casted[, (valueCol) :=
-               lapply(valueCol, function(x) as.numeric(casted[[x]]))]
-    setnames(casted,
-             old = c(grep("NUM", colnames(casted), value = TRUE),
-                 "SYMB"),
-             new = c(gsub("NUM", "INPUT", 
-                 grep("NUM", colnames(casted), value = TRUE)),
-                 "SYMB_INPUT"))
-    casted
+## Load aupus data
+aupus = getAupusData(testCountryCode,  conn)
+for(i in grep("NUM", colnames(aupus), value = TRUE)){
+    remove0M(data = aupus, value = i, flag = gsub("NUM", "SYMB", i),
+             naFlag = "M")
 }
-input = getInputFromProcess(testCountryCode, testItemCode, conn)
+save(aupus, file = "aupusData.RData")
+
+## Get input data
+input = getInputFromProcess(testCountryCode, conn)
+remove0M(input, value = "NUM_INPUT", flag = "SYMB_INPUT")
 save(input, file = "input.RData")
 
-
-balanceElement = getBalanceElement(testCountryCode, conn)
-save(balanceElement, file = "balanceElement.RData")
+## Get ratio data
 ratio = getRatio(testCountryCode, conn)
 save(ratio, file = "ratio.RData")
-share = getShare("79", conn)
+share = getShare(testCountryCode, conn)
 save(share, file = "share.RData")
-
+balanceElement = getBalanceElement(testCountryCode, conn)
+save(balanceElement, file = "balanceElement.RData")
 
 ## Should also merge the input, by we will not do this for now for the
 ## primary commodity.
@@ -88,13 +58,99 @@ load("aupusData.RData")
 load("input.RData")
 load("ratio.RData")
 load("share.RData")
+load("balanceElement.RData")
 
+aupus = merge(aupus, swsItemTable, all.x = TRUE)
+setkeyv(aupus, c("areaCode", "itemCode", "Year"))
 
 ## Need to remove 0M for all the data.
 treeData = merge(input, shares,
     by = c("areaCode", "itemCode", "itemChildCode", "Year"),
     all = TRUE, allow.cartesian = TRUE)
-remove0M(treeData, value = "INPUT", flag = "SYMB_INPUT")
+
+
+wildCardFill = function(originalData, wildCardData, variable,
+                        verbose = FALSE){
+    if(verbose)
+        cat("Number of Miss for vairable", variable, ":",
+            sum(is.na(tmp[, variable, with = FALSE])),        
+            "\n")
+    evalText = paste0(variable, " := i.", variable)
+    index = unique(wildCardData[originalData[is.na(get(variable)),
+        key(wildCardData), with = FALSE], ][!is.na(get(variable)), ])
+    setkeyv(index, key(wildCardData))
+    okey = key(originalData)
+    setkeyv(originalData, key(index))
+    originalData[index[!is.na(get(variable)), 
+                       c(key(index), variable),
+                       with = FALSE],
+                 eval(parse(text = evalText))]
+    setkeyv(originalData, okey)
+    if(verbose)
+        cat("Number of Miss for vairable", variable, ":",    
+            sum(is.na(tmp[, variable, with = FALSE])),
+            "\n")
+}
+
+appendRatio = function(aupus, ratio){
+    base = merge(aupus, ratio[[1]], all.x = TRUE)
+    ## Fill in wild card
+    for(i in 2:length(ratio)){
+        lapply(grep("RATIO", colnames(ratio[[i]]), value = TRUE),
+               FUN = function(x) wildCardFill(base, ratio[[i]], x))
+    }
+    base
+}
+
+
+########################################################################
+## Double Check this section.
+
+availableToInput = function(available, share){
+    inputShare = Reduce(f = function(x, y){
+        merge(x, y, all = TRUE, allow.cartesian = TRUE,
+              by = intersect(colnames(x), colnames(y)))
+    }, x = share, init = available)
+    setnames(inputShare,
+             old = c("itemCode", "itemChildCode"),
+             new = c("itemParentCode", "itemCode"))
+    setkeyv(x = inputShare,
+            cols = c("areaCode", "itemParentCode", "itemCode", "Year"))
+    inputShare[!is.na(itemCode) & !is.na(Year), ]
+}
+available =
+    availableToInput(aupus[, list(areaCode, itemCode, Year, NUM_131)],
+                     share)
+setkeyv(input, key(available))
+
+final = merge(available, input, all = TRUE)
+remove0M(final, "NUM_INPUT", "SYMB_INPUT")
+sum(is.na(final$NUM_INPUT))
+final[is.na(NUM_INPUT), NUM_INPUT := NUM_131 * SHARE/100]
+sum(is.na(final$NUM_INPUT))
+toInput = final[, list(NUM_TOTAL_INPUT = sum(NUM_INPUT)),
+    by = c("areaCode", "itemCode", "Year")]
+
+########################################################################
+
+aupusRatio = appendRatio(aupus, ratio)
+
+length(is.na(aupusRatio$NUM_11))
+length(is.na(aupusRatio$NUM_161))
+calculateEle11(element11Num = "NUM_11", element11Symb = "SYMB_11",
+               element161Num = "NUM_161", data = aupusRatio)
+length(is.na(aupusRatio$NUM_11))
+length(is.na(aupusRatio$NUM_161))
+
+length(is.na(aupusRatio$NUM_31))
+calculateEle31(element31Num = "NUM_31", element31Symb = "SYMB_31",
+               input131Num = "INPUT_131", data = aupusRatio)
+length(is.na(aupusRatio$NUM_31))
+
+
+
+
+
 
 ## TODO (Michael): Code the input from processing with network
 ##                 approach as well.
