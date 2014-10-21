@@ -9,7 +9,7 @@ getShare = function(countryCode, conn){
              old = c("AREA", "ITEM_PARENT", "ITEM_CHILD", "YR",
                  "AUPUS_SHARE"),
              new = c("areaCode", "itemCode", "itemChildCode", "Year",
-                 "aupusShare"))
+                 "SHARE"))
     specific = share[areaCode != 0 & Year != 0, ]
     setkeyv(specific, c("areaCode", "itemCode", "Year"))
     yearWildCard = share[areaCode != 0 & Year == 0,
