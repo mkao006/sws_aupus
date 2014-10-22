@@ -38,6 +38,9 @@ for(i in grep("NUM", colnames(aupus), value = TRUE)){
 }
 save(aupus, file = "aupusData.RData")
 
+population = getPopulation(testCountryCode, conn)
+save(population, file = "population.RData")
+
 ## Get input data
 input = getInputFromProcess(testCountryCode, conn)
 remove0M(input, value = "NUM_INPUT", flag = "SYMB_INPUT")
@@ -55,6 +58,7 @@ save(balanceElement, file = "balanceElement.RData")
 ## primary commodity.
 load("swsItemTable.RData")
 load("aupusData.RData")
+load("population.RData")
 load("input.RData")
 load("ratio.RData")
 load("share.RData")
@@ -63,115 +67,172 @@ load("balanceElement.RData")
 aupus = merge(aupus, swsItemTable, all.x = TRUE)
 setkeyv(aupus, c("areaCode", "itemCode", "Year"))
 
-## Need to remove 0M for all the data.
-treeData = merge(input, shares,
-    by = c("areaCode", "itemCode", "itemChildCode", "Year"),
-    all = TRUE, allow.cartesian = TRUE)
-
-
-wildCardFill = function(originalData, wildCardData, variable,
-                        verbose = FALSE){
-    if(verbose)
-        cat("Number of Miss for vairable", variable, ":",
-            sum(is.na(tmp[, variable, with = FALSE])),        
-            "\n")
-    evalText = paste0(variable, " := i.", variable)
-    index = unique(wildCardData[originalData[is.na(get(variable)),
-        key(wildCardData), with = FALSE], ][!is.na(get(variable)), ])
-    setkeyv(index, key(wildCardData))
-    okey = key(originalData)
-    setkeyv(originalData, key(index))
-    originalData[index[!is.na(get(variable)), 
-                       c(key(index), variable),
-                       with = FALSE],
-                 eval(parse(text = evalText))]
-    setkeyv(originalData, okey)
-    if(verbose)
-        cat("Number of Miss for vairable", variable, ":",    
-            sum(is.na(tmp[, variable, with = FALSE])),
-            "\n")
-}
-
-appendRatio = function(aupus, ratio){
-    base = merge(aupus, ratio[[1]], all.x = TRUE)
-    ## Fill in wild card
-    for(i in 2:length(ratio)){
-        lapply(grep("RATIO", colnames(ratio[[i]]), value = TRUE),
-               FUN = function(x) wildCardFill(base, ratio[[i]], x))
-    }
-    base
-}
-
-
-########################################################################
-## Double Check this section.
-
-availableToInput = function(available, share){
-    inputShare = Reduce(f = function(x, y){
-        merge(x, y, all = TRUE, allow.cartesian = TRUE,
-              by = intersect(colnames(x), colnames(y)))
-    }, x = share, init = available)
-    setnames(inputShare,
-             old = c("itemCode", "itemChildCode"),
-             new = c("itemParentCode", "itemCode"))
-    setkeyv(x = inputShare,
-            cols = c("areaCode", "itemParentCode", "itemCode", "Year"))
-    inputShare[!is.na(itemCode) & !is.na(Year), ]
-}
-available =
-    availableToInput(aupus[, list(areaCode, itemCode, Year, NUM_131)],
-                     share)
-setkeyv(input, key(available))
-
-final = merge(available, input, all = TRUE)
-remove0M(final, "NUM_INPUT", "SYMB_INPUT")
-sum(is.na(final$NUM_INPUT))
-final[is.na(NUM_INPUT), NUM_INPUT := NUM_131 * SHARE/100]
-sum(is.na(final$NUM_INPUT))
-toInput = final[, list(NUM_TOTAL_INPUT = sum(NUM_INPUT)),
-    by = c("areaCode", "itemCode", "Year")]
-
-########################################################################
-
 aupusRatio = appendRatio(aupus, ratio)
+updatedInput =
+    updateInputFromProcess(aupus = aupus, share = share, input = input,
+                           element131Num = "NUM_131")
+aggregatedInput = calculateTotalInput(updatedInput)
+aupusRatioInput = merge(aupusRatio, aggregatedInput, all.x = TRUE)
+aupusFinal = merge(aupusRatioInput, population, all.x = TRUE)
+setkeyv(aupusFinal, c("areaCode", "itemCode", "Year"))
 
-length(is.na(aupusRatio$NUM_11))
-length(is.na(aupusRatio$NUM_161))
+## Element 11
 calculateEle11(element11Num = "NUM_11", element11Symb = "SYMB_11",
-               element161Num = "NUM_161", data = aupusRatio)
-length(is.na(aupusRatio$NUM_11))
-length(is.na(aupusRatio$NUM_161))
+               element161Num = "NUM_161", data = aupusFinal)
 
-length(is.na(aupusRatio$NUM_31))
+## Element 21
+
+## Element 31
 calculateEle31(element31Num = "NUM_31", element31Symb = "SYMB_31",
-               input131Num = "INPUT_131", data = aupusRatio)
-length(is.na(aupusRatio$NUM_31))
+               inputNum = "NUM_TOTAL_INPUT", data = aupusFinal)
+
+## Element 41
+calculateEle41(ratio41Num = "RATIO_41",
+               element41Num = "NUM_41", element41Symb = "SYMB_41",
+               data = aupusFinal)
+
+## Element 51
+calculateEle51(element51Num = "NUM_51", element51Symb = "SYMB_51",
+               element58Num = "NUM_58", data = aupusFinal)
 
 
 
+## Element 31, 41, 51 balance
+calculateEle314151(element31Num = "NUM_31", element31Symb = "SYMB_31",
+                   element41Num = "NUM_41", element41Symb = "SYMB_41",
+                   element51Num = "NUM_51", element51Symb = "SYMB_51",
+                   data = aupusFinal)
+
+## Element 61, 62, 63
+calculateEle63(element61Num = "NUM_61",  element62Num = "NUM_62", 
+               element63Num = "NUM_63", element63Symb = "SYMB_63",
+               data = aupusFinal)
+
+## Element 66
+
+## Element71
+
+calculateEle71(element71Num = "NUM_71", element71Symb = "SYMB_71",
+               element51Num = "NUM_51", element61Num = "NUM_61",
+               element91Num = "NUM_91", element101Num = "NUM_101",
+               element121Num = "NUM_121", element131Num = "NUM_131",
+               element141Num = "NUM_141", element151Num = "NUM_151",
+               element161Num = "NUM_161", data = aupusFinal)
 
 
+## Element 91, 92, 93
+calculateEle93(element91Num = "NUM_91", element92Num = "NUM_92",
+               element93Num = "NUM_93", element93Symb = "SYMB_93",
+               data = aupusFinal)
 
-## TODO (Michael): Code the input from processing with network
-##                 approach as well.
-mergedAupus =
-    Reduce(f = function(x, y){
-        merge(x, y, by = intersect(colnames(x), colnames(y)), all = TRUE,
-              allow.cartesian = TRUE)
-    }, x = list(rawAupus, ratio))
-mergedAupus = merge(mergedAupus, swsItemTable, all.x = TRUE,
-    by = "itemCode")
-    
-calculateInput =
-    merge(treeData,
-          mergedAupus[, list(areaCode, itemCode, Year, NUM_131)])
-inputFromProcess =
-    calculateInput[, list(INPUT_131= sum(share * NUM_131/100)),
-                   by = c("areaCode", "itemChildCode", "Year")]
-setnames(inputFromProcess, "itemChildCode", "itemCode")
 
-finalAupus = merge(mergedAupus, inputFromProcess, all.x = TRUE,
-                   by = c("areaCode", "itemCode", "Year"))
+## Calculate total supply
+calculateTotalSupply(element11Num = "NUM_11", element51Num = "NUM_51",
+                     element58Num = "NUM_58", element61Num = "NUM_61",
+                     element66Num = "NUM_66", data = aupusFinal)
+
+## Elemet 101
+calculateEle101(element101Num = "NUM_101", element101Symb = "SYMB_101",
+                ratio101Num = "RATIO_101", stotal = "TOTAL_SUPPLY",
+                data = aupusFinal)
+
+## Element 121
+calculateEle121(element121Num = "NUM_121", element121Symb = "SYMB_121",
+                ratio121Num = "RATIO_121", stotal = "TOTAL_SUPPLY",
+                data = aupusFinal)
+
+## Element 131
+calculateEle131(element131Num = "NUM_131", element131Symb = "SYMB_131",
+                ratio131Num = "RATIO_131", stotal = "TOTAL_SUPPLY",
+                data = aupusFinal)
+
+
+## Element 141
+calculateEle141(element141Num = "NUM_141", element141Symb = "SYMB_141",
+                element11Num = "NUM_11", element51Num = "NUM_51",
+                element61Num = "NUM_61", element91Num = "NUM_91",
+                element95Num = "NUM_95", element161Num = "NUM_161",
+                ratio141Num = "RATIO_141", stotal = "TOTAL_SUPPLY",
+                data = aupusFinal)
+
+## Element 144
+calculateEle144(element144Num = "NUM_144", element144Symb = "SYMB_144",
+                element141Num = "NUM_141", population = "NUM_POP11",
+                data = aupusFinal)
+
+## Element 151
+calculateEle151(element151Num = "NUM_151", element151Symb = "SYMB_151",
+                element131Num = "NUM_131", element51Num = "NUM_51",
+                ratio151Num = "RATIO_151", stotal = "TOTAL_SUPPLY",
+                data = aupusFinal)
+
+## Element 161
+calculateEle161(element161Num = "NUM_161", element161Symb = "SYMB_161",
+                element11Num = "NUM_11", element71Num = "NUM_71",
+                data = aupusFinal)
+
+## Element 171
+calculateEle171(element171Num = "NUM_161", element171Symb = "SYMB_171",
+                element101Num = "NUM_101", element121Num = "NUM_121",
+                element131Num = "NUM_131", element141Num = "NUM_141",
+                element151Num = "NUM_151", data = aupusFinal)
+
+
+## Element 174
+calculateEle174(element174Num = "NUM_174", element174Symb = "SYMB_174",
+                element171Num = "NUM_171", population = "NUM_POP11",
+                data = aupusFinal)
+
+
+## Element 261
+calculateEle261(element261Num = "NUM_261", element261Symb = "SYMB_261",
+                ratio261Num = "RATIO_261", element141Num = "NUM_141",
+                data = aupusFinal)
+
+## Element 264
+calculateEle264(element264Num = "NUM_264", element264Symb = "SYMB_264",
+                element261Num = "NUM_261", population11 = "NUM_POP11",
+                population21 = "NUM_POP21", data = aupusFinal)
+
+## Element 271
+calculateEle271(element271Num = "NUM_271", element271Symb = "SYMB_271",
+                ratio271Num = "RATIO_271", element141Num = "NUM_141",
+                data = aupusFinal)
+
+## Element 274
+calculateEle274(element274Num = "NUM_274", element274Symb = "SYMB_274",
+                element261Num = "NUM_261", population11 = "NUM_POP11",
+                population21 = "NUM_POP21", data = aupusFinal)
+
+## Element 281
+calculateEle281(element281Num = "NUM_281", element281Symb = "SYMB_281",
+                ratio281Num = "RATIO_281", element141Num = "NUM_141",
+                data = aupusFinal)
+
+## Element 284
+calculateEle284(element284Num = "NUM_284", element284Symb = "SYMB_284",
+                element261Num = "NUM_261", population11 = "NUM_POP11",
+                population21 = "NUM_POP21", data = aupusFinal)
+
+
+aupusFinal = merge(aupusRatioInput, population, all.x = TRUE)
+
+## Element 541
+calculateEle541(element541Num = "NUM_541", element541Symb = "SYMB_541",
+                element542Num = "NUM_542", element543Num = "NUM_543",
+                element544Num = "NUM_544", element545Num = "NUM_545",
+                data = aupusFinal)
+
+## Element 546
+calculateEle546(element546Num = "NUM_546", element546Symb = "SYMB_546",
+                element541Num = "NUM_541", element151Num = "NUM_151",
+                element191Num = "NUM_191", data = aupusFinal)
+
+
+########################################################################
+## Remaining test code to translate
+########################################################################
+
 
 calculateEle21 = function(element21Num, element11Num, data){
     data[itemCode == 1, element21Num := element11Num]
@@ -180,10 +241,8 @@ calculateEle21 = function(element21Num, element11Num, data){
     ##                 applicable.
 }
 
-
-
-
-
+calculateEle58 = function(element58Num, element58Symb, data){
+}
 
 calculateEle111 = function(ratio171Num, ratio111Num, element111Num,
     stotal, data){
