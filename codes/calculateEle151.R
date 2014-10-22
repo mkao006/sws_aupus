@@ -1,25 +1,31 @@
-calculateEle151 = function(element151Num, element131Num, element51Num,
-    ratio151Num, stotal, data){
+calculateEle151 = function(element151Num, element151Symb,
+    element131Num, element51Num, ratio151Num, stotal, data){
     setnames(data,
-             old = c(element151Num, element131Num, element51Num,
-                 ratio151Num, stotal),
-             new = c("element151Num", "element131Num", "element51Num",
-                 "ratio151Num", "stotal"))
-    data[itemCode != 1697, element151Num := ratio151Num * stotal/100]
+             old = c(element151Num, element151Symb,
+                 element131Num, element51Num, ratio151Num, stotal),
+             new = c("element151Num", "element151Symb", "element131Num",
+                 "element51Num", "ratio151Num", "stotal"))
+    data[itemCode != 1687, element151Num := ratio151Num * stotal/100]
+    data[itemCode != 1687 & !is.na(element151Num) &
+         element151Symb == "M", element151Symb := "C"]
 
-    tmp = merge(data[itemCode == 1684,
-        list(itemCode, Year, element131Num)],
-        data[itemCode == 1687, list(itemCode, Year, element51Num)],
-        all = TRUE, by = c("itemCode", "Year"))
-    tmp[, element151Calculated := element131Num - element51Num]
-    tmp[, `:=`(c(element131Num, element51Num), NULL)]
-    tmp[, itemCode:= 1687]
-    data = merge(data, tmp, all = TRUE, by = c("itemCode", "Year"))
-    data[itemCode == 1687, element151Num := element151Calculated]
-    data[, element151Calculated := NULL]
+    ## Item Charcoal (1687) ignored for now.
+    ##
+    ## tmp =
+    ##     merge(data[itemCode == 1684,
+    ##                list(itemCode, Year, element131Num)],
+    ##           data[itemCode == 1687, list(itemCode, Year, element51Num)],
+    ##           all = TRUE, by = c("itemCode", "Year"))
+    ## tmp[, element151Calculated := element131Num - element51Num]
+    ## tmp[, `:=`(c(element131Num, element51Num), NULL)]
+    ## tmp[, itemCode:= 1687]
+    ## data = merge(data, tmp, all = TRUE, by = c("itemCode", "Year"))
+    ## data[itemCode == 1687, element151Num := element151Calculated]
+    ## data[, element151Calculated := NULL]
+
     setnames(data,
-             new = c(element151Num, element131Num, element51Num,
-                 ratio151Num, stotal),
-             old = c("element151Num", "element131Num", "element51Num",
-                 "ratio151Num", "stotal"))    
+             new = c(element151Num, element151Symb, element131Num,
+                 element51Num, ratio151Num, stotal),
+             old = c("element151Num", "element151Symb", "element131Num",
+                 "element51Num", "ratio151Num", "stotal"))    
 }

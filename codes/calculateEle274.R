@@ -1,19 +1,17 @@
-
-
-
-calculateEle274 = function(element21Num, element11Num, element274Num,
-    element271Num, data){
+calculateEle274 = function(element274Num, element274Symb,
+    element261Num, population11, population21, data){
     setnames(data,
-             old = c(element21Num, element11Num, element274Num,
-                 element271Num),
-             new = c("element21Num", "element11Num", "element274Num",
-                 "element271Num"))
-    data[, validPopulation := element21Num]
-    data[is.na(validPopulation), validPopulation := element11Num]
-    data[, element274Num := element271Num/365 * 1000/validPopulation]
+             old = c(element274Num, element274Symb,
+                 element261Num, population11, population21),
+             new = c("element274Num", "element274Symb",
+                 "element261Num", "population11", "population21"))
+    data[, validPopulation := population21]
+    data[is.na(validPopulation), validPopulation := population11]
+    data[, element274Num := element261Num/365 * 1000/validPopulation]
+    data[, validPopulation := NULL]
     setnames(data,
-             new = c(element21Num, element11Num, element274Num,
-                 element271Num),
-             nold = c("element21Num", "element11Num", "element274Num",
-                 "element271Num"))    
+             new = c(element274Num, element274Symb,
+                 element261Num, population11, population21),
+             old = c("element274Num", "element274Symb",
+                 "element261Num", "population11", "population21"))    
 }

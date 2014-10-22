@@ -2,7 +2,7 @@ getAupusData = function(countryCode, conn){
     aupusQuery =
         paste0("SELECT *
                 FROM tsv_ics_work_yr
-                WHERE area in (", countryCode, ")")
+                WHERE area =", countryCode)
     aupus =
         data.table(dbGetQuery(conn = conn, aupusQuery))
     meltedAupus =

@@ -1,17 +1,25 @@
 calculateEle63 = function(element61Num, element62Num,
-    element63Num, data){
+    element63Num, element63Symb, data){
     setnames(data,
-             old = c(element61Num, element62Num, element63Num),
-             new = c("element61Num", "element62Num", "element63Num"))
+             old = c(element61Num, element62Num, element63Num,
+                 element63Symb),
+             new = c("element61Num", "element62Num",
+                 "element63Num", "element63Symb"))
     ## Calculate element 63 from element 61 and 62 if both are
     ## available.
     data[!is.na(element61Num) & !is.na(element62Num),
          element63Num := element61Num * 1000/element62Num]
+    data[!is.na(element63Num) & element63Symb == "M",
+         element63Symb := "C"]
     ## If any one of them is missing, then the new calculatino would
     ## be missing. Therefore, replace with zero.
     data[is.na(element61Num) | is.na(element62Num),
          element63Num := 0]
+    data[is.na(element61Num) | is.na(element62Num),
+         element63Symb := "M"]
     setnames(data,
-             new = c(element61Num, element62Num, element63Num),
-             old = c("element61Num", "element62Num", "element63Num"))    
+             new = c(element61Num, element62Num,
+                 element63Num, element63Symb),
+             old = c("element61Num", "element62Num",
+                 "element63Num", "element63Symb"))
 }

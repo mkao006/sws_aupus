@@ -1,4 +1,3 @@
-
 calculateEle41 = function(ratio41Num, 
     element41Num, element41Symb, data){
     setnames(data,
@@ -17,6 +16,7 @@ calculateEle41 = function(ratio41Num,
     ## Replace data which were previously calculated.
     data[previousCalculation,
          element41Num := newCalculation[previousCalculation]]
+    data[previousCalculation, element41Symb := "C"]
     setnames(data,
              new = c(ratio41Num, element41Num, element41Symb),
              old = c("ratio41Num", "element41Num", "element41Symb"))    
