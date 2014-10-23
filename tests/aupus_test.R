@@ -1,4 +1,4 @@
-## Load the libraries
+# Load the libraries
 library(igraph)
 library(reshape2)
 library(RJDBC)
@@ -81,7 +81,9 @@ calculateEle11(element11Num = "NUM_11", element11Symb = "SYMB_11",
                element161Num = "NUM_161", data = aupusFinal)
 
 ## Element 21
-
+calculateEle21(element21Num = "NUM_21", element21Symb = "SYMB_21",
+               element11Num = "NUM_11", element111Num = "NUM_111",
+               ratio171Num = "RATIO_171", data = aupusFinal)
 ## Element 31
 calculateEle31(element31Num = "NUM_31", element31Symb = "SYMB_31",
                inputNum = "NUM_TOTAL_INPUT", data = aupusFinal)
@@ -95,6 +97,9 @@ calculateEle41(ratio41Num = "RATIO_41",
 calculateEle51(element51Num = "NUM_51", element51Symb = "SYMB_51",
                element58Num = "NUM_58", data = aupusFinal)
 
+## Element 58
+calculateEle58(element58Num = "NUM_58", element58Symb = "SYMB_58",
+               data = aupusFinal)
 
 
 ## Element 31, 41, 51 balance
@@ -135,6 +140,13 @@ calculateTotalSupply(element11Num = "NUM_11", element51Num = "NUM_51",
 calculateEle101(element101Num = "NUM_101", element101Symb = "SYMB_101",
                 ratio101Num = "RATIO_101", stotal = "TOTAL_SUPPLY",
                 data = aupusFinal)
+
+## Element 111
+calculateEle111(element111Num = "NUM_111", element111Symb = "SYMB_111",
+                element21Num = "NUM_21", element31Num = "NUM_31",
+                ratio171Num = "RATIO_171", ratio111Num = "RATIO_111",
+                stotal = "TOTAL_SUPPLY", data = aupusFinal)
+
 
 ## Element 121
 calculateEle121(element121Num = "NUM_121", element121Symb = "SYMB_121",
@@ -215,8 +227,6 @@ calculateEle284(element284Num = "NUM_284", element284Symb = "SYMB_284",
                 population21 = "NUM_POP21", data = aupusFinal)
 
 
-aupusFinal = merge(aupusRatioInput, population, all.x = TRUE)
-
 ## Element 541
 calculateEle541(element541Num = "NUM_541", element541Symb = "SYMB_541",
                 element542Num = "NUM_542", element543Num = "NUM_543",
@@ -232,39 +242,6 @@ calculateEle546(element546Num = "NUM_546", element546Symb = "SYMB_546",
 ########################################################################
 ## Remaining test code to translate
 ########################################################################
-
-
-calculateEle21 = function(element21Num, element11Num, data){
-    data[itemCode == 1, element21Num := element11Num]
-    ## NOTE (Michael): I think this means that the calculation is done
-    ##                 in the next year if seeding rates are
-    ##                 applicable.
-}
-
-calculateEle58 = function(element58Num, element58Symb, data){
-}
-
-calculateEle111 = function(ratio171Num, ratio111Num, element111Num,
-    stotal, data){
-    setnames(data,
-             old = c(ratio171Num, ratio111Num, element111Num, stotal),
-             new = c("ratio171Num", "ratio111Num", "element111Num",
-                 "stotal"))
-    ## In this case it's the same to calculateEle101
-    data[is.na(ratio171Num) & !is.na(ratio111Num),
-         element111Num := ratio111Num * stotal/100]
-    ## NOTE (Michael): How do you define a 'valid value'?
-    if(!missing(t1)){
-        tmp = c(ele21t1, ele31t1, ele21t0, ele31t0) * ratio171/1000
-        ele111 = tmp[isvalid(tmp)][1]
-    }
-    setnames(data,
-             new = c(ratio171Num, ratio111Num, element111Num, stotal),
-             old = c("ratio171Num", "ratio111Num", "element111Num",
-                 "stotal"))    
-}    
-
-
 
 balance = function(){
     if(item in c(04, 15, 16, 20, 21, 25, 32, 33, 37, 49, 50, 55, 56))
