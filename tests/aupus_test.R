@@ -72,9 +72,11 @@ updatedInput =
     updateInputFromProcess(aupus = aupus, share = share, input = input,
                            element131Num = "NUM_131")
 aggregatedInput = calculateTotalInput(updatedInput)
-aupusRatioInput = merge(aupusRatio, aggregatedInput, all.x = TRUE)
-aupusFinal = merge(aupusRatioInput, population, all.x = TRUE)
+aupusFinal = merge(aupusRatio, aggregatedInput, all.x = TRUE)
 setkeyv(aupusFinal, c("areaCode", "itemCode", "Year"))
+## aupusRatioInput = merge(aupusRatio, aggregatedInput, all.x = TRUE)
+## aupusFinal = merge(aupusRatioInput, population, all.x = TRUE)
+## setkeyv(aupusFinal, c("areaCode", "itemCode", "Year"))
 
 ## Element 11
 calculateEle11(element11Num = "NUM_11", element11Symb = "SYMB_11",
@@ -84,6 +86,12 @@ calculateEle11(element11Num = "NUM_11", element11Symb = "SYMB_11",
 calculateEle21(element21Num = "NUM_21", element21Symb = "SYMB_21",
                element11Num = "NUM_11", element111Num = "NUM_111",
                ratio171Num = "RATIO_171", data = aupusFinal)
+
+## Denormalize population
+denormalizePopulation(elementNum11 = "NUM_11", elementNum21 = "NUM_21",
+                      data = aupusFinal)
+
+
 ## Element 31
 calculateEle31(element31Num = "NUM_31", element31Symb = "SYMB_31",
                inputNum = "NUM_TOTAL_INPUT", data = aupusFinal)
