@@ -90,9 +90,9 @@ setkeyv(aupusFinal, c("areaCode", "itemCode", "Year"))
 
 ## NOTE (Michael): There itemCodes are not in the ratio table and thus
 ##                 does not have a balancing item
-check = dbGetQuery(conn,
-    "SELECT * FROM aupus_ratios WHERE area in (0, 79)")
-unique(aupusFinal[is.na(balanceElement), itemCode])[which(unique(aupusFinal[is.na(balanceElement), itemCode]) %in% check$ITEM)]
+## check = dbGetQuery(conn,
+##     "SELECT * FROM aupus_ratios WHERE area in (0, 79)")
+## unique(aupusFinal[is.na(balanceElement), itemCode])[which(unique(aupusFinal[is.na(balanceElement), itemCode]) %in% check$ITEM)]
 
 
 ## Element 11
@@ -160,10 +160,10 @@ calculateEle63(element61Num = "NUM_61",  element62Num = "NUM_62",
 ## Element 66
 ## system.time(
 ##     {
-        calculateEle6696(data = aupusFinal, shares = share,
-                         element41Num = "NUM_41", element61Num = "NUM_61",
-                         element66Num = "NUM_66", element91Num = "NUM_91",
-                         element96Num = "NUM_96")
+##         calculateEle6696(data = aupusFinal, shares = share,
+##                          element41Num = "NUM_41", element61Num = "NUM_61",
+##                          element66Num = "NUM_66", element91Num = "NUM_91",
+##                          element96Num = "NUM_96")
 ##     })
 
 
@@ -310,6 +310,7 @@ calculateBalance(supply = "TOTAL_SUPPLY",
                  element161Num = "NUM_161",
                  element171Num = "NUM_171",
                  element181Num = "NUM_181",
+                 element181Symb = "SYMB_181",
                  balanceElement = "balanceElement",
                  data = aupusFinal)
 
