@@ -1,4 +1,3 @@
-
 calculateEle6696 = function(data, shares, element41Num,
     element61Num, element66Num, element91Num, element96Num){
     setnames(data,
@@ -10,8 +9,8 @@ calculateEle6696 = function(data, shares, element41Num,
          element66Num :=
              standardizeCommodityNetwork(shares = shares[Year == .BY[[2]], ],
                                          aupus = data[Year == .BY[[2]], ],
-                                         extractionRate = element41Num,
-                                         standardizeElement = element61Num,
+                                         extractionRate = "element41Num",
+                                         standardizeElement = "element61Num",
                                          commodity = as.character(.BY[[1]])
                                          ),
          by = c("itemCode", "Year")]
@@ -19,8 +18,8 @@ calculateEle6696 = function(data, shares, element41Num,
          element96Num :=
              standardizeCommodityNetwork(shares = shares[Year == .BY[[2]], ],
                                          aupus = data[Year == .BY[[2]], ],
-                                         extractionRate = element41Num,
-                                         standardizeElement = element91Num,
+                                         extractionRate = "element41Num",
+                                         standardizeElement = "element91Num",
                                          commodity = as.character(.BY[[1]])
                                          ),
          by = c("itemCode", "Year")]

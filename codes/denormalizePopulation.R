@@ -8,7 +8,6 @@ denormalizePopulation = function(data, elementNum11, elementNum21){
     setnames(population,
              old = c("elementNum11", "elementNum21"),
              new = c("NUM_POP11", "NUM_POP21"))
-    print(str(population))
     setkeyv(population, c("areaCode", "Year"))
     okey = key(data)
     setkeyv(data, key(population))

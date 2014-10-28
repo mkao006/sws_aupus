@@ -24,7 +24,7 @@ setkeyv(swsItemTable, "itemCode")
 save(swsItemTable, file = "swsItemTable.RData")
 
 ## Test of Germany
-testCountryCode = 79
+testCountryCode = 100
 testItemCode = swsItemTable[swsItemTable$GRP_IND == "D", "ITEM"]
 aupusElements = c(11, 21, 31, 41, 51, 58, 61, 62, 66, 71, 91, 92, 95,
     96, 101, 111, 121, 131, 141, 144, 151, 161, 171, 174, 261, 274, 281,
@@ -49,10 +49,13 @@ save(input, file = "input.RData")
 ## Get ratio data
 ratio = getRatio(testCountryCode, conn)
 save(ratio, file = "ratio.RData")
-share = getShare(testCountryCode, conn)
+share.lst = getShare(testCountryCode, conn)
+share = mergeShare(share.lst)
 save(share, file = "share.RData")
 balanceElement = getBalanceElement(testCountryCode, conn)
 save(balanceElement, file = "balanceElement.RData")
+
+
 
 ## Should also merge the input, by we will not do this for now for the
 ## primary commodity.
@@ -64,19 +67,33 @@ load("ratio.RData")
 load("share.RData")
 load("balanceElement.RData")
 
+
+
 aupus = merge(aupus, swsItemTable, all.x = TRUE)
 setkeyv(aupus, c("areaCode", "itemCode", "Year"))
 
-aupusRatio = appendRatio(aupus, ratio)
+
+aupusRatio = appendRatio(aupus, ratio, TRUE)
+aupusRatioBalanceElement =
+    appendBalanceElement(aupusRatio, balanceElement, TRUE)
 updatedInput =
     updateInputFromProcess(aupus = aupus, share = share, input = input,
                            element131Num = "NUM_131")
 aggregatedInput = calculateTotalInput(updatedInput)
-aupusFinal = merge(aupusRatio, aggregatedInput, all.x = TRUE)
+aupusFinal = merge(aupusRatioBalanceElement, aggregatedInput,
+    all.x = TRUE)
 setkeyv(aupusFinal, c("areaCode", "itemCode", "Year"))
 ## aupusRatioInput = merge(aupusRatio, aggregatedInput, all.x = TRUE)
 ## aupusFinal = merge(aupusRatioInput, population, all.x = TRUE)
 ## setkeyv(aupusFinal, c("areaCode", "itemCode", "Year"))
+
+
+## NOTE (Michael): There itemCodes are not in the ratio table and thus
+##                 does not have a balancing item
+check = dbGetQuery(conn,
+    "SELECT * FROM aupus_ratios WHERE area in (0, 79)")
+unique(aupusFinal[is.na(balanceElement), itemCode])[which(unique(aupusFinal[is.na(balanceElement), itemCode]) %in% check$ITEM)]
+
 
 ## Element 11
 calculateEle11(element11Num = "NUM_11", element11Symb = "SYMB_11",
@@ -105,10 +122,6 @@ calculateEle41(ratio41Num = "RATIO_41",
 calculateEle51(element51Num = "NUM_51", element51Symb = "SYMB_51",
                element58Num = "NUM_58", data = aupusFinal)
 
-## Element 58
-calculateEle58(element58Num = "NUM_58", element58Symb = "SYMB_58",
-               data = aupusFinal)
-
 
 ## Element 31, 41, 51 balance
 calculateEle314151(element31Num = "NUM_31", element31Symb = "SYMB_31",
@@ -116,12 +129,44 @@ calculateEle314151(element31Num = "NUM_31", element31Symb = "SYMB_31",
                    element51Num = "NUM_51", element51Symb = "SYMB_51",
                    data = aupusFinal)
 
+## Element 58
+calculateEle58(element58Num = "NUM_58", element58Symb = "SYMB_58",
+               data = aupusFinal)
+
+
 ## Element 61, 62, 63
 calculateEle63(element61Num = "NUM_61",  element62Num = "NUM_62", 
                element63Num = "NUM_63", element63Symb = "SYMB_63",
                data = aupusFinal)
 
+
+
 ## Element 66
+
+
+
+## aupusFinal = merge(aupusRatio, aggregatedInput, all.x = TRUE)
+## setkeyv(aupusFinal, c("areaCode", "itemCode", "Year"))
+## test.graph =
+##     constructGraph(share[Year == 2010, ],
+##                    aupusFinal[Year == 2010, ], "NUM_41", "NUM_61", TRUE)
+## standardizeCommodityNetwork(share[Year == 2010, ],
+##                             aupusFinal[Year == 2010, ],
+##                             "NUM_41", "NUM_61", c("28", "29"))
+## V(standardizeNode(standardizeNode(test.graph, "29"), "35"))["28"]$standardizeElement
+## V(standardizeNode(test.graph, c("29", "35")))["28"]$standardizeElement
+
+## NOTE (Michael): Now can also recode the function to standarize by year.
+## Element 66
+## system.time(
+##     {
+        calculateEle6696(data = aupusFinal, shares = share,
+                         element41Num = "NUM_41", element61Num = "NUM_61",
+                         element66Num = "NUM_66", element91Num = "NUM_91",
+                         element96Num = "NUM_96")
+##     })
+
+
 
 ## Element71
 
@@ -246,58 +291,33 @@ calculateEle546(element546Num = "NUM_546", element546Symb = "SYMB_546",
                 element541Num = "NUM_541", element151Num = "NUM_151",
                 element191Num = "NUM_191", data = aupusFinal)
 
+## Total utilization
+calculateTotalUtilization(element91Num = "NUM_91",
+                          element95Num = "NUM_95",
+                          element96Num = "NUM_96",
+                          element101Num = "NUM_101",
+                          element111Num = "NUM_111",
+                          element121Num = "NUM_121",
+                          element131Num = "NUM_131",
+                          element141Num = "NUM_141",
+                          element151Num = "NUM_151",
+                          element161Num = "NUM_161",
+                          element546Num = "NUM_546", data = aupusFinal)
 
+## Balance
+calculateBalance(supply = "TOTAL_SUPPLY",
+                 utilization = "TOTAL_UTILIZATION",
+                 element161Num = "NUM_161",
+                 element171Num = "NUM_171",
+                 element181Num = "NUM_181",
+                 balanceElement = "balanceElement",
+                 data = aupusFinal)
+
+    
 ########################################################################
 ## Remaining test code to translate
 ########################################################################
 
-balance = function(){
-    if(item in c(04, 15, 16, 20, 21, 25, 32, 33, 37, 49, 50, 55, 56))
-        break
-    supply = c(51, 58, 61, 66)
-    utilization = c(91, 95, 96, 101, 111, 121, 131, 141, 161, 546)
-    if(item in 51, 58, 59, 61){
-        supply = c(supply, 11)
-    } else {
-        utilization = c(utilization, 11)
-    }
-
-    if(item in WEIS){
-        supply = c(supply, 53)
-    } else {
-        utilization = c(utilization, 53)
-    }
-    balance = sum(supply) - sum(utilization)
-
-    if(item in 57){
-        tmp = (ele161/ele171) * 1000
-        if(is.finite(tmp)){
-            balance = tmp
-        } else {
-            balance = 0
-        }
-    }
-
-    if(balele == 71)
-        balance = -balance
-
-    if(balance < 0){
-        if(area != 10 & itm != 3904){
-            ele181 = balance
-            balance = 0
-        }
-    }
-
-    
-    if(!missing(balele)){
-        assign(balance)
-    } else {
-        warning("Value entered for an element that is balance")
-        ele181 = ele181 + balance
-    }
-}
-
-    
 ## Things to Note:
 ## Need to write a function to check whether a cell is not null or zero.
 ##

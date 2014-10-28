@@ -1,8 +1,8 @@
 wildCardFill = function(originalData, wildCardData, variable,
-                        verbose = FALSE){
+    verbose = FALSE, ...){
     if(verbose)
         cat("Number of Miss for vairable", variable, ":",
-            sum(is.na(tmp[, variable, with = FALSE])),        
+            sum(is.na(originalData[, variable, with = FALSE])),
             "\n")
     evalText = paste0(variable, " := i.", variable)
     index = unique(wildCardData[originalData[is.na(get(variable)),
@@ -17,6 +17,6 @@ wildCardFill = function(originalData, wildCardData, variable,
     setkeyv(originalData, okey)
     if(verbose)
         cat("Number of Miss for vairable", variable, ":",    
-            sum(is.na(tmp[, variable, with = FALSE])),
+            sum(is.na(originalData[, variable, with = FALSE])),
             "\n")
 }

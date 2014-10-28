@@ -2,7 +2,7 @@ getShare = function(countryCode, conn){
     shareQuery =
         paste0("SELECT area, item_parent, item_child, yr, aupus_share
                 FROM aupus_item_tree_shares
-                WHERE area in (0", countryCode, ")")
+                WHERE area in (0, ", countryCode, ")")
     share =
         data.table(dbGetQuery(conn = conn, shareQuery))
     setnames(share,
@@ -11,13 +11,13 @@ getShare = function(countryCode, conn){
              new = c("areaCode", "itemCode", "itemChildCode", "Year",
                  "SHARE"))
     specific = share[areaCode != 0 & Year != 0, ]
-    setkeyv(specific, c("areaCode", "itemCode", "Year"))
+    setkeyv(specific, c("areaCode", "itemCode", "itemChildCode", "Year"))
     yearWildCard = share[areaCode != 0 & Year == 0,
         !"Year", with = FALSE]
-    setkeyv(yearWildCard, c("areaCode", "itemCode"))
+    setkeyv(yearWildCard, c("areaCode", "itemCode", "itemChildCode"))
     areaYearWildCard = share[areaCode == 0 & Year == 0,
         !c("areaCode", "Year"), with = FALSE]
-    setkeyv(areaYearWildCard, "itemCode")
+    setkeyv(areaYearWildCard, c("itemCode", "itemChildCode"))
     list(specific = specific, 
          yearWildCard = yearWildCard,
          areaYearWildCard = areaYearWildCard)

@@ -21,6 +21,7 @@ getInputFromProcess = function(countryCode, conn){
              old = c("AREA", "ITEM_PARENT", "ITEM_CHILD", "NUM", "SYMB"),
              new = c("areaCode", "itemParentCode", "itemCode",
                  "NUM_INPUT", "SYMB_INPUT"))
-    setkeyv(finalInput, cols = c("areaCode", "itemCode", "Year"))
+    setkeyv(finalInput,
+            cols = c("areaCode", "itemParentCode", "itemCode", "Year"))
     finalInput
 }
