@@ -14,7 +14,11 @@ standardizeNode = function(graph, leave){
     reverseMatrix[is.na(reverseMatrix) | !is.finite(reverseMatrix)] = 0
     standardized = reverseMatrix %*% matrix(values, nc = 1)
     V(graph)[rownames(standardized)]$standardizeElement =
-        V(graph)[rownames(standardized)]$standardizeElement + standardized
+        V(graph)[rownames(standardized)]$standardizeElement +
+            standardized
+    intermediateValues = V(graph)[leave]$standardizeElement
+    names(intermediateValues) = leave
     graph = graph - vertices(leave)
-    graph
+    list(standardizedGraph = graph,
+         intermediateValues = intermediateValues)
 }
