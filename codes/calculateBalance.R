@@ -15,8 +15,7 @@ calculateBalance = function(supply, utilization, element161Num,
          BALANCE := 0]
 
     data[balanceElement == 71, BALANCE := -BALANCE]
-    ## data[BALANCE < 0, `:=`(c("BALANCE", "element181Num"),
-    ##                        list(0, BALANCE))]
+    
     fillBalance = function(balanceValue, balanceNum, balanceSymb,
         element181Num, element181Symb, data){
         ## Replace if the balancing element is calculated or missing
