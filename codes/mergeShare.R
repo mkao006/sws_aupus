@@ -1,11 +1,11 @@
-mergeShare = function(share){
+mergeShare = function(share, aupus){
     uniquePath =
         unique.data.frame(Reduce(rbind,
                                  lapply(share, FUN = function(x)
                                      x[, list(itemCode, itemChildCode)]))
                           )
-    uniqueYear = unique(share[[1]]$Year)
-    uniqueArea = unique(share[[1]]$areaCode)
+    uniqueYear = unique(c(share[[1]]$Year, unique(aupus$Year)))
+    uniqueArea = unique(c(share[[1]]$areaCode, unique(aupus$areaCode)))
     tmp = lapply(uniquePath, rep, times = length(uniqueYear))
     tmp$Year = rep(uniqueYear, each = NROW(uniquePath))
     tmp$areaCode = uniqueArea
