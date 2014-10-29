@@ -5,8 +5,9 @@ constructGraph = function(shares, aupus, extractionRate,
     setnames(aupus,
              old = c(extractionRate, standardizeElement),
              new = c("extractionRate", "standardizeElement"))
+
+    ## Construct edge from share and extraction aret
     aupusExtract = aupus[, list(itemCode, extractionRate)]
-    ## setnames(aupusExtract, "itemCode", "itemChildCode")    
     shareAupus = merge(shares, aupusExtract, by = "itemCode",
         all.x = TRUE, allow.cartesian = TRUE)
     
@@ -14,12 +15,11 @@ constructGraph = function(shares, aupus, extractionRate,
         list(itemChildCode, itemCode, SHARE, extractionRate)]
     uniqueEdgeItem =
         sort(unique(c(unique(e$itemCode), unique(e$itemChildCode))))
-    v = aupus[itemCode %in% uniqueEdgeItem,
-        list(itemCode, standardizeElement)]
+    v = aupus[, list(itemCode, standardizeElement)]
     ## print(str(e))
     ## print(str(v))
     ## print(uniqueEdgeItem)
-    inEdgeNotInNode = setdiff(uniqueEdgeItem, v$itemCode)
+    inEdgeNotInNode = setdiff(uniqueEdgeItem, unique(v$itemCode))
     if(length(inEdgeNotInNode) > 0){
         missingNodes = 
             data.table(itemCode = inEdgeNotInNode,
