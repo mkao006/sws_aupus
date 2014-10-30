@@ -8,6 +8,7 @@ trendOnce = function(Num, Symb, applyIndex = 1:length(Num),
         symb[newTrendIndex] = transferSymb(symb[newTrendIndex - 1])
     } else {
         symb[newTrendIndex] = "T"
+    }
     trendedOnceValue = value[-1]
     trendOnceSymb = symb[-1]
     list(trendedOnceValue, trendOnceSymb)
