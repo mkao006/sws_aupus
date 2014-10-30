@@ -10,8 +10,9 @@ calculateEle171 = function(element171Num, element171Symb, element101Num,
 
     data[itemCode == 57,
          `:=`(c("element171Num", "element171Symb"),
-              list(element101Num + element121Num + element131Num +
-                   element141Num + element151Num, "C"))]
+              appendSymbol(element101Num + element121Num +
+                           element131Num + element141Num +
+                           element151Num, "C"))]
 
     setnames(data,
              new = c(element171Num, element171Symb, element101Num,

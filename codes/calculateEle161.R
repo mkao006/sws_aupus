@@ -7,7 +7,7 @@ calculateEle161 = function(element161Num, element161Symb,
                  "element71Num"))
     data[itemType == 57,
          `:=`(c("element161Num", "element161Symb"),
-              list(element11Num + element71Num, "C"))]
+              appendSymbol(element11Num + element71Num, "C"))]
 
     ## NOTE (Michael): It just says that the next year is forced to be
     ##                 processed if it is of type trade and also

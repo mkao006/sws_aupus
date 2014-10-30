@@ -8,7 +8,8 @@ calculateEle274 = function(element274Num, element274Symb,
     data[, validPopulation := population21]
     data[is.na(validPopulation), validPopulation := population11]
     data[, `:=`(c("element274Num", "element274Symb"),
-                list(element261Num/365 * 1000/validPopulation, "C"))]
+                appendSymbol(element261Num/365 * 1000/validPopulation,
+                             "C"))]
     data[, validPopulation := NULL]
     setnames(data,
              new = c(element274Num, element274Symb,

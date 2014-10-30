@@ -9,7 +9,7 @@ calculateEle93 = function(element91Num, element92Num,
     data[!itemType %in% c(42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52) &
          !is.na(element91Num) & !is.na(element92Num),
          `:=`(c("element93Num", "element93Symb"),
-              list(element91Num * 1000/element92Num, "C"))]
+              appendSymbol(element91Num * 1000/element92Num, "C"))]
     data[!itemType %in% c(42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52) &
          is.na(element91Num) | is.na(element92Num),
          `:=`(c("element93Num", "element93Symb"),

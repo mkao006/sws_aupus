@@ -24,22 +24,25 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
     ## value
     data[is.na(element31Num) &
          (numberOfMissingElements == 1 | numberOfTrendingElements),
-         element31Num := element51Num/element41Num * fd]
-    data[is.na(element31Num) &
-         (numberOfMissingElements == 1 | numberOfTrendingElements) &
-         element31Symb == "M", element31Symb := "C"]
+         `:=`(c("element31Num", "element31Symb"),
+             appendSymbol(element51Num/element41Num * fd, "C"))]
+    ## data[is.na(element31Num) &
+    ##      (numberOfMissingElements == 1 | numberOfTrendingElements) &
+    ##      element31Symb == "M", element31Symb := "C"]
     data[is.na(element41Num) &
          (numberOfMissingElements == 1 | numberOfTrendingElements),
-         element41Num := element51Num/element31Num * fd]
-    data[is.na(element41Num) &
-         (numberOfMissingElements == 1 | numberOfTrendingElements) &
-         element41Symb == "M", element41Symb := "C"]
+         `:=`(c("element41Num", "element41Symb"),
+              appendSymbol(element51Num/element31Num * fd, "C"))]
+    ## data[is.na(element41Num) &
+    ##      (numberOfMissingElements == 1 | numberOfTrendingElements) &
+    ##      element41Symb == "M", element41Symb := "C"]
     data[is.na(element51Num) &
          (numberOfMissingElements == 1 | numberOfTrendingElements),
-         element51Num := element31Num * element41Num/fd]
-    data[is.na(element51Num) &
-         (numberOfMissingElements == 1 | numberOfTrendingElements) &
-         element51Symb == "M", element51Symb := "C"]    
+         `:=`(c("element51Num", "element51Symb"),
+              appendSymbol(element31Num * element41Num/fd, "C"))]
+    ## data[is.na(element51Num) &
+    ##      (numberOfMissingElements == 1 | numberOfTrendingElements) &
+    ##      element51Symb == "M", element51Symb := "C"]    
 
 
     ## Remove prior trended value
@@ -64,30 +67,36 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
          by = "itemCode"]
     data[!is.na(element31Num) & 
          is.na(element41Num) & !is.na(element51Num),
-         element41Num := element51Num/element31Num * fd]
+         `:=`(c("element41Num", "element41Symb"),
+              appendSymbol(element51Num/element31Num * fd, "C"))]
     data[!is.na(element31Num) & 
          !is.na(element41Num) & is.na(element51Num),
-         element51Num := element31Num * element41Num* fd]    
+         `:=`(c("element51Num", "element51Symb"),
+              appendSymbol(element31Num * element41Num* fd, "C"))]
     data[, `:=`(c("element41Num", "element41Symb"),
                 trendOnce(element41Num, element41Symb,
                           which(numberOfTrendingElements > 1))),
          by = "itemCode"]
     data[is.na(element31Num) & 
          !is.na(element41Num) & !is.na(element51Num),
-         element31Num := element51Num/element41Num * fd]
+         `:=`(c("element31Num", "element31Symb"),
+              appendSymbol(element51Num/element41Num * fd, "C"))]
     data[!is.na(element31Num) & 
          !is.na(element41Num) & is.na(element51Num),
-         element51Num := element31Num * element41Num * fd]
+         `:=`(c("element51Num", "element51Symb"),
+              appendSymbol(element31Num * element41Num * fd, "C"))]
     data[, `:=`(c("element51Num", "element51Symb"),
                 trendOnce(element51Num, element51Symb,
                           which(numberOfTrendingElements > 1))),
          by = "itemCode"]
     data[is.na(element31Num) & 
          !is.na(element41Num) & !is.na(element51Num),
-         element31Num := element51Num/element41Num * fd]
+         `:=`(c("element31Num", "element31Symb"),
+              appendSymbol(element51Num/element41Num * fd, "C"))]
     data[!is.na(element31Num) & 
          !is.na(element41Num) & is.na(element51Num),
-         element41Num := element51Num/element31Num * fd]
+         `:=`(c("element41Num", "element41Symb"),
+              appendSymbol(element51Num/element31Num * fd, "C"))]
 
     data[, `:=`(c("numberOfMissingElements", "numberOfTrendingElements",
                   "fd"),

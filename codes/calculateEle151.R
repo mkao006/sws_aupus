@@ -7,7 +7,7 @@ calculateEle151 = function(element151Num, element151Symb,
                  "element51Num", "ratio151Num", "stotal"))
     data[itemCode != 1687,
          `:=`(c("element151Num", "element151Symb"),
-              list(ratio151Num * stotal/100, "C"))]
+              appendSymbol(ratio151Num * stotal/100, "C"))]
 
     ## Item Charcoal (1687) ignored for now.
     ##

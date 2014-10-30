@@ -13,7 +13,7 @@ calculateEle21 = function(element21Num, element21Symb, element11Num,
     ##                 element 111 which has the reverse calculation.
     data[itemType %in% c(2, 3, 9, 29, 30),
          `:=`(c("element21Num", "element21Symb"),
-              list(element111Num * 1000/ratio171Num, "C"))]
+              appendSymbol(element111Num * 1000/ratio171Num, "C"))]
     setnames(data,
              new = c(element21Num, element21Symb, element11Num,
                  element111Num, ratio171Num),

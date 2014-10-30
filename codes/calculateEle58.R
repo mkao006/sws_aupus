@@ -7,7 +7,7 @@ calculateEle58 = function(element58Num, element58Symb, data){
     if(length(calcValue) != 0)
         data[itemType == 57,
              `:=`(c("element58Num", "element58Symb"),
-                  list(calcValue, "C"))]
+                  appendSymbol(calcValue, "C"))]
     setnames(data,
              new = c(element58Num, element58Symb),
              old = c("element58Num", "element58Symb"))

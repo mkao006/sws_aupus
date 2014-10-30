@@ -9,7 +9,7 @@ calculateEle63 = function(element61Num, element62Num,
     ## available.
     data[!is.na(element61Num) & !is.na(element62Num),
          `:=`(c("element63Num", "element63Symb"),
-              list(element61Num * 1000/element62Num, "C"))]
+              appendSymbol(element61Num * 1000/element62Num, "C"))]
     ## If any one of them is missing, then the new calculation would
     ## be missing. Therefore, replace with zero.
     data[is.na(element61Num) | is.na(element62Num),

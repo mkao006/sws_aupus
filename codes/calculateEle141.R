@@ -13,14 +13,15 @@ calculateEle141 = function(element141Num, element141Symb,
                  "ratio141Num", "stotal"))
     data[!itemType %in% c(50, 58, 59, 60, 61),
          `:=`(c("element141Num", "element141Symb"),
-              list(ratio141Num * stotal/100, "C"))]
+              appendSymbol(ratio141Num * stotal/100, "C"))]
 
     ## NOTE(Michael): Calculation for commodity Jute (50) is not
     ##                replicated.
     data[itemType %in% c(58:61),
          `:=`(c("element141Num", "element141Symb"),
-              list(element11Num + element51Num + element61Num -
-                   element91Num - element95Num - element161Num, "C"))]
+              appendSymbol(element11Num + element51Num + element61Num -
+                           element91Num - element95Num - element161Num,
+                           "C"))]
 
     setnames(data,
              new = c(element141Num, element141Symb,

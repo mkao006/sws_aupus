@@ -6,7 +6,7 @@ calculateEle261 = function(element261Num, element261Symb, ratio261Num,
              new = c("element261Num", "element261Symb", "ratio261Num",
                  "element141Num"))
     data[, `:=`(c("element261Num", "element261Symb"),
-                list(ratio261Num * element141Num/100, "C"))]
+                appendSymbol(ratio261Num * element141Num/100, "C"))]
     setnames(data,
              new = c(element261Num, element261Symb, ratio261Num,
                  element141Num),

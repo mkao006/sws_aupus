@@ -1,5 +1,3 @@
-    
-
 calculateTrend = function(element, elementNum, elementSymb, data){
     setnames(x = data, old = c(elementNum, elementSymb),
              new = c("elementNum", "elementSymb"))
