@@ -7,7 +7,7 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
                  element31Symb, element41Symb, element51Symb),
              new = c("element31Num", "element41Num", "element51Num",
                  "element31Symb", "element41Symb", "element51Symb"))
-    ## Calculate conversion factor
+    ## Assign conversion factor
     data[itemType == 55, fd := 1]
     data[itemType %in% c(58, 59, 61), fd := 1000]
     data[!itemType %in% c(55, 58, 59, 61), fd := 10000]
