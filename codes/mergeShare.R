@@ -1,4 +1,4 @@
-mergeShare = function(share, aupus){
+mergeShare = function(share, aupus, verbose = FALSE){
     uniquePath =
         unique.data.frame(Reduce(rbind,
                                  lapply(share, FUN = function(x)
@@ -14,7 +14,7 @@ mergeShare = function(share, aupus){
     setkeyv(finalBase,
             c("areaCode", "itemCode", "itemChildCode", "Year"))
     for(i in 1:length(share)){
-        wildCardFill(finalBase, share[[i]], "SHARE", TRUE)
+        wildCardFill(finalBase, share[[i]], "SHARE", verbose)
     }
     finalBase[SHARE != 0, ]
     ## finalBase
