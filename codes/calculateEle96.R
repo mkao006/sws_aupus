@@ -1,8 +1,10 @@
 calculateEle96 = function(element41Num, element91Num, element96Num,
-    data, share){
+    element96Symb, data, share){
     setnames(data,
-             old = c(element41Num, element91Num, element96Num),
-             new = c("element41Num", "element91Num", "element96Num"))
+             old = c(element41Num, element91Num, element96Num,
+                 element96Symb),
+             new = c("element41Num", "element91Num", "element96Num",
+                     "element96Symb"))
     data[itemType %in% c(2:13, 19:22, 25:30, 39),
          `:=`(c("element96Num", "element96Symb"),
               list(standardizeCommodityNetwork(shares = share[Year == .BY[[1]], ],
@@ -13,6 +15,8 @@ calculateEle96 = function(element41Num, element91Num, element96Num,
                    "C")),
          by = "Year"]
     setnames(data,
-             new = c(element41Num, element91Num, element96Num),
-             old = c("element41Num", "element91Num", "element96Num"))
+             new = c(element41Num, element91Num, element96Num,
+                 element96Symb),
+             old = c("element41Num", "element91Num", "element96Num",
+                     "element96Symb"))
 }
