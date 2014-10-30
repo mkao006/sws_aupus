@@ -14,7 +14,7 @@ calculateEle31 = function(element31Num, element31Symb, inputNum,
                          32, 33, 5, 6, 7, 8, 9) &
          (is.calculated(element31Symb) | element31Symb == "M") &
          is.na(inputNum),
-         `:=`(c("element31Num", "element31Symb"), list(0, "M"))]
+         `:=`(c("element31Num", "element31Symb"), list(NA, "M"))]
     setnames(data,
              old = c("element31Num", "element31Symb", "inputNum"),
              new = c(element31Num, element31Symb, inputNum))    
