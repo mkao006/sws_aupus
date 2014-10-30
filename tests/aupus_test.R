@@ -1,10 +1,10 @@
-## source("get_data.R")
+## Load libraries
+source("get_data.R")
 library(igraph)
 library(reshape2)
 library(data.table)
 load("swsItemTable.RData")
 load("aupusData.RData")
-load("population.RData")
 load("input.RData")
 load("ratio.RData")
 load("share.RData")
@@ -14,9 +14,9 @@ load("balanceElement.RData")
 ## Prepare the aupus data
 aupus = merge(aupus, swsItemTable, all.x = TRUE)
 setkeyv(aupus, c("areaCode", "itemCode", "Year"))
-aupusRatio = appendRatio(aupus, ratio, TRUE)
+aupusRatio = appendRatio(aupus, ratio, FALSE)
 aupusRatioBalanceElement =
-    appendBalanceElement(aupusRatio, balanceElement, TRUE)
+    appendBalanceElement(aupusRatio, balanceElement, FALSE)
 updatedInput =
     updateInputFromProcess(aupus = aupus, share = share, input = input,
                            element131Num = "NUM_131")
@@ -35,7 +35,8 @@ setkeyv(aupusFinal, c("areaCode", "itemCode", "Year"))
 
 ## Element 11
 calculateEle11(element11Num = "NUM_11", element11Symb = "SYMB_11",
-               element161Num = "NUM_161", data = aupusFinal)
+               element161Num = "NUM_161", element161Symb = "SYMB_161",
+               data = aupusFinal)
 
 ## Element 21
 calculateEle21(element21Num = "NUM_21", element21Symb = "SYMB_21",
@@ -81,7 +82,8 @@ calculateEle63(element61Num = "NUM_61",  element62Num = "NUM_62",
 
 ## Element 66
 calculateEle66(element41Num = "NUM_41", element61Num = "NUM_61",
-               element66Num = "NUM_66", data = aupusFinal, share = share)
+               element66Num = "NUM_66", element66Symb = "SYMB_66",
+               data = aupusFinal, share = share)
 
 ## Element71
 calculateEle71(element71Num = "NUM_71", element71Symb = "SYMB_71",
@@ -99,7 +101,8 @@ calculateEle93(element91Num = "NUM_91", element92Num = "NUM_92",
 
 ## Element 96
 calculateEle96(element41Num = "NUM_41", element91Num = "NUM_91",
-               element96Num = "NUM_96", data = aupusFinal, share = share)
+               element96Num = "NUM_96", element96Symb = "SYMB_96",
+               data = aupusFinal, share = share)
 
 
 ## Calculate total supply
