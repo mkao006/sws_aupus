@@ -6,6 +6,7 @@ calculateBalance = function(supply, utilization, element161Num,
              new = c("supply", "utilization", "element161Num",
                  "element171Num", "element181Num", "element181Symb",
                  "balanceElement"))
+    ## Calculate the temporary value for balance
     data[!itemType %in% c(04, 15, 16, 20, 21, 25, 32, 33, 37, 49,
                           50, 55, 56, 57),
          BALANCE := supply - utilization]
@@ -14,6 +15,7 @@ calculateBalance = function(supply, utilization, element161Num,
     data[itemType == 57 & (is.na(element161Num) | is.na(element171Num)),
          BALANCE := 0]
 
+    ## Reverse the value if balance element is 71.
     data[balanceElement == 71, BALANCE := -BALANCE]
     
     fillBalance = function(balanceValue, balanceNum, balanceSymb,
@@ -50,6 +52,7 @@ calculateBalance = function(supply, utilization, element161Num,
         list(originalValue, originalSymb, discrepancyValue,
              discrepancySymb)
     }
+
     data[!is.na(balanceElement),
          `:=`(c(paste0("NUM_", .BY[[1]]), paste0("SYMB_", .BY[[1]]),
                 "element181Num", "element181Symb"),
