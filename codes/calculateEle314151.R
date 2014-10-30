@@ -18,57 +18,76 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
                                     element51Num)]
     data[, numberOfTrendingElements :=
              numberOfTrendingElement(element31Symb, element41Symb,
-                                     element51Symb)]    
-    ## Start the balancing if there is only one missing value
-    data[is.na(element31Num) & numberOfMissingElements == 1,
+                                     element51Symb)]
+    
+    ## Start the balancing if there is only one missing or trending
+    ## value
+    data[is.na(element31Num) &
+         (numberOfMissingElements == 1 | numberOfTrendingElements),
          element31Num := element51Num/element41Num * fd]
-    data[is.na(element41Num) & numberOfMissingElements == 1,
-         element41Num := element51Num/element31Num * fd]
-    data[is.na(element51Num) & numberOfMissingElements == 1,
-         element51Num := element31Num * element41Num * fd]
-
-    ## Change the symbol
-    data[!is.na(element31Num) & numberOfMissingElements == 1 &
+    data[is.na(element31Num) &
+         (numberOfMissingElements == 1 | numberOfTrendingElements) &
          element31Symb == "M", element31Symb := "C"]
-    data[!is.na(element41Num) & numberOfMissingElements == 1 &
+    data[is.na(element41Num) &
+         (numberOfMissingElements == 1 | numberOfTrendingElements),
+         element41Num := element51Num/element31Num * fd]
+    data[is.na(element41Num) &
+         (numberOfMissingElements == 1 | numberOfTrendingElements) &
          element41Symb == "M", element41Symb := "C"]
-    data[!is.na(element51Num) & numberOfMissingElements == 1 &
+    data[is.na(element51Num) &
+         (numberOfMissingElements == 1 | numberOfTrendingElements),
+         element51Num := element31Num * element41Num/fd]
+    data[is.na(element51Num) &
+         (numberOfMissingElements == 1 | numberOfTrendingElements) &
          element51Symb == "M", element51Symb := "C"]    
 
-    ## Recalculate the trend if there is only one trending value
-    data[, element31Num :=
-             trendOnce(element31Num,
-                       which(numberOfTrendingElements == 1)),
-         by = c("itemCode", "Year")]
-    data[, element41Num :=
-             trendOnce(element41Num,
-                       which(numberOfTrendingElements == 1)),
-         by = c("itemCode", "Year")]
-    data[, element51Num :=
-             trendOnce(element51Num,
-                       which(numberOfTrendingElements == 1)),
-         by = c("itemCode", "Year")]
-    
+
+    ## Remove prior trended value
+    data[numberOfTrendingElements > 1 & element31Symb == "T",
+         `:=`(c("element31Num", "element31Symb"),
+              list(NA, "M"))]
+    data[numberOfTrendingElements > 1 & element41Symb == "T",
+         `:=`(c("element41Num", "element41Symb"),
+              list(NA, "M"))]
+    data[numberOfTrendingElements > 1 & element51Symb == "T",
+         `:=`(c("element51Num", "element51Symb"),
+              list(NA, "M"))]
+
+    ## Re-trend the values
+    ##
     ## NOTE (Michael): Although not mentioned in the documentation,
-    ## here we trend then balance in order to satisfy the equation.
-    data[,
-         element31Num := trendOnce(element31Num, 1),
-         by = c("itemCode", "Year")]
+    ##                 here we trend then balance in order to satisfy
+    ##                 the equation.
+    data[, `:=`(c("element31Num", "element31Symb"),
+                trendOnce(element31Num, element31Symb,
+                          which(numberOfTrendingElements > 1))),
+         by = "itemCode"]
     data[!is.na(element31Num) & 
          is.na(element41Num) & !is.na(element51Num),
-         element41Num := element51Num/element41Num * fd]
+         element41Num := element51Num/element31Num * fd]
     data[!is.na(element31Num) & 
          !is.na(element41Num) & is.na(element51Num),
          element51Num := element31Num * element41Num* fd]    
-    data[numberOfTrendingElements >= 2,
-         element41Num := trendOnce(element41Num, 1),
-         by = c("itemCode", "Year")]
+    data[, `:=`(c("element41Num", "element41Symb"),
+                trendOnce(element41Num, element41Symb,
+                          which(numberOfTrendingElements > 1))),
+         by = "itemCode"]
     data[is.na(element31Num) & 
          !is.na(element41Num) & !is.na(element51Num),
          element31Num := element51Num/element41Num * fd]
     data[!is.na(element31Num) & 
          !is.na(element41Num) & is.na(element51Num),
          element51Num := element31Num * element41Num * fd]
+    data[, `:=`(c("element51Num", "element51Symb"),
+                trendOnce(element51Num, element51Symb,
+                          which(numberOfTrendingElements > 1))),
+         by = "itemCode"]
+    data[is.na(element31Num) & 
+         !is.na(element41Num) & !is.na(element51Num),
+         element31Num := element51Num/element41Num * fd]
+    data[!is.na(element31Num) & 
+         !is.na(element41Num) & is.na(element51Num),
+         element41Num := element51Num/element31Num * fd]
 
     data[, `:=`(c("numberOfMissingElements", "numberOfTrendingElements",
                   "fd"),
