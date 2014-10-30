@@ -4,9 +4,8 @@ calculateEle121 = function(element121Num, element121Symb,
              old = c(element121Num, element121Symb, ratio121Num, stotal),
              new = c("element121Num", "element121Symb",
                  "ratio121Num", "stotal"))
-    data[, element121Num := ratio121Num * stotal/100]
-    data[!is.na(element121Num) & element121Symb == "M",
-         element121Symb := "C"]
+    data[, `:=`(c("element121Num", "element121Symb"),
+                list(ratio121Num * stotal/100, "C"))]
     setnames(data,
              new = c(element121Num, element121Symb, ratio121Num, stotal),
              old = c("element121Num", "element121Symb",
