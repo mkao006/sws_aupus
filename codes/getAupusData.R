@@ -6,7 +6,7 @@ getAupusData = function(countryCode, conn){
     aupus =
         data.table(dbGetQuery(conn = conn, aupusQuery))
     meltedAupus =
-        melt(aupus, id.var = c("AREA", "ITEM", "ELE"))
+        suppressWarnings(melt(aupus, id.var = c("AREA", "ITEM", "ELE")))
     meltedAupus[, Year := as.numeric(gsub("[^0-9]", "", variable))]
     meltedAupus[, type := gsub("[0-9|_]", "", variable)]
     meltedAupus[, variable := NULL]
@@ -19,7 +19,7 @@ getAupusData = function(countryCode, conn){
     for(i in valueCol){
         remove0M(data = finalAupus, value = i,
                  flag = gsub("NUM", "SYMB", i), naFlag = "M")
-    }    
+    }
     setnames(finalAupus,
              old = c("AREA", "ITEM"),
              new = c("areaCode", "itemCode"))

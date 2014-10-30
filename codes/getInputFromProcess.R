@@ -6,7 +6,8 @@ getInputFromProcess = function(countryCode, conn){
     input =
         data.table(dbGetQuery(conn, inputQuery))
     meltedInput =
-        melt(input, id.var = c("AREA", "ITEM_PARENT", "ITEM_CHILD"))
+        suppressWarnings(melt(input, id.var = c("AREA", "ITEM_PARENT",
+                                         "ITEM_CHILD")))
     meltedInput[, Year := as.numeric(gsub("[^0-9]", "", variable))]
     meltedInput[, type := gsub("[0-9|_]", "", variable)]
     meltedInput[, variable := NULL]
