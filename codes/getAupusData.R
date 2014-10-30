@@ -16,6 +16,10 @@ getAupusData = function(countryCode, conn){
     valueCol = grep("NUM", colnames(finalAupus), value = TRUE)
     finalAupus[, (valueCol) :=
                lapply(valueCol, function(x) as.numeric(finalAupus[[x]]))]
+    for(i in valueCol){
+        remove0M(data = aupus, value = i, flag = gsub("NUM", "SYMB", i),
+                 naFlag = "M")
+    }    
     setnames(finalAupus,
              old = c("AREA", "ITEM"),
              new = c("areaCode", "itemCode"))
