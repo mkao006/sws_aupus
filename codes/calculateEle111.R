@@ -1,7 +1,7 @@
 calculateEle111 = function(element111Num, element111Symb, element21Num,
     element31Num, ratio171Num, ratio111Num, stotal, data){
     if(!ratio111Num %in% colnames(data))
-        data[, c(ratio111Num) := NA]
+        data[, c(ratio111Num) := as.numeric(NA)]
         
     setnames(data,
              old = c(element111Num, element111Symb, element21Num,
@@ -11,9 +11,10 @@ calculateEle111 = function(element111Num, element111Symb, element21Num,
 
     ## In this case it's the same to calculateEle101
     data[is.na(ratio171Num) & !is.na(ratio111Num),
-         element111Num := ratio111Num * stotal/100]
+         `:=`(c("element111Num", "element111Symb"),
+              list(ratio111Num * stotal/100, "C"))]
 
-    foo = function(subData){
+    yearSearch = function(subData){
         n = NROW(subData)
         newValue = vector("numeric", n)
         newSymb = subData[, element111Symb]
@@ -29,7 +30,7 @@ calculateEle111 = function(element111Num, element111Symb, element21Num,
         newSymb[ratio171Available] = "C"
         list(newValue, newSymb)
     }
-    data[, c("element111Num", "element111Symb") := foo(.SD),
+    data[, c("element111Num", "element111Symb") := yearSearch(.SD),
          by = "itemCode"]
     setnames(data,
              new = c(element111Num, element111Symb, element21Num,
