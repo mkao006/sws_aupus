@@ -5,14 +5,15 @@ calculateEle21 = function(element21Num, element21Symb, element11Num,
                  element111Num, ratio171Num),
              new = c("element21Num", "element21Symb", "element11Num",
                  "element111Num", "ratio171Num"))
-    ## NOTE (Michael): The denormalize of population should be done
-    ##                 after the update of element 21.
-    data[itemCode == 1, element21Num := element11Num]
-
+    ## If the item was population then copy from element 11
+    data[itemCode == 1, `:=`(c("element21Num", "element21Symb"),
+             list(element11Num, "/"))]
+    
     ## NOTE (Michael): This formula is derived from the formula of
     ##                 element 111 which has the reverse calculation.
     data[itemType %in% c(2, 3, 9, 29, 30),
-         element21Num := element111Num * 1000/ratio171Num]
+         `:=`(c("element21Num", "element21Symb"),
+              list(element111Num * 1000/ratio171Num, "C"))]
     setnames(data,
              new = c(element21Num, element21Symb, element11Num,
                  element111Num, ratio171Num),
