@@ -17,8 +17,8 @@ getAupusData = function(countryCode, conn){
     finalAupus[, (valueCol) :=
                lapply(valueCol, function(x) as.numeric(finalAupus[[x]]))]
     for(i in valueCol){
-        remove0M(data = aupus, value = i, flag = gsub("NUM", "SYMB", i),
-                 naFlag = "M")
+        remove0M(data = finalAupus, value = i,
+                 flag = gsub("NUM", "SYMB", i), naFlag = "M")
     }    
     setnames(finalAupus,
              old = c("AREA", "ITEM"),

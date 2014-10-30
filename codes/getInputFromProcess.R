@@ -14,9 +14,8 @@ getInputFromProcess = function(countryCode, conn){
         dcast.data.table(meltedInput, AREA + ITEM_PARENT + ITEM_CHILD +
                              Year ~ type,
                          value.var = "value")
-    valueCol = grep("NUM", colnames(finalInput), value = TRUE)
-    finalInput[, (valueCol) :=
-               lapply(valueCol, function(x) as.numeric(finalInput[[x]]))]
+    finalInput[, NUM := as.numeric(NUM)]
+    remove0M(input, value = "NUM", flag = "SYMB", naFlag = "M")
     setnames(finalInput,
              old = c("AREA", "ITEM_PARENT", "ITEM_CHILD", "NUM", "SYMB"),
              new = c("areaCode", "itemParentCode", "itemCode",
