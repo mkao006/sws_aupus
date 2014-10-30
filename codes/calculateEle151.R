@@ -5,9 +5,9 @@ calculateEle151 = function(element151Num, element151Symb,
                  element131Num, element51Num, ratio151Num, stotal),
              new = c("element151Num", "element151Symb", "element131Num",
                  "element51Num", "ratio151Num", "stotal"))
-    data[itemCode != 1687, element151Num := ratio151Num * stotal/100]
-    data[itemCode != 1687 & !is.na(element151Num) &
-         element151Symb == "M", element151Symb := "C"]
+    data[itemCode != 1687,
+         `:=`(c("element151Num", "element151Symb"),
+              list(ratio151Num * stotal/100, "C"))]
 
     ## Item Charcoal (1687) ignored for now.
     ##
