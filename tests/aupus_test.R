@@ -1,5 +1,4 @@
 ## Load libraries
-source("get_data.R")
 library(igraph)
 library(reshape2)
 library(data.table)
@@ -9,7 +8,7 @@ load("input.RData")
 load("ratio.RData")
 load("share.RData")
 load("balanceElement.RData")
-
+source("get_data.R")
 
 ## Prepare the aupus data
 aupus = merge(aupus, swsItemTable, all.x = TRUE)
