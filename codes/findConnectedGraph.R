@@ -8,5 +8,14 @@ findConnectedGraph = function(graph, commodity){
                                    FUN = function(x){
                                        which(is.finite(x))
                                    }), names)))
-    induced.subgraph(graph, vids = V(graph)[connectedNodes])
+    if(length(connectedNodes) > 1){
+        connectedGraph =
+            induced.subgraph(graph, vids = V(graph)[connectedNodes])
+    } else {
+        connectedGraph =
+            graph.data.frame(d = data.frame(from = "000",
+                                 to = commodity))
+        connectedGraph = connectedGraph - vertices("000")
+    }
+    connectedGraph
 }
