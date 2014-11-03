@@ -7,7 +7,7 @@ calculateEle11 = function(element11Num, element11Symb,
                      "element161Symb"))
     ## NOTE (Michael): The item Code list for stock type is contained
     ##                 in appendix A
-    data[itemCode %in% c(2:10, 13, 19:22, 25:28, 30, 57) &
+    data[itemCode %in% c(2:10, 13, 19:22, 25:28, 30, 57),
          `:=`(c("element11Num", "element11Symb"),
               trendOnce(Num = element161Num, Symb = element161Symb,
                         transfer = TRUE)),
