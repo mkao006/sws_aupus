@@ -2,7 +2,8 @@ trendOnce = function(Num, Symb, applyIndex = 1:length(Num),
                      transfer = FALSE){
     value = c(NA, Num)
     symb = c(NA, Symb)
-    newTrendIndex = intersect(applyIndex + 1, which(is.na(value)))
+    newTrendIndex = intersect(applyIndex + 1,
+        which(is.na(value) & Symb %in% c("T", "C")))
     value[newTrendIndex] = value[newTrendIndex - 1]
     if(transfer){
         symb[newTrendIndex] = transferSymb(symb[newTrendIndex - 1])
