@@ -5,8 +5,8 @@ standardizeCommodityNetwork = function(shares, aupus, extractionRate,
     graph = constructGraph(shares = shares, aupus = aupus,
         extractionRate = extractionRate,
         standardizeElement = standardizeElement)
-    if(length(E(graph)) > 0){
-        sub.graph = findConnectedGraph(graph, commodity = commodity)
+    sub.graph = findConnectedGraph(graph, commodity = commodity)
+    if(length(E(sub.graph)) > 0){
         if(plot)
             plot(sub.graph, vertex.size = 8, edge.arrow.size = 0.5,
                  vertex.label = paste0(V(sub.graph)$name, "\n(",
@@ -41,6 +41,8 @@ standardizeCommodityNetwork = function(shares, aupus, extractionRate,
         standardizedValue[standardizedItem] =
             fullStandardization[standardizedItem]
     } else {
+        ## TODO (Michael): Need to make this the same as the commodity
+        ##                 value rather than NA.
         standardizedValue = as.numeric(rep(NA, length(commodity)))
         names(standardizedValue) = commodity
     }
