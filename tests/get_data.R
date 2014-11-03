@@ -1,4 +1,4 @@
-# Load the libraries
+## Load the libraries
 library(reshape2)
 library(RJDBC)
 library(data.table)
@@ -21,14 +21,21 @@ setkeyv(swsItemTable, "itemCode")
 save(swsItemTable, file = "swsItemTable.RData")
 
 ## Initialization
-testCountryCode = 100
+## testCountryCode = 100
 testItemCode = swsItemTable[swsItemTable$GRP_IND == "D", "ITEM"]
 aupusElements = c(11, 21, 31, 41, 51, 58, 61, 62, 66, 71, 91, 92, 95,
     96, 101, 111, 121, 131, 141, 144, 151, 161, 171, 174, 261, 274, 281,
     284, 541, 546)
 
+## Fill in columns which are not available
+valueName = paste0("NUM_", aupusElements)
+symbName = paste0("SYMB_", aupusElements)
+ratioName = paste0("RATIO_", aupusElements)
+
 ## Load aupus data
 aupus = getAupusData(testCountryCode,  conn)
+fillMissingColumn(aupus, valueName)
+fillMissingColumn(aupus, symbName)
 save(aupus, file = "aupusData.RData")
 
 ## Get input data
@@ -37,6 +44,7 @@ save(input, file = "input.RData")
 
 ## Get ratio data
 ratio = getRatio(testCountryCode, conn)
+lapply(ratio, FUN = fillMissingColumn, allColumn = ratioName)
 save(ratio, file = "ratio.RData")
 
 ## Get share data
