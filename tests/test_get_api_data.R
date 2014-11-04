@@ -3,7 +3,7 @@ library(RJSONIO)
 library(reshape2)
 library(data.table)
 library(faoswsUtil)
-## lapply(dir("../codes/", full.names = TRUE), FUN = source)
+lapply(dir("../codes/", full.names = TRUE), FUN = source)
 
 ## Connection detail to the new working system R API
 if(Sys.getenv("USER") == "mk"){
@@ -15,11 +15,16 @@ if(Sys.getenv("USER") == "mk"){
 }
 
 
-testCountryCode = c(100, 0)
-aupusElements = c(11, 21, 31, 41, 51, 58, 61, 62, 66, 71, 91, 92, 95,
-    96, 101, 111, 121, 131, 141, 144, 151, 161, 171, 174, 261, 274, 281,
-    284, 541, 546)
+testCountryCode = 100
+aupusElements = c(11, 21, 31, 41, 51, 58, 61, 62, 63, 66, 71, 91, 92,
+    93, 95, 96, 101, 111, 121, 131, 141, 144, 151, 161, 171, 174, 181,
+    191, 261, 264, 271, 274, 281, 284, 541, 546)
 testYears = 2005:2012
+
+## Fill in columns which are not available
+valueName = paste0("NUM_", aupusElements)
+symbName = paste0("SYMB_", aupusElements)
+ratioName = paste0("RATIO_", aupusElements)
 
 itemCodeList =
     GetCodeList(domain = "faostat_one",
@@ -62,14 +67,50 @@ aupus =
             pivoting = aupusPivot)
 
 ## Convert list of NULL to vector of NA
-sapply(names(sapply(aupus, typeof) == "list"),
+sapply(names(which(sapply(aupus, typeof) == "list")),
        FUN = function(x){
            aupus[,
-                 eval(parse(text = paste0(x, " := NULLtoNA(", x, ")")))
+                 eval(parse(text = paste0(x, " := as.character(NULLtoNA(", x, "))")))
                  ]
            invisible(NULL)
        })
+sapply(names(which(sapply(aupus, typeof) == "logical")),
+       FUN = function(x){
+           aupus[, eval(parse(text =
+                                  paste0(x, " := as.numeric(", x, ")")))]
+           invisible(NULL)
+       })
 
+
+## Temporary solution
+setnames(aupus,
+         old = c("geographicAreaFS", "measuredItemFS", "timePointYears"),
+         new = c("areaCode", "itemCode", "Year"))
+setnames(aupus,
+         old = grep("Value", colnames(aupus), value = TRUE),
+         new = paste0("NUM_",
+             gsub("[^0-9]", "",
+                  grep("Value", colnames(aupus), value = TRUE))))
+setnames(aupus,
+         old = grep("flag", colnames(aupus), value = TRUE),
+         new = paste0("SYMB_",
+             gsub("[^0-9]", "",
+                  grep("flag", colnames(aupus), value = TRUE))))
+
+aupusKey = c("areaCode", "itemCode", "Year")
+aupus[, `:=`(c(aupusKey),
+             lapply(aupus[, aupusKey, with = FALSE],
+                    as.numeric))]
+setkeyv(aupus, cols = aupusKey)
+fillMissingColumn(aupus, valueName)
+fillMissingColumn(aupus, symbName)
+
+## setnames(aupus, "timePointYears", "timePointYearsSP")
+## aupusKey = c("geographicAreaFS", "measuredItemFS", "timePointYearsSP")
+## aupus[, `:=`(c(aupusKey),
+##              lapply(aupus[, aupusKey, with = FALSE],
+##                     as.numeric))]
+## setkeyv(aupus, cols = aupusKey)
 
 
 ## Get input from processing data
@@ -100,20 +141,42 @@ input =
     GetData(key = inputDataContext, flags = TRUE,
             normalized = TRUE, pivoting = inputPivot)
 
+## Temporary solution
+setnames(input,
+         old = c("geographicAreaFS", "measuredItemParentFS",
+             "measuredItemChildFS", "timePointYearsSP", "Value",
+             "flagFaostat"),
+         new = c("areaCode", "itemParentCode", "itemCode", "Year",
+                 "NUM_INPUT", "SYMB_INPUT"))
 
-## NOTE (Michael): Why does the year has 'SP' suffix?
+inputKey = c("areaCode", "itemParentCode", "itemCode", "Year")
+input[, `:=`(c(inputKey),
+             lapply(input[, inputKey, with = FALSE],
+                    as.numeric))]
+setkeyv(input, cols = inputKey)
 
+## setnames(input,
+##          old = c("Value", "flagFaostat"),
+##          new = c("inpute_value", "input_flag"))
+
+## ## NOTE (Michael): Why does the year has 'SP' suffix?
+## inputKey = c("geographicAreaFS", "measuredItemParentFS",
+##             "measuredItemChildFS", "timePointYearsSP")
+## input[, `:=`(inputKey,
+##              lapply(input[, inputKey, with = FALSE],
+##                     as.numeric))]
+## setkeyv(input, cols = inputKey)
 
 ## Get ratio data
 ## ---------------------------------------------------------------------
 
 ratioDimension =
     list(Dimension(name = "geographicAreaFS",
-                   keys = as.character(testCountryCode)),
+                   keys = as.character(c(0, testCountryCode))),
          Dimension(name = "measuredItemFS",
                    keys = itemCodeList[type != 0, code]),
          Dimension(name = "timePointYearsSP",
-                   keys = as.character(testYears)),
+                   keys = as.character(c(0, testYears))),
          Dimension(name = "measuredElementFS",
                    keys =
                        as.character(intersect(aupusElements,
@@ -131,18 +194,61 @@ ratioPivot = c(
     Pivoting(code = "measuredElementFS", ascending = TRUE)
 )
 
-ratio =
+ratioFull =
     GetData(key = ratioDataContext, flags = TRUE, normalized = FALSE,
             pivoting = ratioPivot)
 
-## Convert list of NULL to vector of NA
-sapply(names(sapply(ratio, typeof) == "list"),
+## Remove the symbol since it is not used
+ratioFull[, `:=`(c(grep("flag", colnames(ratioFull))), NULL)]
+
+
+sapply(names(which(sapply(ratioFull, typeof) == "logical")),
        FUN = function(x){
-           ratio[,
-                 eval(parse(text = paste0(x, " := NULLtoNA(", x, ")")))
-                 ]
+           ratioFull[, eval(parse(text =
+                                  paste0(x, " := as.numeric(", x, ")")))]
            invisible(NULL)
        })
+
+
+## Temporary solution
+setnames(ratioFull,
+         old = c("geographicAreaFS", "measuredItemFS",
+             "timePointYearsSP"),
+         new = c("areaCode", "itemCode", "Year"))
+setnames(ratioFull,
+         old = grep("Value", colnames(ratioFull), value = TRUE),
+         new = paste0("RATIO_",
+             gsub("[^0-9]", "",
+                  grep("Value", colnames(ratioFull), value = TRUE))))
+fillMissingColumn(ratioFull, ratioName)
+ratioFullKeys = c("areaCode", "itemCode", "Year")
+ratioFull[, `:=`(c(ratioFullKeys),
+             lapply(ratioFull[, ratioFullKeys, with = FALSE], as.numeric))]
+setkeyv(ratioFull, cols = ratioFullKeys)
+
+specific = ratioFull[areaCode != 0 & Year != 0, ]
+setkeyv(specific, c("areaCode", "itemCode", "Year"))
+yearWildCard = ratioFull[areaCode != 0 & Year == 0,
+    !"Year", with = FALSE]
+setkeyv(yearWildCard, c("areaCode", "itemCode"))
+areaYearWildCard = ratioFull[areaCode == 0 & Year == 0,
+    !c("areaCode", "Year"), with = FALSE]
+setkeyv(areaYearWildCard, "itemCode")
+
+ratio = list(specific = specific, 
+    yearWildCard = yearWildCard,
+    areaYearWildCard = areaYearWildCard)
+
+
+
+## setnames(ratio,
+##          old = grep("Value", colnames(ratio), value = TRUE),
+##          new = gsub("Value", "ratio",
+##              grep("Value", colnames(ratio), value = TRUE)))
+## ratioKeys = c("geographicAreaFS", "measuredItemFS", "timePointYearsSP")
+## ratio[, `:=`(c(ratioKeys),
+##              lapply(ratio[, ratioKeys, with = FALSE], as.numeric))]
+## setkeyv(ratio, cols = ratioKeys)
 
 
 
@@ -157,7 +263,7 @@ shareDimension =
          Dimension(name = "measuredItemChildFS",
                    keys = itemCodeList[type != 0, code]),
          Dimension(name = "timePointYearsSP",
-                   keys = as.character(testYears)))
+                   keys = as.character(c(0, testYears))))
 
 shareDataContext =
     DatasetKey(domain = "faostat_one",
@@ -171,9 +277,45 @@ sharePivot = c(
     Pivoting(code = "timePointYearsSP", ascending = FALSE)
 )
 
-share =
+shareFull =
     GetData(key = shareDataContext, flags = TRUE,
             normalized = TRUE, pivoting = sharePivot)
+shareFull[, flagShare := NULL]
+
+## Temporary solution
+setnames(shareFull,
+         old = c("geographicAreaFS", "measuredItemParentFS",
+             "measuredItemChildFS", "timePointYearsSP", "Value"),
+         new = c("areaCode", "itemCode", "itemChildCode", "Year",
+                 "SHARE"))
+
+shareFullKey = c("areaCode", "itemCode", "itemChildCode", "Year")
+shareFull[, `:=`(c(shareFullKey),
+             lapply(shareFull[, shareFullKey, with = FALSE],
+                    as.numeric))]
+setkeyv(shareFull, cols = shareFullKey)
+
+specific = shareFull[areaCode != 0 & Year != 0, ]
+setkeyv(specific, c("areaCode", "itemCode", "itemChildCode", "Year"))
+yearWildCard = shareFull[areaCode != 0 & Year == 0,
+    !"Year", with = FALSE]
+setkeyv(yearWildCard, c("areaCode", "itemCode", "itemChildCode"))
+areaYearWildCard = shareFull[areaCode == 0 & Year == 0,
+    !c("areaCode", "Year"), with = FALSE]
+setkeyv(areaYearWildCard, c("itemCode", "itemChildCode"))
+share =
+    mergeShare(list(specific = specific, 
+                    yearWildCard = yearWildCard,
+                    areaYearWildCard = areaYearWildCard),
+               aupus = aupus)
+
+
+## setnames(share, c("Value", "flagShare"), c("share_value", "share_flag"))
+## shareKeys = c("geographicAreaFS", "measuredItemParentFS",
+##                  "measuredItemChildFS", "timePointYearsSP")
+## share[, `:=`(c(shareKeys),
+##              lapply(share[, shareKeys, with = FALSE], as.numeric))]
+## setkeyv(share, shareKeys)
 
 ## Get balancing item
 ##
@@ -185,6 +327,33 @@ balanceElementAll =
     GetData(key = ratioDataContext, flags = TRUE, normalized = TRUE,
             pivoting = ratioPivot)
 
-balanceElement = balanceElementAll[flagRatio == "Y",
+balanceElementFull = balanceElementAll[flagRatio == "Y",
     list(geographicAreaFS, measuredItemFS, measuredElementFS,
          timePointYearsSP)]
+setnames(balanceElementFull,
+         old = c("geographicAreaFS", "measuredItemFS",
+             "measuredElementFS", "timePointYearsSP"),
+         new = c("areaCode", "itemCode", "balanceElement", "Year"))
+
+tmp = lapply(balanceElementFull[, colnames(balanceElementFull),
+    with = FALSE], as.numeric)
+balanceElementFull[, `:=`(c(colnames(balanceElementFull)), tmp)]
+balanceElementFullKey = c("areaCode", "itemCode", "Year")
+setkeyv(balanceElementFull, balanceElementFullKey)
+
+specific = balanceElementFull[areaCode != 0 & Year != 0, ]
+setkeyv(specific, c("areaCode", "itemCode", "Year"))
+yearWildCard = balanceElementFull[areaCode != 0 & Year == 0,
+    !"Year", with = FALSE]
+setkeyv(yearWildCard, c("areaCode", "itemCode"))
+areaYearWildCard = balanceElementFull[areaCode == 0 & Year == 0,
+    !c("areaCode", "Year"), with = FALSE]
+setkeyv(areaYearWildCard, "itemCode")
+
+balanceElement = list(specific = specific, 
+    yearWildCard = yearWildCard,
+    areaYearWildCard = areaYearWildCard)
+
+## setnames(balanceElement, "measuredElementFS", "balanceElement")
+## setkeyv(balanceElement,
+##         c("geographicAreaFS", "measuredItemFS", "timePointYearsSP"))
