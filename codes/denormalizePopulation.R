@@ -3,7 +3,7 @@ denormalizePopulation = function(data, elementNum11, elementNum21){
              old = c(elementNum11, elementNum21),
              new = c("elementNum11", "elementNum21"))
     population =
-        data[itemCode == 1,
+        data[data[[key(data)[2]]] == 1,
              list(areaCode, Year, elementNum11, elementNum21)]
     setnames(population,
              old = c("elementNum11", "elementNum21"),

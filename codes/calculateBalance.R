@@ -1,5 +1,6 @@
 calculateBalance = function(supply, utilization, element161Num,
-    element171Num, element181Num, element181Symb, balanceElement, data){
+    element171Num, element181Num, element181Symb, balanceElement,
+    itemTypeCol, data){
     setnames(data,
              old = c(supply, utilization, element161Num, element171Num,
                      element181Num, element181Symb, balanceElement),
@@ -7,12 +8,14 @@ calculateBalance = function(supply, utilization, element161Num,
                  "element171Num", "element181Num", "element181Symb",
                  "balanceElement"))
     ## Calculate the temporary value for balance
-    data[!itemType %in% c(04, 15, 16, 20, 21, 25, 32, 33, 37, 49,
-                          50, 55, 56, 57),
+    data[!data[[itemTypeCol]] %in%
+         c(04, 15, 16, 20, 21, 25, 32, 33, 37, 49, 50, 55, 56, 57),
          BALANCE := supply - utilization]
-    data[itemType == 57 & !is.na(element161Num) & !is.na(element171Num),
+    data[data[[itemTypeCol]] == 57 & !is.na(element161Num) &
+         !is.na(element171Num),
          BALANCE := element161Num/element171Num * 1000]
-    data[itemType == 57 & (is.na(element161Num) | is.na(element171Num)),
+    data[data[[itemTypeCol]] == 57 &
+         (is.na(element161Num) | is.na(element171Num)),
          BALANCE := 0]
 
     ## Reverse the value if balance element is 71.

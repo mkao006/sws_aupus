@@ -31,7 +31,7 @@ calculateEle111 = function(element111Num, element111Symb, element21Num,
         list(newValue, newSymb)
     }
     data[, c("element111Num", "element111Symb") := yearSearch(.SD),
-         by = "itemCode"]
+         by = c(key(data)[2])]
     setnames(data,
              new = c(element111Num, element111Symb, element21Num,
                  element31Num, ratio171Num, ratio111Num, stotal),

@@ -1,7 +1,7 @@
 calculateEle71 = function(element71Num, element71Symb,
     element51Num, element61Num,
     element91Num, element101Num, element121Num, element131Num,
-    element141Num, element151Num, element161Num, data){
+    element141Num, element151Num, element161Num, itemTypeCol, data){
     setnames(data,
              old = c(element71Num, element71Symb,
                  element51Num, element61Num,
@@ -14,12 +14,12 @@ calculateEle71 = function(element71Num, element71Symb,
                  "element131Num", "element141Num", "element151Num",
                  "element161Num"))
     
-    data[itemType == 58,
+    data[data[[itemTypeCol]] == 58,
          `:=`(c("element71Num", "element71Symb"),
               appendSymbol(element51Num + element61Num -
                    element91Num - element101Num - element121Num -
                    element131Num - element141Num - element151Num, "C"))]
-    data[itemType %in% c(59, 60, 61),
+    data[data[[itemTypeCol]] %in% c(59, 60, 61),
          `:=`(c("element71Num", "element71Symb"),
               appendSymbol(element161Num - element101Num, "C"))]
     

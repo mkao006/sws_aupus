@@ -5,7 +5,7 @@ calculateEle151 = function(element151Num, element151Symb,
                  element131Num, element51Num, ratio151Num, stotal),
              new = c("element151Num", "element151Symb", "element131Num",
                  "element51Num", "ratio151Num", "stotal"))
-    data[itemCode != 1687,
+    data[data[[key(data)[2]]] != 1687,
          `:=`(c("element151Num", "element151Symb"),
               appendSymbol(ratio151Num * stotal/100, "C"))]
 

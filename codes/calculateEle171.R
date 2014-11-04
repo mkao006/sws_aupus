@@ -8,7 +8,7 @@ calculateEle171 = function(element171Num, element171Symb, element101Num,
                  "element121Num",
                  "element131Num", "element141Num", "element151Num"))
 
-    data[itemCode == 57,
+    data[data[[key(data)[2]]] == 57,
          `:=`(c("element171Num", "element171Symb"),
               appendSymbol(element101Num + element121Num +
                            element131Num + element141Num +

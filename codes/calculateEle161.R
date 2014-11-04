@@ -1,11 +1,11 @@
 calculateEle161 = function(element161Num, element161Symb,
-    element11Num, element71Num, data){
+    element11Num, element71Num, itemTypeCol, data){
     setnames(data,
              old = c(element161Num, element161Symb,
                  element11Num, element71Num),
              new = c("element161Num", "element161Symb", "element11Num",
                  "element71Num"))
-    data[itemType == 57,
+    data[data[[itemTypeCol]] == 57,
          `:=`(c("element161Num", "element161Symb"),
               appendSymbol(element11Num + element71Num, "C"))]
 
@@ -14,7 +14,7 @@ calculateEle161 = function(element161Num, element161Symb,
     ##                 element 11 was already calculated for the
     ##                 following year.
     ##
-    ## data[itemType %in% c(2:13, 19:22, 25:30, 39), ]
+    ## data[data[[itemTypeCol]] %in% c(2:13, 19:22, 25:30, 39), ]
     setnames(data,
              new = c(element161Num, element161Symb,
                  element11Num, element71Num),

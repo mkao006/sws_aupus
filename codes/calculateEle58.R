@@ -1,11 +1,13 @@
-calculateEle58 = function(element58Num, element58Symb, data){
+calculateEle58 = function(element58Num, element58Symb, itemTypeCol,
+    data){
     setnames(data,
              old = c(element58Num, element58Symb),
              new = c("element58Num", "element58Symb"))
-    calcValue = unlist(data[itemCode == 3158, element58Num]) +
-        unlist(data[itemCode == 3159, element58Num])
+    calcValue =
+        unlist(data[data[[key(data)[2]]] == 3158, element58Num]) +
+        unlist(data[data[[key(data)[2]]] == 3159, element58Num])
     if(length(calcValue) != 0)
-        data[itemType == 57,
+        data[data[[itemTypeCol]] == 57,
              `:=`(c("element58Num", "element58Symb"),
                   appendSymbol(calcValue, "C"))]
     setnames(data,

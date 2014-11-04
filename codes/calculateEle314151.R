@@ -1,16 +1,16 @@
 ## Function to balance element 31, 41, 51 after each has been
 ## calculated/updated.
 calculateEle314151 = function(element31Num, element41Num, element51Num,
-    element31Symb, element41Symb, element51Symb, data){
+    element31Symb, element41Symb, element51Symb, itemTypeCol, data){
     setnames(data,
              old = c(element31Num, element41Num, element51Num,
                  element31Symb, element41Symb, element51Symb),
              new = c("element31Num", "element41Num", "element51Num",
                  "element31Symb", "element41Symb", "element51Symb"))
     ## Assign conversion factor
-    data[itemType == 55, fd := 1]
-    data[itemType %in% c(58, 59, 61), fd := 1000]
-    data[!itemType %in% c(55, 58, 59, 61), fd := 10000]
+    data[data[[itemTypeCol]] == 55, fd := 1]
+    data[data[[itemTypeCol]] %in% c(58, 59, 61), fd := 1000]
+    data[!data[[itemTypeCol]] %in% c(55, 58, 59, 61), fd := 10000]
     
     ## Calculate condition statistics
     data[, numberOfMissingElements :=
@@ -64,11 +64,11 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
     ##
     ## NOTE (Michael): Only item in 0:1200 and 1455:1700 are trended
     ##                 as according to the documentation.
-    data[itemCode %in% c(0:1200, 1455:1700),
+    data[data[[key(data)[2]]] %in% c(0:1200, 1455:1700),
          `:=`(c("element31Num", "element31Symb"),
               trendOnce(element31Num, element31Symb,
                         which(numberOfTrendingElements > 1))),
-         by = "itemCode"]
+         by = c(key(data)[2])]
     data[!is.na(element31Num) & 
          is.na(element41Num) & !is.na(element51Num),
          `:=`(c("element41Num", "element41Symb"),
@@ -77,11 +77,11 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
          !is.na(element41Num) & is.na(element51Num),
          `:=`(c("element51Num", "element51Symb"),
               appendSymbol(element31Num * element41Num* fd, "C"))]
-    data[itemCode %in% c(0:1200, 1455:1700),
+    data[data[[key(data)[2]]] %in% c(0:1200, 1455:1700),
          `:=`(c("element41Num", "element41Symb"),
               trendOnce(element41Num, element41Symb,
                         which(numberOfTrendingElements > 1))),
-         by = "itemCode"]
+         by = c(key(data)[2])]
     data[is.na(element31Num) & 
          !is.na(element41Num) & !is.na(element51Num),
          `:=`(c("element31Num", "element31Symb"),
@@ -90,11 +90,11 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
          !is.na(element41Num) & is.na(element51Num),
          `:=`(c("element51Num", "element51Symb"),
               appendSymbol(element31Num * element41Num * fd, "C"))]
-    data[itemCode %in% c(0:1200, 1455:1700),
+    data[data[[key(data)[2]]] %in% c(0:1200, 1455:1700),
          `:=`(c("element51Num", "element51Symb"),
               trendOnce(element51Num, element51Symb,
                         which(numberOfTrendingElements > 1))),
-         by = "itemCode"]
+         by = c(key(data)[2])]
     data[is.na(element31Num) & 
              !is.na(element41Num) & !is.na(element51Num),
          `:=`(c("element31Num", "element31Symb"),

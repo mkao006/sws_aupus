@@ -8,7 +8,7 @@ constructGraph = function(shares, aupus, extractionRate,
 
     ## Construct edge from share and extraction aret
     aupusExtract = aupus[, list(itemCode, extractionRate)]
-    shareAupus = merge(shares, aupusExtract, by = "itemCode",
+    shareAupus = merge(shares, aupusExtract, by = c(key(aupus)[2]),
         all.x = TRUE, allow.cartesian = TRUE)
     
     e = shareAupus[!is.na(extractionRate) | extractionRate != 0,

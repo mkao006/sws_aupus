@@ -1,7 +1,7 @@
 calculateTotalUtilization = function(element91Num, element95Num,
     element96Num, element101Num, element111Num, element121Num,
     element131Num, element141Num, element161Num, element546Num,
-    element151Num, data){
+    element151Num, itemTypeCol, data){
     setnames(data,
              old = c(element91Num, element95Num, element96Num,
                  element101Num, element111Num, element121Num,
@@ -12,7 +12,7 @@ calculateTotalUtilization = function(element91Num, element95Num,
                  "element131Num", "element141Num", "element161Num",
                  "element546Num", "element151Num"))
 
-    data[!itemType %in% 53,
+    data[!data[[itemTypeCol]] %in% 53,
          TOTAL_UTILIZATION :=
              rowSums(.SD[, list(element91Num, element95Num,
                                 element96Num, element101Num,
@@ -21,7 +21,7 @@ calculateTotalUtilization = function(element91Num, element95Num,
                                 element161Num, element546Num)],
                      na.rm = TRUE)]
 
-    data[itemType %in% 53,
+    data[data[[itemTypeCol]] %in% 53,
          TOTAL_UTILIZATION :=
              rowSums(.SD[, list(element91Num, element95Num,
                                 element96Num, element101Num,

@@ -6,7 +6,7 @@ calculateEle174 = function(element174Num, element174Symb,
              new = c("element174Num", "element174Symb", "element171Num",
                  "population"))
 
-    data[itemCode == 57,
+    data[data[[key(data)[2]]] == 57,
          `:=`(c("element174Num", "element174Symb"),
               appendSymbol(element171Num * population, "C"))]
     
