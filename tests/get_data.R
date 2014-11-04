@@ -22,10 +22,10 @@ save(swsItemTable, file = "swsItemTable.RData")
 
 ## Initialization
 ## testCountryCode = 100
-testItemCode = swsItemTable[swsItemTable$GRP_IND == "D", "ITEM"]
-aupusElements = c(11, 21, 31, 41, 51, 58, 61, 62, 66, 71, 91, 92, 95,
-    96, 101, 111, 121, 131, 141, 144, 151, 161, 171, 174, 261, 274, 281,
-    284, 541, 546)
+## testItemCode = swsItemTable[swsItemTable$GRP_IND == "D", "ITEM"]
+aupusElements = c(11, 21, 31, 41, 51, 58, 61, 62, 63, 66, 71, 91, 92,
+    93, 95, 96, 101, 111, 121, 131, 141, 144, 151, 161, 171, 174, 181,
+    191, 261, 264, 271, 274, 281, 284, 541, 546)
 
 ## Fill in columns which are not available
 valueName = paste0("NUM_", aupusElements)
@@ -55,3 +55,4 @@ save(share, file = "share.RData")
 ## Get balancing element
 balanceElement = getBalanceElement(testCountryCode, conn)
 save(balanceElement, file = "balanceElement.RData")
+
