@@ -2,13 +2,13 @@
 library(igraph)
 library(reshape2)
 library(data.table)
-load("swsItemTable.RData")
-load("aupusData.RData")
-load("input.RData")
-load("ratio.RData")
-load("share.RData")
-load("balanceElement.RData")
 source("get_data.R")
+## load("swsItemTable.RData")
+## load("aupusData.RData")
+## load("input.RData")
+## load("ratio.RData")
+## load("share.RData")
+## load("balanceElement.RData")
 
 ## Prepare the aupus data
 aupus = merge(aupus, swsItemTable, all.x = TRUE)
@@ -238,14 +238,7 @@ calculateBalance(supply = "TOTAL_SUPPLY",
 ########################################################################
 ## Remaining test code to translate
 ########################################################################
-
-## Things to Note:
-## Need to write a function to check whether a cell is not null or zero.
-##
-## Need to check whether zero or na is replaced.
-##
-## Need to check how the symbols are applied. When we assign a value
-## of zero, do we assign the symbol 'M' or 'C'.
-##
-##
              
+
+
+
