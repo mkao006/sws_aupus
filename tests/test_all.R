@@ -1,4 +1,7 @@
 library(FAOSTAT)
+library(compiler)
+library(doMC)
+registerDoMC(4)
 allCountries =
     sort(na.omit(FAOcountryProfile[FAOcountryProfile$FAOST_CODE < 1000,
                                    "FAOST_CODE"]))
@@ -10,17 +13,23 @@ noDataCountry = c(1, 6, 22, 24, 30, 31, 34, 36, 42, 71, 82, 92, 94,
 
 allCountries = allCountries[!allCountries %in% noDataCountry]
 
+functions = dir("../codes/", pattern = "R$", full.names = TRUE)
+lapply(functions, FUN = cmpfile)
+lapply(gsub("\\.R", "\\.Rc", functions), FUN = loadcmp)
+
 
 failedCountry = c()
 failedReason = c()
-for(i in allCountries){
+foreach(i = allCountries) %dopar% {
+## for(i in allCountries){
     testCountryCode = i
     cat("Running Aupus Module for country:",
         FAOcountryProfile[which(FAOcountryProfile$FAOST_CODE == i),
                           "FAO_TABLE_NAME"], "(", i, ")\n")
     aupus_run = try(
         {
-            source("aupus_test.R")
+            ## source("aupus_test.R")
+            source("aupus_test_api.R")
         }
         )
     if(inherits(aupus_run, "try-error")){
