@@ -3,7 +3,7 @@ library(RJSONIO)
 library(reshape2)
 library(data.table)
 library(faoswsUtil)
-lapply(dir("../codes/", full.names = TRUE), FUN = source)
+## lapply(dir("../codes/", full.names = TRUE), FUN = source)
 
 ## Connection detail to the new working system R API
 if(Sys.getenv("USER") == "mk"){
@@ -11,11 +11,11 @@ if(Sys.getenv("USER") == "mk"){
         baseUrl = "https://hqlqasws1.hq.un.fao.org:8181/sws",
         token = "5d9b8d4a-0989-4b50-869f-cd0bc566fd18"
         )
-    attach(as.list(fromJSON("~/connectionDetail.json")))
+    ## attach(as.list(fromJSON("~/connectionDetail.json")))
 }
 
 
-testCountryCode = 100
+## testCountryCode = 100
 aupusElements = c(11, 21, 31, 41, 51, 58, 61, 62, 63, 66, 71, 91, 92,
     93, 95, 96, 101, 111, 121, 131, 141, 144, 151, 161, 171, 174, 181,
     191, 261, 264, 271, 274, 281, 284, 541, 546)
