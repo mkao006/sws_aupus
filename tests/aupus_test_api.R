@@ -35,7 +35,8 @@ calculateEle11(element11Num = "NUM_11", element11Symb = "SYMB_11",
 ## Element 21
 calculateEle21(element21Num = "NUM_21", element21Symb = "SYMB_21",
                element11Num = "NUM_11", element111Num = "NUM_111",
-               ratio171Num = "RATIO_171", data = aupusFinal)
+               ratio171Num = "RATIO_171", itemTypeCol = "itemType",
+               data = aupusFinal)
 
 ## Denormalize population
 denormalizePopulation(elementNum11 = "NUM_11", elementNum21 = "NUM_21",
@@ -44,7 +45,8 @@ denormalizePopulation(elementNum11 = "NUM_11", elementNum21 = "NUM_21",
 
 ## Element 31
 calculateEle31(element31Num = "NUM_31", element31Symb = "SYMB_31",
-               inputNum = "NUM_TOTAL_INPUT", data = aupusFinal)
+               inputNum = "NUM_TOTAL_INPUT", itemTypeCol = "itemType",
+               data = aupusFinal)
 
 ## Element 41
 calculateEle41(ratio41Num = "RATIO_41",
@@ -53,18 +55,19 @@ calculateEle41(ratio41Num = "RATIO_41",
 
 ## Element 51
 calculateEle51(element51Num = "NUM_51", element51Symb = "SYMB_51",
-               element58Num = "NUM_58", data = aupusFinal)
+               element58Num = "NUM_58", itemTypeCol = "itemType",
+               data = aupusFinal)
 
 
 ## Element 31, 41, 51 balance
 calculateEle314151(element31Num = "NUM_31", element31Symb = "SYMB_31",
                    element41Num = "NUM_41", element41Symb = "SYMB_41",
                    element51Num = "NUM_51", element51Symb = "SYMB_51",
-                   data = aupusFinal)
+                   itemTypeCol = "itemType", data = aupusFinal)
 
 ## Element 58
 calculateEle58(element58Num = "NUM_58", element58Symb = "SYMB_58",
-               data = aupusFinal)
+               itemTypeCol = "itemType", data = aupusFinal)
 
 
 ## Element 61, 62, 63
@@ -77,7 +80,8 @@ calculateEle63(element61Num = "NUM_61",  element62Num = "NUM_62",
 ## Element 66
 calculateEle66(element41Num = "NUM_41", element61Num = "NUM_61",
                element66Num = "NUM_66", element66Symb = "SYMB_66",
-               data = aupusFinal, share = share)
+               itemTypeCol = "itemType", data = aupusFinal,
+               share = share)
 
 ## Element71
 calculateEle71(element71Num = "NUM_71", element71Symb = "SYMB_71",
@@ -85,7 +89,8 @@ calculateEle71(element71Num = "NUM_71", element71Symb = "SYMB_71",
                element91Num = "NUM_91", element101Num = "NUM_101",
                element121Num = "NUM_121", element131Num = "NUM_131",
                element141Num = "NUM_141", element151Num = "NUM_151",
-               element161Num = "NUM_161", data = aupusFinal)
+               element161Num = "NUM_161", itemTypeCol = "itemType",
+               data = aupusFinal)
 
 
 ## Element 91, 92, 93
@@ -96,13 +101,15 @@ calculateEle93(element91Num = "NUM_91", element92Num = "NUM_92",
 ## Element 96
 calculateEle96(element41Num = "NUM_41", element91Num = "NUM_91",
                element96Num = "NUM_96", element96Symb = "SYMB_96",
-               data = aupusFinal, share = share)
+               data = aupusFinal, itemTypeCol = "itemType",
+               share = share)
 
 
 ## Calculate total supply
 calculateTotalSupply(element11Num = "NUM_11", element51Num = "NUM_51",
                      element58Num = "NUM_58", element61Num = "NUM_61",
-                     element66Num = "NUM_66", data = aupusFinal)
+                     element66Num = "NUM_66", itemTypeCol = "itemType",
+                     data = aupusFinal)
 
 ## Elemet 101
 calculateEle101(element101Num = "NUM_101", element101Symb = "SYMB_101",
@@ -133,7 +140,7 @@ calculateEle141(element141Num = "NUM_141", element141Symb = "SYMB_141",
                 element61Num = "NUM_61", element91Num = "NUM_91",
                 element95Num = "NUM_95", element161Num = "NUM_161",
                 ratio141Num = "RATIO_141", stotal = "TOTAL_SUPPLY",
-                data = aupusFinal)
+                itemTypeCol = "itemType", data = aupusFinal)
 
 ## Element 144
 calculateEle144(element144Num = "NUM_144", element144Symb = "SYMB_144",
@@ -149,7 +156,7 @@ calculateEle151(element151Num = "NUM_151", element151Symb = "SYMB_151",
 ## Element 161
 calculateEle161(element161Num = "NUM_161", element161Symb = "SYMB_161",
                 element11Num = "NUM_11", element71Num = "NUM_71",
-                data = aupusFinal)
+                itemTypeCol = "itemType", data = aupusFinal)
 
 ## Element 171
 calculateEle171(element171Num = "NUM_161", element171Symb = "SYMB_171",
@@ -217,7 +224,9 @@ calculateTotalUtilization(element91Num = "NUM_91",
                           element141Num = "NUM_141",
                           element151Num = "NUM_151",
                           element161Num = "NUM_161",
-                          element546Num = "NUM_546", data = aupusFinal)
+                          element546Num = "NUM_546",
+                          itemTypeCol = "itemType",
+                          data = aupusFinal)
 
 ## Balance
 calculateBalance(supply = "TOTAL_SUPPLY",
@@ -227,6 +236,7 @@ calculateBalance(supply = "TOTAL_SUPPLY",
                  element181Num = "NUM_181",
                  element181Symb = "SYMB_181",
                  balanceElement = "balanceElement",
+                 itemTypeCol = "itemType",
                  data = aupusFinal)
 
     
