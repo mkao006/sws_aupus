@@ -26,10 +26,19 @@ valueName = paste0("NUM_", aupusElements)
 symbName = paste0("SYMB_", aupusElements)
 ratioName = paste0("RATIO_", aupusElements)
 
+## Get item table
 itemCodeList =
     GetCodeList(domain = "faostat_one",
                 dataset = "FS1_SUA",
                 dimension = "measuredItemFS")
+itemCodeList[, startDate := as.Date(NULLtoNA(startDate))]
+itemCodeList[, endDate := as.Date(NULLtoNA(endDate))]
+itemCodeList[, `:=`(c("itemCode", "itemType"),
+                    list(as.numeric(code), as.numeric(type)))]
+setnames(itemCodeList, "description", "itemName")
+swsItemTable =
+    itemCodeList[, list(itemCode, itemName, itemType)]
+
 
 elementCodeList =
     GetCodeList(domain = "faostat_one",
