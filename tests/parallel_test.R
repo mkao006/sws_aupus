@@ -9,17 +9,6 @@ library(RJSONIO)
 library(faoswsUtil)
 registerDoMC(4)
 source("foo.R")
-allCountries =
-    sort(na.omit(FAOcountryProfile[FAOcountryProfile$FAOST_CODE < 1000,
-                                   "FAOST_CODE"]))
-
-noDataCountry = c(1, 6, 15, 22, 24, 30, 31, 34, 36, 42, 51, 62, 71,
-76, 82, 92, 94, 111, 125, 139, 140, 152, 161, 163, 172, 177, 180, 187,
-192, 224, 228, 232, 242, 245, 255, 258, 259, 260, 264, 270, 271, 272,
-273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 351,
-357)
-
-allCountries = allCountries[!allCountries %in% noDataCountry]
 
 ## Connection detail to the new working system R API
 if(Sys.getenv("USER") == "mk"){
@@ -30,14 +19,37 @@ if(Sys.getenv("USER") == "mk"){
     ## attach(as.list(fromJSON("~/connectionDetail.json")))
 }
 
+
+
+allCountries =
+    sort(na.omit(FAOcountryProfile[FAOcountryProfile$FAOST_CODE < 1000,
+                                   "FAOST_CODE"]))
+## noDataCountry = c(1, 6, 15, 22, 24, 30, 31, 34, 36, 42, 51, 62, 71,
+## 76, 82, 92, 94, 111, 125, 139, 140, 152, 161, 163, 172, 177, 180, 187,
+## 192, 224, 228, 232, 242, 245, 255, 258, 259, 260, 264, 270, 271, 272,
+## 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 351,
+## 357)
+## allCountries = allCountries[!allCountries %in% noDataCountry]
+
+## areaCodeList =
+##     GetCodeList(domain = "faostat_one",
+##                 dataset = "FS1_SUA",
+##                 dimension = "geographicAreaFS")
+## allCountries =
+##     areaCodeList[!code %in% c(0, 252, 296, 297, 294, 281, 295,
+##                               510, 500, 590) & type == "country", code]
+
+
 functions = dir("../codes/", pattern = "R$", full.names = TRUE)
 lapply(functions, FUN = cmpfile)
 lapply(gsub("\\.R", "\\.Rc", functions), FUN = loadcmp)
 
-aupusElements = c(11, 21, 31, 41, 51, 58, 61, 62, 63, 66, 71, 91, 92,
-    93, 95, 96, 101, 111, 121, 131, 141, 144, 151, 161, 171, 174, 181,
-    191, 261, 264, 271, 274, 281, 284, 541, 546)
-testYears = 2005:2012
+aupusElements = c(11, 21, 31, 41, 51, 58, 61, 62, 63, 66, 71, 81, 91,
+    92, 93, 95, 96, 101, 111, 121, 131, 141, 144, 151, 161, 171, 174,
+    181, 191, 261, 264, 271, 274, 281, 284, 541, 546)
+
+testYears = 2000:2012
+
 
 ## Fill in columns which are not available
 valueName = paste0("NUM_", aupusElements)
@@ -78,8 +90,22 @@ foreach(i = allCountries) %dopar% {
     testCountryCode = i
     cat("Running Aupus Module for country:",
         FAOcountryProfile[which(FAOcountryProfile$FAOST_CODE == i),
-                          "FAO_TABLE_NAME"], "(", i, ")\n")    
-    load("swsItemTable.RData")
+                          "FAO_TABLE_NAME"], "(", i, ")\n")
+    
+    ## Get item table
+    itemCodeList =
+        GetCodeList(domain = "faostat_one",
+                    dataset = "FS1_SUA",
+                    dimension = "measuredItemFS")
+    itemCodeList[, startDate := as.Date(NULLtoNA(startDate))]
+    itemCodeList[, endDate := as.Date(NULLtoNA(endDate))]
+    itemCodeList[, `:=`(c("itemCode", "itemType"),
+                        list(as.numeric(code), as.numeric(type)))]
+    setnames(itemCodeList, "description", "itemName")
+    swsItemTable =
+        itemCodeList[, list(itemCode, itemName, itemType)]
+    setkeyv(swsItemTable, "itemCode")
+    ## load("swsItemTable.RData")
 
 
     itemCodeList =
@@ -91,6 +117,7 @@ foreach(i = allCountries) %dopar% {
         GetCodeList(domain = "faostat_one",
                     dataset = "FS1_SUA",
                     dimension = "measuredElementFS")
+    
     getData = try({
     ## Get aupus data
     ## ---------------------------------------------------------------------
@@ -362,6 +389,7 @@ foreach(i = allCountries) %dopar% {
     aupusFinal = merge(aupusRatioBalanceElement, aggregatedInput,
         all.x = TRUE)
     setkeyv(aupusFinal, c("areaCode", "itemCode", "Year"))
+    
     })
     gc()
     if(!inherits(getData, "try-error"))
