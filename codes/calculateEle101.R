@@ -4,7 +4,9 @@ calculateEle101 = function(element101Num, element101Symb,
              old = c(element101Num, element101Symb, ratio101Num, stotal),
              new = c("element101Num", "element101Symb",
                  "ratio101Num", "stotal"))
-    data[!is.na(ratio101Num),
+    replaceIndex = replaceable(data$element101Symb)
+    print(replaceIndex)
+    data[replaceIndex,
          `:=`(c("element101Num", "element101Symb"),
               appendSymbol(ratio101Num * stotal/100, "C"))]
     setnames(data,

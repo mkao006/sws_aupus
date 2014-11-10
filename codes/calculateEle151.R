@@ -5,7 +5,10 @@ calculateEle151 = function(element151Num, element151Symb,
                  element131Num, element51Num, ratio151Num, stotal),
              new = c("element151Num", "element151Symb", "element131Num",
                  "element51Num", "ratio151Num", "stotal"))
-    data[data[[key(data)[2]]] != 1687,
+    replaceIndex = which(data[[key(data)[2]]] != 1687 &
+                         replaceable(data$element151Symb))
+    print(replaceIndex)
+    data[replaceIndex,
          `:=`(c("element151Num", "element151Symb"),
               appendSymbol(ratio151Num * stotal/100, "C"))]
 

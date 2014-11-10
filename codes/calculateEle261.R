@@ -5,8 +5,11 @@ calculateEle261 = function(element261Num, element261Symb, ratio261Num,
                  element141Num),
              new = c("element261Num", "element261Symb", "ratio261Num",
                  "element141Num"))
-    data[, `:=`(c("element261Num", "element261Symb"),
-                appendSymbol(ratio261Num * element141Num/100, "C"))]
+    replaceIndex = with(data, which(replaceble(element261Symb)))
+    print(replaceIndex)
+    data[replaceIndex,
+         `:=`(c("element261Num", "element261Symb"),
+              appendSymbol(ratio261Num * element141Num/100, "C"))]
     setnames(data,
              new = c(element261Num, element261Symb, ratio261Num,
                  element141Num),

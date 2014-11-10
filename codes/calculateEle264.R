@@ -7,9 +7,12 @@ calculateEle264 = function(element264Num, element264Symb,
                  "element261Num", "population11", "population21"))
     data[, validPopulation := population21]
     data[is.na(validPopulation), validPopulation := population11]
-    data[, `:=`(c("element264Num", "element264Symb"),
-                appendSymbol(element261Num/365 * 1000/validPopulation,
-                             "C"))]
+    replaceIndex = with(data, which(replaceable(element264Symb)))
+    print(replaceIndex)
+    data[replaceIndex,
+         `:=`(c("element264Num", "element264Symb"),
+              appendSymbol(element261Num/365 * 1000/validPopulation,
+                           "C"))]
     data[, validPopulation := NULL]
     setnames(data,
              new = c(element264Num, element264Symb,

@@ -7,9 +7,12 @@ calculateEle274 = function(element274Num, element274Symb,
                  "element261Num", "population11", "population21"))
     data[, validPopulation := population21]
     data[is.na(validPopulation), validPopulation := population11]
-    data[, `:=`(c("element274Num", "element274Symb"),
-                appendSymbol(element261Num/365 * 1000/validPopulation,
-                             "C"))]
+    replaceIndex = with(data, which(replaceable(element274Symb)))
+    print(replaceIndex)
+    data[replaceIndex,
+         `:=`(c("element274Num", "element274Symb"),
+              appendSymbol(element261Num/365 * 1000/validPopulation,
+                           "C"))]
     data[, validPopulation := NULL]
     setnames(data,
              new = c(element274Num, element274Symb,

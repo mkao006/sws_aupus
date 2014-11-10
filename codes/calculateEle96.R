@@ -5,7 +5,11 @@ calculateEle96 = function(element41Num, element91Num, element96Num,
                  element96Symb),
              new = c("element41Num", "element91Num", "element96Num",
                      "element96Symb"))
-    data[data[[itemTypeCol]] %in% c(2:13, 19:22, 25:30, 39),
+    replaceIndex =
+        which(data[[itemTypeCol]] %in% c(2:13, 19:22, 25:30, 39) &
+              replaceable(data$element96Symb))
+    print(replaceIndex)
+    data[replaceIndex,
          `:=`(c("element96Num", "element96Symb"),
               appendSymbol(standardizeCommodityNetwork(shares = share[Year == .BY[[1]], ],
                                                        aupus = data[Year == .BY[[1]], ],

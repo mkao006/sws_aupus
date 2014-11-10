@@ -10,10 +10,15 @@ calculateEle111 = function(element111Num, element111Symb, element21Num,
                  "element31Num", "ratio171Num", "ratio111Num", "stotal"))
 
     ## In this case it's the same to calculateEle101
-    data[is.na(ratio171Num) & !is.na(ratio111Num),
+    replaceIndex =
+        with(data, which(is.na(ratio171Num) & !is.na(ratio111Num)))
+    print(replaceIndex)
+    data[replaceIndex,
          `:=`(c("element111Num", "element111Symb"),
               list(ratio111Num * stotal/100, "C"))]
 
+    ## TODO (Michael): Don't base the replacement with NA, but with
+    ##                 symbol.
     yearSearch = function(subData){
         n = NROW(subData)
         newValue = vector("numeric", n)

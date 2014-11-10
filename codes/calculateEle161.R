@@ -5,7 +5,10 @@ calculateEle161 = function(element161Num, element161Symb,
                  element11Num, element71Num),
              new = c("element161Num", "element161Symb", "element11Num",
                  "element71Num"))
-    data[data[[itemTypeCol]] == 57,
+    replaceIndex = which(data[[itemTypeCol]] == 57 &
+                         replaceable(element161Symb))
+    print(replaceIndex)
+    data[replaceIndex,
          `:=`(c("element161Num", "element161Symb"),
               appendSymbol(element11Num + element71Num, "C"))]
 

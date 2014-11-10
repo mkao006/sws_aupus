@@ -3,9 +3,12 @@ calculateEle131 = function(element131Num, element131Symb, ratio131Num,
     setnames(data,
              old = c(element131Num, element131Symb, ratio131Num, stotal),
              new = c("element131Num", "element131Symb",
-                 "ratio131Num", "stotal"))    
-    data[, `:=`(c("element131Num", "element131Symb"),
-                appendSymbol(ratio131Num * stotal/100, "C"))]
+                 "ratio131Num", "stotal"))
+    replaceIndex = with(data, which(replaceable(element131Symb)))
+    print(replaceIndex)    
+    data[replaceIndex,
+         `:=`(c("element131Num", "element131Symb"),
+              appendSymbol(ratio131Num * stotal/100, "C"))]
     setnames(data,
              new = c(element131Num, element131Symb, ratio131Num, stotal),
              old = c("element131Num", "element131Symb",

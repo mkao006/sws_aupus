@@ -19,13 +19,19 @@ calculateEle541 = function(element541Num, element541Symb,
     data[, numberOfMissingElements :=
              numberOfMissingElement(element542Num, element543Num,
                                     element544Num, element545Num)]
-    data[, `:=`(c("element541Num", "element541Symb"),
-                appendSymbol(rowSums(.SD[, list(element542Num,
-                                                element543Num,
-                                                element544Num,
-                                                element545Num)],
-                                     na.rm = TRUE), "C"))]
-    data[numberOfMissingElements == 4,
+    replaceIndex = with(data, which(replaceable(element541Symb)))
+    print(replaceIndex)
+    data[replaceIndex,
+         `:=`(c("element541Num", "element541Symb"),
+              appendSymbol(rowSums(.SD[, list(element542Num,
+                                              element543Num,
+                                              element544Num,
+                                              element545Num)],
+                                   na.rm = TRUE), "C"))]
+    replaceIndex = with(data, which(numberOfMissingElements == 4 &
+                                    replaceable(element541Symb)))
+    print(replaceIndex)
+    data[replaceIndex,
          `:=`(c("element541Num", "element541Symb"), list(NA, "M"))]
     
     data[, numberOfMissingElements := NULL]
