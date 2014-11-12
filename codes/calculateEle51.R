@@ -1,13 +1,26 @@
+##' The function calculates element 51
+##'
+##' @param element51Num The column corresponding to value of element
+##' 51.
+##' @param element51Symb The column corresponding to symbol of element
+##' 51.
+##' @param element58Num The column corresponding to value of element
+##' 58.
+##' @param itemTypeCol The column which identifies the item type of
+##' the commodity item.
+##' @param data The data
+##' @export
+##' 
+
 calculateEle51 = function(element51Num, element51Symb, element58Num,
     itemTypeCol, data){
     setnames(data,
              old = c(element51Num, element51Symb, element58Num),
              new = c("element51Num", "element51Symb", "element58Num"))
-    replaceIndex = which(data[[itemTypeCol]] %in% c(55, 56) &
+    replaceIndex1 = which(data[[itemTypeCol]] %in% c(55, 56) &
                          !is.na(data$element58Num) &
                          replaceable(data$element51Symb))
-    print(replaceIndex)
-    data[replaceIndex, 
+    data[replaceIndex1, 
          `:=`(c("element51Num", "element51Symb"),
               appendSymbol(element58Num, "C"))]
 
@@ -19,4 +32,5 @@ calculateEle51 = function(element51Num, element51Symb, element58Num,
     setnames(data,
              new = c(element51Num, element51Symb, element58Num),
              old = c("element51Num", "element51Symb", "element58Num"))
+    replaceIndex1
 }

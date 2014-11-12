@@ -1,20 +1,36 @@
+##' The function calculates element 174 (consumption per caput sugar)
+##'
+##'
+##' @param element174Num The column corresponding to value of element
+##' 174.
+##' @param element174Symb The column corresponding to symbol of element
+##' 174.
+##' @param element171Num The column corresponding to value of element
+##' 171.
+##' @param population11Num The column corresponds to element 11 of the
+##' population.
+##' @param data The data
+##' @export
+##' 
+
+
 calculateEle174 = function(element174Num, element174Symb,
-    element171Num, population, data){
+    element171Num, population11Num, data){
     setnames(data,
              old = c(element174Num, element174Symb, element171Num,
-                 population),
+                 population11Num),
              new = c("element174Num", "element174Symb", "element171Num",
-                 "population"))
-    replaceIndex = which(data[[key(data)[2]]] == 57 &
+                 "population11Num"))
+    replaceIndex1 = which(data[[key(data)[2]]] == 57 &
                          replaceable(data$element174Symb))
-    print(replaceIndex)
-    data[replaceIndex,
+    data[replaceIndex1,
          `:=`(c("element174Num", "element174Symb"),
-              appendSymbol(element171Num * population, "C"))]
+              appendSymbol(element171Num/population11Num, "C"))]
     
     setnames(data,
              new = c(element174Num, element174Symb, element171Num,
-                 population),
+                 population11Num),
              old = c("element174Num", "element174Symb", "element171Num",
-                 "population"))
+                 "population11Num"))
+    replaceIndex1
 }

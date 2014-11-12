@@ -1,3 +1,12 @@
+##' This function takes a graph/network and then find the subset of
+##' the network which are connected to the specified nodes/commodities.
+##'
+##' @param graph The graph object created by the function
+##' constrctGraph.
+##' @param commodity The commodities
+##' @export
+##' 
+
 findConnectedGraph = function(graph, commodity){
     dist = shortest.paths(graph = graph, v = V(graph)[commodity],
         mode = "in")

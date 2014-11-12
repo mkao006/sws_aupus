@@ -1,8 +1,18 @@
-standardizeNode = function(graph, leave){
-    outEdges = E(graph)[from(V(graph)[leave])]
+##' Function to standardize all the nodes in the node list of a graph
+##'
+##' The formula is hard coded
+##'
+##' @param graph The graph object created by the function
+##' constructGraph.
+##' @param node The nodes to be standardized
+##' @export
+##' 
+
+standardizeNode = function(graph, node){
+    outEdges = E(graph)[from(V(graph)[node])]
     shareMatrix =
         get.adjacency(subgraph.edges(graph, outEdges), sparse = FALSE,
-                      attr = "SHARE")
+                      attr = "shares")
     rateMatrix =
         get.adjacency(subgraph.edges(graph, outEdges), sparse = FALSE,
                       attr = "extractionRate")
@@ -16,9 +26,9 @@ standardizeNode = function(graph, leave){
     V(graph)[rownames(standardized)]$standardizeElement =
         V(graph)[rownames(standardized)]$standardizeElement +
             standardized
-    intermediateValues = V(graph)[leave]$standardizeElement
-    names(intermediateValues) = leave
-    graph = graph - vertices(leave)
+    intermediateValues = V(graph)[node]$standardizeElement
+    names(intermediateValues) = node
+    graph = graph - vertices(node)
     list(standardizedGraph = graph,
          intermediateValues = intermediateValues)
 }

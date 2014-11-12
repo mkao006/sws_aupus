@@ -1,3 +1,20 @@
+##' The function calculates element 151 (Reemployment other sector)
+##'
+##' @param element151Num The column corresponding to value of element
+##' 151.
+##' @param element151Symb The column corresponding to symbol of element
+##' 151.
+##' @param element131Num The column corresponding to value of element
+##' 131.
+##' @param element51Num The column corresponding to value of element
+##' 51.
+##' @param ratio151Num The column corresponding to ratio of element
+##' 151.
+##' @param stotal The column corresponding to total supply.
+##' @param data The data
+##' @export
+##' 
+
 calculateEle151 = function(element151Num, element151Symb,
     element131Num, element51Num, ratio151Num, stotal, data){
     setnames(data,
@@ -5,10 +22,9 @@ calculateEle151 = function(element151Num, element151Symb,
                  element131Num, element51Num, ratio151Num, stotal),
              new = c("element151Num", "element151Symb", "element131Num",
                  "element51Num", "ratio151Num", "stotal"))
-    replaceIndex = which(data[[key(data)[2]]] != 1687 &
+    replaceIndex1 = which(data[[key(data)[2]]] != 1687 &
                          replaceable(data$element151Symb))
-    print(replaceIndex)
-    data[replaceIndex,
+    data[replaceIndex1,
          `:=`(c("element151Num", "element151Symb"),
               appendSymbol(ratio151Num * stotal/100, "C"))]
 
@@ -30,5 +46,6 @@ calculateEle151 = function(element151Num, element151Symb,
              new = c(element151Num, element151Symb, element131Num,
                  element51Num, ratio151Num, stotal),
              old = c("element151Num", "element151Symb", "element131Num",
-                 "element51Num", "ratio151Num", "stotal"))    
+                 "element51Num", "ratio151Num", "stotal"))
+    replaceIndex1
 }

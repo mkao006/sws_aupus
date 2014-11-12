@@ -1,3 +1,20 @@
+##' The function calculates element 161 (Final existence)
+##'
+##' @param element161Num The column corresponding to value of element
+##' 161.
+##' @param element161Symb The column corresponding to symbol of element
+##' 161.
+##' @param element11Num The column corresponding to value of element
+##' 11.
+##' @param element71Num The column corresponding to value of element
+##' 71.
+##' @param itemTypeCol The column which identifies the item type of
+##' the commodity item.
+##' @param data The data
+##' @export
+##'
+##' 
+
 calculateEle161 = function(element161Num, element161Symb,
     element11Num, element71Num, itemTypeCol, data){
     setnames(data,
@@ -5,10 +22,9 @@ calculateEle161 = function(element161Num, element161Symb,
                  element11Num, element71Num),
              new = c("element161Num", "element161Symb", "element11Num",
                  "element71Num"))
-    replaceIndex = which(data[[itemTypeCol]] == 57 &
+    replaceIndex1 = which(data[[itemTypeCol]] == 57 &
                          replaceable(element161Symb))
-    print(replaceIndex)
-    data[replaceIndex,
+    data[replaceIndex1,
          `:=`(c("element161Num", "element161Symb"),
               appendSymbol(element11Num + element71Num, "C"))]
 
@@ -22,5 +38,6 @@ calculateEle161 = function(element161Num, element161Symb,
              new = c(element161Num, element161Symb,
                  element11Num, element71Num),
              old = c("element161Num", "element161Symb", "element11Num",
-                 "element71Num"))    
+                 "element71Num"))
+    replaceIndex1
 }

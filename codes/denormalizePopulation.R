@@ -1,12 +1,27 @@
-denormalizePopulation = function(data, elementNum11, elementNum21){
+##' The function denormalize the population from the row to column.
+##'
+##' Item 1 is populaion rather than a commodity, and it has two
+##' element which corresponds to two different population.
+##'
+##' The function denormalize the population so it is easier for later
+##' calculate of per capita.
+##'
+##' @param data The data
+##' @param element11Num The column corresponding to value of element
+##' 11.
+##' @param element21Num The column corresponding to value of element 21.
+##' @export
+##' 
+
+denormalizePopulation = function(data, element11Num, element21Num){
     setnames(data,
-             old = c(elementNum11, elementNum21),
-             new = c("elementNum11", "elementNum21"))
+             old = c(element11Num, element21Num),
+             new = c("element11Num", "element21Num"))
     population =
         data[data[[key(data)[2]]] == 1,
-             list(areaCode, Year, elementNum11, elementNum21)]
+             list(areaCode, Year, element11Num, element21Num)]
     setnames(population,
-             old = c("elementNum11", "elementNum21"),
+             old = c("element11Num", "element21Num"),
              new = c("NUM_POP11", "NUM_POP21"))
     setkeyv(population, c("areaCode", "Year"))
     okey = key(data)
@@ -15,6 +30,6 @@ denormalizePopulation = function(data, elementNum11, elementNum21){
     data[population, NUM_POP21 := i.NUM_POP21]
     setkeyv(data, okey)
     setnames(data,
-             new = c(elementNum11, elementNum21),
-             old = c("elementNum11", "elementNum21"))
+             new = c(element11Num, element21Num),
+             old = c("element11Num", "element21Num"))
 }
