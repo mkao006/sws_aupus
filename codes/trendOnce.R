@@ -1,3 +1,13 @@
+##' This function trends the data once
+##'
+##' @param Num The value column of the element
+##' @param Symb The symbol column of the element
+##' @param applyIndex Which value should be trended
+##' @param transfer Should the symbol be converted by the function
+##' transferSymb.
+##' @export
+##' 
+
 trendOnce = function(Num, Symb, applyIndex = 1:length(Num),
                      transfer = FALSE){
     value = c(NA, Num)
