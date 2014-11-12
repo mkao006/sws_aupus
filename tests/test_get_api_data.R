@@ -3,7 +3,8 @@ library(RJSONIO)
 library(reshape2)
 library(data.table)
 library(faoswsUtil)
-## lapply(dir("../codes/", full.names = TRUE), FUN = source)
+lapply(dir("../codes/", pattern = "\\.R$", full.names = TRUE),
+       FUN = source)
 
 ## Connection detail to the new working system R API
 if(Sys.getenv("USER") == "mk"){
@@ -13,6 +14,7 @@ if(Sys.getenv("USER") == "mk"){
         )
     ## attach(as.list(fromJSON("~/connectionDetail.json")))
 }
+
 
 
 ## testCountryCode = 100
@@ -38,6 +40,7 @@ itemCodeList[, `:=`(c("itemCode", "itemType"),
 setnames(itemCodeList, "description", "itemName")
 swsItemTable =
     itemCodeList[, list(itemCode, itemName, itemType)]
+setkeyv(swsItemTable, "itemCode")
 
 
 elementCodeList =
@@ -313,11 +316,11 @@ areaYearWildCard = shareFull[areaCode == 0 & Year == 0,
     !c("areaCode", "Year"), with = FALSE]
 setkeyv(areaYearWildCard, c("itemCode", "itemChildCode"))
 share =
-    mergeShare(list(specific = specific, 
-                    yearWildCard = yearWildCard,
-                    areaYearWildCard = areaYearWildCard),
-               aupus = aupus)
-
+    mergeShare(shareData = list(specific = specific, 
+                   yearWildCard = yearWildCard,
+                   areaYearWildCard = areaYearWildCard),
+               aupus = aupus,
+               shares = "SHARE")
 
 ## setnames(share, c("Value", "flagShare"), c("share_value", "share_flag"))
 ## shareKeys = c("geographicAreaFS", "measuredItemParentFS",
