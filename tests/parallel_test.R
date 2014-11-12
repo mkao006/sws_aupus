@@ -16,29 +16,15 @@ if(Sys.getenv("USER") == "mk"){
         baseUrl = "https://hqlqasws1.hq.un.fao.org:8181/sws",
         token = "5d9b8d4a-0989-4b50-869f-cd0bc566fd18"
         )
-    ## attach(as.list(fromJSON("~/connectionDetail.json")))
 }
 
-
-
+areaCodeList =
+    GetCodeList(domain = "faostat_one",
+                dataset = "FS1_SUA",
+                dimension = "geographicAreaFS")
 allCountries =
-    sort(na.omit(FAOcountryProfile[FAOcountryProfile$FAOST_CODE < 1000,
-                                   "FAOST_CODE"]))
-## noDataCountry = c(1, 6, 15, 22, 24, 30, 31, 34, 36, 42, 51, 62, 71,
-## 76, 82, 92, 94, 111, 125, 139, 140, 152, 161, 163, 172, 177, 180, 187,
-## 192, 224, 228, 232, 242, 245, 255, 258, 259, 260, 264, 270, 271, 272,
-## 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 351,
-## 357)
-## allCountries = allCountries[!allCountries %in% noDataCountry]
-
-## areaCodeList =
-##     GetCodeList(domain = "faostat_one",
-##                 dataset = "FS1_SUA",
-##                 dimension = "geographicAreaFS")
-## allCountries =
-##     areaCodeList[!code %in% c(0, 252, 296, 297, 294, 281, 295,
-##                               510, 500, 590) & type == "country", code]
-
+    areaCodeList[type == "country" &
+                 code != 0, ][order(as.numeric(code))][, code]
 
 functions = dir("../codes/", pattern = "R$", full.names = TRUE)
 lapply(functions, FUN = cmpfile)
