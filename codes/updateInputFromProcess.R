@@ -1,13 +1,28 @@
-updateInputFromProcess = function(aupus, share, input, element131Num){
+##' The function re-calculates the input from processing
+##'
+##' @param aupus The aupus data from the function getAupus
+##' @param shareData The shares data from the function getShares
+##' @param inputData The input data from the function
+##' getInputFromProcessing.
+##' @param sharesNum The column corresponding to shares value.
+##' @param inputNum The column corresponding to input values.
+##' @param inputSymb The column corresponding to input symbol.
+##' @param element131Num The column corresponding to the value of
+##' element 131.
+##' @export
+##' 
+
+updateInputFromProcess = function(aupus, shareData, inputData, sharesNum,
+    inputNum, inputSymb, element131Num){
     available = aupus[, c(key(aupus), element131Num), with = FALSE]
     setnames(available, old = element131Num, new = "element131Num")
     ## inputShare = Reduce(f = function(x, y){
     ##     merge(x, y, all = TRUE, allow.cartesian = TRUE,
     ##           by = intersect(colnames(x), colnames(y)))
     ## }, x = share, init = available)
-    inputShare = merge(available, share, all = TRUE,
+    inputShare = merge(available, shareData, all = TRUE,
         allow.cartesian = TRUE,
-        by = intersect(colnames(available), colnames(share)))
+        by = intersect(colnames(available), colnames(shareData)))
     setnames(inputShare,
              old = c("itemCode", "itemChildCode"),
              new = c("itemParentCode", "itemCode"))
@@ -16,10 +31,16 @@ updateInputFromProcess = function(aupus, share, input, element131Num){
     availableForInput = inputShare[!is.na(itemCode) & !is.na(Year), ]
     ## print(str(availableForInput))
     ## print(str(input))
-    newInput = merge(availableForInput, input, all = TRUE)
-    newInput[is.na(NUM_INPUT),
-                     NUM_INPUT := element131Num * SHARE/100]
-    newInput[!is.na(NUM_INPUT) & SYMB_INPUT == "M", SYMB_INPUT := "C"]
-    newInput[, c("SHARE", "element131Num") := NULL]
+    newInput = merge(availableForInput, inputData, all = TRUE)
+    setnames(newInput,
+             old = c(sharesNum, inputNum, inputSymb),
+             new = c("sharesNum", "inputNum", "inputSymb"))
+    newInput[replaceable(inputSymb),
+             `:=`(c("inputNum", "inputSymb"),
+                  appendSymbol(element131Num * sharesNum/100, "C"))]
+    newInput[, element131Num := NULL]
+    setnames(newInput,
+             new = c(sharesNum, inputNum, inputSymb),
+             old = c("sharesNum", "inputNum","inputSymb"))
     newInput
 }
