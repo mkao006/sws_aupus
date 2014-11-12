@@ -3,7 +3,6 @@ library(igraph)
 library(reshape2)
 library(data.table)
 source("test_get_api_data.R")
-load("swsItemTable.RData")
 
 ## Prepare the aupus data
 aupus = merge(aupus, swsItemTable, all.x = TRUE)
@@ -30,7 +29,7 @@ setkeyv(aupusFinal, c("areaCode", "itemCode", "Year"))
 ## Element 11
 calculateEle11(element11Num = "NUM_11", element11Symb = "SYMB_11",
                element161Num = "NUM_161", element161Symb = "SYMB_161",
-               data = aupusFinal)
+               itemTypeCol = "itemType", data = aupusFinal)
 
 ## Element 21
 calculateEle21(element21Num = "NUM_21", element21Symb = "SYMB_21",
@@ -39,7 +38,7 @@ calculateEle21(element21Num = "NUM_21", element21Symb = "SYMB_21",
                data = aupusFinal)
 
 ## Denormalize population
-denormalizePopulation(elementNum11 = "NUM_11", elementNum21 = "NUM_21",
+denormalizePopulation(element11Num = "NUM_11", element21Num = "NUM_21",
                       data = aupusFinal)
 
 
@@ -144,8 +143,8 @@ calculateEle141(element141Num = "NUM_141", element141Symb = "SYMB_141",
 
 ## Element 144
 calculateEle144(element144Num = "NUM_144", element144Symb = "SYMB_144",
-                element141Num = "NUM_141", population = "NUM_POP11",
-                data = aupusFinal)
+                element141Num = "NUM_141", population11Num = "NUM_POP11",
+                itemTypeCol = "itemType", data = aupusFinal)
 
 ## Element 151
 calculateEle151(element151Num = "NUM_151", element151Symb = "SYMB_151",
@@ -159,7 +158,7 @@ calculateEle161(element161Num = "NUM_161", element161Symb = "SYMB_161",
                 itemTypeCol = "itemType", data = aupusFinal)
 
 ## Element 171
-calculateEle171(element171Num = "NUM_161", element171Symb = "SYMB_171",
+calculateEle171(element171Num = "NUM_171", element171Symb = "SYMB_171",
                 element101Num = "NUM_101", element121Num = "NUM_121",
                 element131Num = "NUM_131", element141Num = "NUM_141",
                 element151Num = "NUM_151", data = aupusFinal)
@@ -167,7 +166,7 @@ calculateEle171(element171Num = "NUM_161", element171Symb = "SYMB_171",
 
 ## Element 174
 calculateEle174(element174Num = "NUM_174", element174Symb = "SYMB_174",
-                element171Num = "NUM_171", population = "NUM_POP11",
+                element171Num = "NUM_171", population11Num = "NUM_POP11",
                 data = aupusFinal)
 
 
