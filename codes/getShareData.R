@@ -51,26 +51,25 @@ getShareData = function(database = c("new", "old"), param, conn){
             GetData(key = shareDataContext, flags = TRUE,
                     normalized = TRUE, pivoting = sharePivot)
         fullShare[, flagShare := NULL]
-        print(str(fullShare))
         setnames(fullShare,
-                 old = c("Value", "measuredItemParentFS"),
-                 new = c("share_value", "measuredItemFS"))
+                 old = c("Value"),
+                 new = c("Value_share"))
 
 
         specific = fullShare[geographicAreaFS != 0 &
                              timePointYearsSP != 0, ]
-        setkeyv(specific, c("geographicAreaFS", "measuredItemFS",
+        setkeyv(specific, c("geographicAreaFS", "measuredItemParentFS",
                             "measuredItemChildFS", "timePointYearsSP"))
         yearWildCard = fullShare[geographicAreaFS != 0 &
                                  timePointYearsSP == 0,
             !"timePointYearsSP", with = FALSE]
         setkeyv(yearWildCard, c("geographicAreaFS",
-                                "measuredItemFS",
+                                "measuredItemParentFS",
                                 "measuredItemChildFS"))
         areaYearWildCard =
             fullShare[geographicAreaFS == 0 & timePointYearsSP == 0,
             !c("geographicAreaFS", "timePointYearsSP"), with = FALSE]
-        setkeyv(areaYearWildCard, c("measuredItemFS",
+        setkeyv(areaYearWildCard, c("measuredItemParentFS",
                                     "measuredItemChildFS"))
         finalShare = list(specific = specific, 
             yearWildCard = yearWildCard,
