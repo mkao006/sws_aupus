@@ -59,7 +59,7 @@ getInputFromProcessData = function(database = c("new", "old"), param,
 
         setnames(finalInput,
                  old = c("Value", "flagFaostat"),
-                 new = c("inpute_value", "input_flag"))
+                 new = c("Value_input", "flagFaostat_input"))
 
         ## NOTE (Michael): Why does the year has 'SP' suffix?
         inputKey = c("geographicAreaFS", "measuredItemParentFS",
