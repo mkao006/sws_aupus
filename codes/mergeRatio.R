@@ -4,15 +4,15 @@
 ##' the country and year specific values, then year wild card then
 ##' global wild card.
 ##'
-##' @param aupus The aupus data extracted from getAupus function.
+##' @param aupusData The aupus data extracted from getAupus function.
 ##' @param ratioData The ratio data from the function getRatio.
 ##' @param verbose To print out information
 ##' 
 ##' @export
 ##' 
 
-mergeRatio = function(aupus, ratioData, verbose = FALSE){
-    base = merge(aupus, ratioData[[1]], all.x = TRUE)
+mergeRatio = function(aupusData, ratioData, verbose = FALSE){
+    base = merge(aupusData, ratioData[[1]], all.x = TRUE)
     ## Fill in wild card
     for(i in 2:length(ratioData)){
         lapply(grep("RATIO", colnames(ratioData[[i]]), value = TRUE),
