@@ -1,4 +1,4 @@
-getAupusData = function(countryCode, database = c("new", "old"), conn){
+getAupusData = function(database = c("new", "old"), param, conn){
     database = match.arg(database)
     if(database == "old"){
         aupusQuery =
@@ -29,20 +29,15 @@ getAupusData = function(countryCode, database = c("new", "old"), conn){
                  new = c("areaCode", "itemCode"))
         setkeyv(finalAupus, cols = c("areaCode", "itemCode", "Year"))
     } else if(database == "new"){
-        aupusElements = c(11, 21, 31, 41, 51, 58, 61, 62, 63, 66, 71,
-            91, 92, 93, 95, 96, 101, 111, 121, 131, 141, 144, 151,
-            161, 171, 174, 181, 191, 261, 264, 271, 274, 281, 284, 541,
-            546)
         aupusDimension =
             list(Dimension(name = "geographicAreaFS",
-                           keys = as.character(testCountryCode)),
+                           keys = as.character(param$countryCode)),
                  Dimension(name = "measuredItemFS",
-                           keys = itemCodeList[type != 0, code]),
+                           keys = as.character(param$itemCode)),
                  Dimension(name = "timePointYears",
-                           keys = as.character(testYears)),
+                           keys = as.character(param$year)),
                  Dimension(name = "measuredElementFS",
-                           keys = as.character(intersect(aupusElements,
-                               elementCodeList$code))))
+                           keys = as.character(param$elementCode)))
 
         aupusDataContext =
             DatasetKey(domain = "faostat_one",
@@ -55,10 +50,9 @@ getAupusData = function(countryCode, database = c("new", "old"), conn){
             Pivoting(code = "timePointYears", ascending = FALSE),
             Pivoting(code = "measuredElementFS", ascending = TRUE)
         )
-
         finalAupus =
-            GetData(key = finalAupusDataContext, flags = TRUE,
-                    normalized = FALSE, pivoting = finalAupusPivot)
+            GetData(key = aupusDataContext, flags = TRUE,
+                    normalized = FALSE, pivoting = aupusPivot)
 
         ## Convert list of NULL to vector of NA
         for(i in colnames(finalAupus)){
@@ -68,11 +62,11 @@ getAupusData = function(countryCode, database = c("new", "old"), conn){
             } else if(typeof(finalAupus[, i, with = FALSE]) == "logical"){
                 finalAupus[, eval(parse(text =
                                    paste0(x, " := as.numeric(", x, ")")))]
-                
             }
         }
         
         setnames(finalAupus, "timePointYears", "timePointYearsSP")
+        finalAupus[, timePointYearsSP := as.numeric(timePointYearsSP)]
         finalAupusKey = c("geographicAreaFS", "measuredItemFS",
             "timePointYearsSP")
         setkeyv(finalAupus, cols = finalAupusKey)        
