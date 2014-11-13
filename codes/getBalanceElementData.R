@@ -53,10 +53,12 @@ getBalanceElementData = function(database = c("new", "old"), param,
             GetData(key = balanceElementDataContext, flags = TRUE,
                     normalized = TRUE,
                     pivoting = balanceElementPivot)
-
+        setnames(fullBalanceElement,
+                 old = "measuredElementFS",
+                 new = "balanceElement")
         balanceElement = fullBalanceElement[flagRatio == "Y",
-            list(geographicAreaFS, measuredItemFS, measuredElementFS,
-                 timePointYearsSP)]
+            list(geographicAreaFS, measuredItemFS, timePointYearsSP,
+                 balanceElement)]
 
         tmp = lapply(balanceElement[, colnames(balanceElement),
             with = FALSE], as.numeric)
