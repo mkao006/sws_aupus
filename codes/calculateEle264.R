@@ -23,9 +23,8 @@ calculateEle264 = function(element264Num, element264Symb,
                  "element261Num", "population11Num", "population21Num"))
     data[, validPopulation := population21Num]
     data[is.na(validPopulation), validPopulation := population11Num]
-    replaceIndex = with(data, which(replaceable(element264Symb)))
-    print(replaceIndex)
-    data[replaceIndex,
+    replaceIndex1 = with(data, which(replaceable(element264Symb)))
+    data[replaceIndex1,
          `:=`(c("element264Num", "element264Symb"),
               appendSymbol(element261Num/365 * 1000/validPopulation,
                            "C"))]
@@ -34,5 +33,5 @@ calculateEle264 = function(element264Num, element264Symb,
              new = c(element264Num, element264Symb,
                  element261Num, population11Num, population21Num),
              old = c("element264Num", "element264Symb",
-                 "element261Num", "population11Num", "population21Num"))    
+                 "element261Num", "population11Num", "population21Num"))
 }
