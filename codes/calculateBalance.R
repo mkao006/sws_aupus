@@ -25,7 +25,7 @@
 
 calculateBalance = function(supply, utilization, element161Num,
     element171Num, element181Num, element181Symb, balanceElement,
-    itemTypeCol, data){
+    itemTypeCol, param, data){
     ## TODO (Michael): Need to check the replace column of this
     ##                 function.
     setnames(data,
@@ -49,10 +49,12 @@ calculateBalance = function(supply, utilization, element161Num,
     data[balanceElement == 71, BALANCE := -BALANCE]
 
     data[!is.na(balanceElement),
-         `:=`(c(paste0("NUM_", .BY[[1]]), paste0("SYMB_", .BY[[1]]),
+         `:=`(c(paste0(param$keyNames$valuePrefix, .BY[[1]]),
+                paste0(param$keyNames$flagPrefix, .BY[[1]]),
                 "element181Num", "element181Symb", "replaced"),
-              fillBalance("BALANCE", paste0("NUM_", .BY[[1]]),
-                          paste0("SYMB_", .BY[[1]]),
+              fillBalance("BALANCE",
+                          paste0(param$keyNames$valuePrefix, .BY[[1]]),
+                          paste0(param$keyNames$flagPrefix, .BY[[1]]),
                           "element181Num", "element181Symb", .SD)),
          by = "balanceElement"]
     replaceIndex1 = which(unlist(data[, replaced]))
