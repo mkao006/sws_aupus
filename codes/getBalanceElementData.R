@@ -1,3 +1,15 @@
+##' This function extracts the balance element data from the data
+##' base.
+##'
+##' @param database Whether to use the new or the old statistical
+##' working system.
+##' @param param The parameter file from getAupusParam
+##' @param conn The RJDBS connection to the old working system.
+##' @export
+##' 
+
+
+
 getBalanceElementData = function(database = c("new", "old"), param,
     conn){
     database = match.arg(database)
@@ -60,9 +72,10 @@ getBalanceElementData = function(database = c("new", "old"), param,
             list(geographicAreaFS, measuredItemFS, timePointYearsSP,
                  balanceElement)]
 
-        tmp = lapply(balanceElement[, colnames(balanceElement),
-            with = FALSE], as.numeric)
-        balanceElement[, `:=`(c(colnames(balanceElement)), tmp)]
+        balanceElement[, timePointYearsSP := as.numeric(timePointYearsSP)]
+        ## tmp = lapply(balanceElement[, colnames(balanceElement),
+        ##     with = FALSE], as.numeric)
+        ## balanceElement[, `:=`(c(colnames(balanceElement)), tmp)]
         balanceElementKey = c("geographicAreaFS", "measuredItemFS",
             "timePointYearsSP")
         setkeyv(balanceElement, balanceElementKey)
