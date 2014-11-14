@@ -1,3 +1,12 @@
+##' This function extracts the share data from the data base.
+##'
+##' @param database Whether to use the new or the old statistical
+##' working system.
+##' @param param The parameter file from getAupusParam
+##' @param conn The RJDBS connection to the old working system.
+##' @export
+##' 
+
 getShareData = function(database = c("new", "old"), param, conn){
     database = match.arg(database)
     if(database == "old"){
