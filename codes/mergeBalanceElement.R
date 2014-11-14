@@ -18,7 +18,7 @@ mergeBalanceElement = function(aupus, balanceElementData,
     balanceElementNum, verbose = FALSE){
     base = merge(aupus, balanceElementData[[1]], all.x = TRUE)
     ## Fill in wild card
-    for(i in 2:length(balanceElement)){
+    for(i in 2:length(balanceElementData)){
         wildCardFill(base, balanceElementData[[i]], balanceElementNum,
                      verbose)
     }
