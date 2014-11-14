@@ -6,11 +6,16 @@
 ##' @export
 ##' 
 
-calculateTotalInput = function(inputData){
-    newKey = c("areaCode", "itemCode", "Year")
+calculateTotalInput = function(inputData, inputNum, param){
+    newKey = with(param$keyNames,
+        c(countryName, itemChildName, yearName))
+    evalString = paste0("list(", inputNum, " = sum(", inputNum, "))")
     aggregatedInput =
-        inputData[, list(NUM_TOTAL_INPUT = sum(NUM_INPUT)),
-              by = newKey]
+        inputData[, eval(parse(text = evalString)),
+                  by = newKey]
     setkeyv(aggregatedInput, newKey)
+    setnames(aggregatedInput,
+             old = param$keyNames$itemChildName,
+             new = param$keyNames$itemName)
     aggregatedInput
 }
