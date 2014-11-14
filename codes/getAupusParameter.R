@@ -44,7 +44,10 @@ getAupusParameter = function(countryCode, assignGlobal = TRUE){
              itemParentName = "measuredItemParentFS",
              itemChildName = "measuredItemChildFS",
              elementName = "measuredElementFS",
-             yearName = "timePointYearsSP")
+             yearName = "timePointYearsSP",
+             valuePrefix = "Value_measuredElementFS_",
+             flagPrefix = "flagFaostat_measuredElementFS_",
+             ratioPrefix = "Ratio_measuredElementFS_")
         
     tmp = list(countryCode = countryCode,
         itemCode = allItemCodes, elementCode = allElementCodes,
