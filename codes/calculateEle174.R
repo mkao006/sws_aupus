@@ -25,7 +25,8 @@ calculateEle174 = function(element174Num, element174Symb,
                          replaceable(data$element174Symb))
     data[replaceIndex1,
          `:=`(c("element174Num", "element174Symb"),
-              appendSymbol(element171Num/population11Num, "C"))]
+              appendSymbol(computeRatio(element171Num, population11Num),
+                           "C"))]
     
     setnames(data,
              new = c(element174Num, element174Symb, element171Num,

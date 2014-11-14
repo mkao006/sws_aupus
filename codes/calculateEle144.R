@@ -28,7 +28,8 @@ calculateEle144 = function(element144Num, element144Symb,
                    replaceable(element144Symb)))
     data[replaceIndex1,
          `:=`(c("element144Num", "element144Symb"),
-              appendSymbol(element141Num/population11Num * 1000, "C"))]
+              appendSymbol(computeRatio(element141Num, population11Num) *
+                               1000, "C"))]
     replaceIndex2 =
         with(data,
              which(!data[[itemTypeCol]] %in%
@@ -36,7 +37,8 @@ calculateEle144 = function(element144Num, element144Symb,
               replaceable(element144Symb)))
     data[replaceIndex2, 
          `:=`(c("element144Num", "element144Symb"),
-              appendSymbol(element141Num/population11Num, "C"))]
+              appendSymbol(computeRatio(element141Num, population11Num),
+                           "C"))]
     
     setnames(data,
              new = c(element144Num, element144Symb,

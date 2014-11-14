@@ -21,7 +21,8 @@ calculateEle101 = function(element101Num, element101Symb,
     replaceIndex1 = which(replaceable(data$element101Symb))
     data[replaceIndex1,
          `:=`(c("element101Num", "element101Symb"),
-              appendSymbol(ratio101Num * stotal/100, "C"))]
+              appendSymbol(ratio101Num * computeRatio(stotal, 100),
+                           "C"))]
     setnames(data,
              new = c(element101Num, element101Symb, ratio101Num, stotal),
              old = c("element101Num", "element101Symb",

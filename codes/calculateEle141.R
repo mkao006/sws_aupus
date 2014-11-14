@@ -43,7 +43,8 @@ calculateEle141 = function(element141Num, element141Symb,
               replaceable(data$element141Symb))
     data[replaceIndex1,
          `:=`(c("element141Num", "element141Symb"),
-              appendSymbol(ratio141Num * stotal/100, "C"))]
+              appendSymbol(ratio141Num * computeRatio(stotal, 100),
+                           "C"))]
 
     ## NOTE(Michael): Calculation for commodity Jute (50) is not
     ##                replicated.

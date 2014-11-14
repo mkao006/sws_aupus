@@ -48,7 +48,8 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
                     numberOfTrendingElements)))
     data[replaceIndex,
          `:=`(c("element31Num", "element31Symb"),
-             appendSymbol(element51Num/element41Num * fd, "C"))]
+             appendSymbol(computeRatio(element51Num, element41Num) * fd,
+                          "C"))]
 
     replaceIndex2 =
         with(data,
@@ -58,7 +59,8 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
                     numberOfTrendingElements)))
     data[replaceIndex2,
          `:=`(c("element41Num", "element41Symb"),
-              appendSymbol(element51Num/element31Num * fd, "C"))]
+              appendSymbol(computeRatio(element51Num, element31Num) * fd,
+                           "C"))]
 
     replaceIndex3 =
         with(data,
@@ -68,7 +70,8 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
                     numberOfTrendingElements)))
     data[replaceIndex3, 
          `:=`(c("element51Num", "element51Symb"),
-              appendSymbol(element31Num * element41Num/fd, "C"))]
+              appendSymbol(element31Num *
+                               computeRatio(element41Num, fd), "C"))]
 
 
     ## Remove prior trended value
@@ -104,7 +107,8 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
               replaceable(element41Symb)))
     data[replaceIndex5, 
          `:=`(c("element41Num", "element41Symb"),
-              appendSymbol(element51Num/element31Num * fd, "C"))]
+              appendSymbol(computeRatio(element51Num, element31Num) *
+                               fd, "C"))]
     replaceIndex6 = with(data,
         which(!is.na(element31Num) & 
               !is.na(element41Num) &
@@ -113,8 +117,9 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
     data[replaceIndex6,
          `:=`(c("element51Num", "element51Symb"),
               appendSymbol(element31Num * element41Num* fd, "C"))]
-    replaceIndex7 = which(data[[key(data)[2]]] %in% c(0:1200, 1455:1700) &
-                         replaceable(data$element41Symb))
+    replaceIndex7 =
+        which(data[[key(data)[2]]] %in% c(0:1200, 1455:1700) &
+                  replaceable(data$element41Symb))
     data[replaceIndex7,
          `:=`(c("element41Num", "element41Symb"),
               trendOnce(element41Num, element41Symb,
@@ -127,7 +132,8 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
               replaceable(element31Symb)))
     data[replaceIndex8,
          `:=`(c("element31Num", "element31Symb"),
-              appendSymbol(element51Num/element41Num * fd, "C"))]
+              appendSymbol(computeRatio(element51Num, element41Num) *
+                               fd, "C"))]
     replaceIndex9 = with(data,
         which(!is.na(element31Num) & 
               !is.na(element41Num) &
@@ -150,7 +156,8 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
               replaceable(element31Symb)))
     data[replaceIndex11, 
          `:=`(c("element31Num", "element31Symb"),
-              appendSymbol(element51Num/element41Num * fd, "C"))]
+              appendSymbol(computeRatio(element51Num, element41Num) *
+                               fd, "C"))]
     replaceIndex12 = with(data,
         which(!is.na(element31Num) & 
               !is.na(element41Num) &
@@ -158,7 +165,8 @@ calculateEle314151 = function(element31Num, element41Num, element51Num,
               replaceable(element41Symb)))
     data[replaceIndex12,
          `:=`(c("element41Num", "element41Symb"),
-              appendSymbol(element51Num/element31Num * fd, "C"))]
+              appendSymbol(computeRatio(element51Num, element31Num) *
+                               fd, "C"))]
     
     data[, `:=`(c("numberOfMissingElements", "numberOfTrendingElements",
                   "fd"),

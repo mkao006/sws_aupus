@@ -33,7 +33,7 @@ calculateEle111 = function(element111Num, element111Symb, element21Num,
         with(data, which(is.na(ratio171Num) & !is.na(ratio111Num)))
     data[replaceIndex1,
          `:=`(c("element111Num", "element111Symb"),
-              list(ratio111Num * stotal/100, "C"))]
+              list(ratio111Num * computeRatio(stotal, 100), "C"))]
 
     yearSearch = function(subData){
         n = NROW(subData)

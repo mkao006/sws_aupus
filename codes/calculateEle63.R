@@ -28,7 +28,8 @@ calculateEle63 = function(element61Num, element62Num,
               replaceable(element63Symb)))
     data[replaceIndex1,
          `:=`(c("element63Num", "element63Symb"),
-              appendSymbol(element61Num * 1000/element62Num, "C"))]
+              appendSymbol(element61Num *
+                               computeRatio(1000, element62Num), "C"))]
     ## If any one of them is missing, then the new calculation would
     ## be missing. Therefore, replace with zero.
     replaceIndex2 = with(data,

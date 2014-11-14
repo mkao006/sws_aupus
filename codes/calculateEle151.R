@@ -26,7 +26,8 @@ calculateEle151 = function(element151Num, element151Symb,
                          replaceable(data$element151Symb))
     data[replaceIndex1,
          `:=`(c("element151Num", "element151Symb"),
-              appendSymbol(ratio151Num * stotal/100, "C"))]
+              appendSymbol(ratio151Num * computeRatio(stotal, 100),
+                           "C"))]
 
     ## Item Charcoal (1687) ignored for now.
     ##

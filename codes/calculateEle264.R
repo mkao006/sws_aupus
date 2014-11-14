@@ -26,7 +26,8 @@ calculateEle264 = function(element264Num, element264Symb,
     replaceIndex1 = with(data, which(replaceable(element264Symb)))
     data[replaceIndex1,
          `:=`(c("element264Num", "element264Symb"),
-              appendSymbol(element261Num/365 * 1000/validPopulation,
+              appendSymbol(computeRatio(element261Num, 365) *
+                               computeRatio(1000, validPopulation),
                            "C"))]
     data[, validPopulation := NULL]
     setnames(data,

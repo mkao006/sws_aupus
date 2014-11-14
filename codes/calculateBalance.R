@@ -40,7 +40,7 @@ calculateBalance = function(supply, utilization, element161Num,
          BALANCE := supply - utilization]
     data[data[[itemTypeCol]] == 57 & !is.na(element161Num) &
          !is.na(element171Num),
-         BALANCE := element161Num/element171Num * 1000]
+         BALANCE := computeRatio(element161Num, element171Num) * 1000]
     data[data[[itemTypeCol]] == 57 &
          (is.na(element161Num) | is.na(element171Num)),
          BALANCE := 0]
