@@ -11,7 +11,7 @@ collapseShare = function(shareData, shares, param, verbose = FALSE){
     uniquePath =
         unique.data.frame(Reduce(rbind,
                                  lapply(shareData, FUN = function(x)
-                                     x[, c(param$keyNames$itemName,
+                                     x[, c(param$keyNames$itemParentName,
                                            param$keyNames$itemChildName),
                                        with = FALSE]
                           )))
