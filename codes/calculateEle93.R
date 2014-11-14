@@ -8,12 +8,14 @@
 ##' 93.
 ##' @param element93Symb The column corresponding to symbol of element
 ##' 93.
+##' @param itemTypeCol The column corresponding to the type of the
+##' commodity item.
 ##' @param data The data
 ##' @export
 ##' 
 
 calculateEle93 = function(element91Num, element92Num,
-    element93Num, element93Symb, data){
+    element93Num, element93Symb, itemTypeCol, data){
     setnames(data,
              old = c(element91Num, element92Num, element93Num,
                  element93Symb),
@@ -21,7 +23,7 @@ calculateEle93 = function(element91Num, element92Num,
                      "element93Symb"))
     ## Calculate value
     replaceIndex1 = with(data,
-        which(!itemType %in% c(42, 43, 44, 45, 46, 47, 48, 49,
+        which(!data[[itemTypeCol]] %in% c(42, 43, 44, 45, 46, 47, 48, 49,
                                50, 51, 52) &
               !is.na(element91Num) & !is.na(element92Num) &
                   replaceable(element93Symb)))
@@ -29,7 +31,7 @@ calculateEle93 = function(element91Num, element92Num,
          `:=`(c("element93Num", "element93Symb"),
               appendSymbol(element91Num * 1000/element92Num, "C"))]
     replaceIndex2 = with(data,
-        which(!itemType %in% c(42, 43, 44, 45, 46, 47, 48, 49,
+        which(!data[[itemTypeCol]] %in% c(42, 43, 44, 45, 46, 47, 48, 49,
                                50, 51, 52) &
         replaceable(element93Symb) &
         (is.na(element91Num) | is.na(element92Num))))
