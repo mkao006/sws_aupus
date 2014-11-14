@@ -1,3 +1,12 @@
+##' This function extracts the aupus data from the data base.
+##'
+##' @param database Whether to use the new or the old statistical
+##' working system.
+##' @param param The parameter file from getAupusParam
+##' @param conn The RJDBS connection to the old working system.
+##' @export
+##' 
+
 getAupusData = function(database = c("new", "old"), param, conn){
     database = match.arg(database)
     if(database == "old"){
@@ -59,9 +68,13 @@ getAupusData = function(database = c("new", "old"), param, conn){
             if(typeof(finalAupus[, i, with = FALSE]) == "list"){
                 finalAupus[, eval(parse(text =
                                    paste0(i, " := NULLtoNA(", i, ")")))]
-            } else if(typeof(finalAupus[, i, with = FALSE]) == "logical"){
+            }
+            if(grepl("Value", i)){
                 finalAupus[, eval(parse(text =
-                                   paste0(x, " := as.numeric(", x, ")")))]
+                                   paste0(i, " := as.numeric(", i, ")")))]
+            } else if(grepl("flag", i)){
+                finalAupus[, eval(parse(text =
+                                paste0(i, " := as.character(", i, ")")))]
             }
         }
         
@@ -69,6 +82,15 @@ getAupusData = function(database = c("new", "old"), param, conn){
         finalAupus[, timePointYearsSP := as.numeric(timePointYearsSP)]
         finalAupusKey = c("geographicAreaFS", "measuredItemFS",
             "timePointYearsSP")
+        ## Filling in missing columns
+        ## fillMissingColumn(finalAupus,
+        ##                   allColumn =
+        ##                       paste0("Value_measuredElementFS_",
+        ##                              param$elementCode))
+        ## fillMissingColumn(finalAupus,
+        ##                   allColumn =
+        ##                       paste0("flagFaostat_measuredElementFS_",
+        ##                              param$elementCode))
         setkeyv(finalAupus, cols = finalAupusKey)        
     }
     finalAupus
