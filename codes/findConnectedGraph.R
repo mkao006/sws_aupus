@@ -13,10 +13,8 @@ findConnectedGraph = function(graph, commodity){
     if(any(!commodity %in% V(graph)$name))
        stop("Commodity not found in graph")
     connectedNodes =
-        unique(unlist(sapply(apply(X = dist, MARGIN = 1,
-                                   FUN = function(x){
-                                       which(is.finite(x))
-                                   }), names)))
+        names(which(colSums(dist != Inf) != 0))
+    print(connectedNodes)
     if(length(connectedNodes) > 1){
         connectedGraph =
             induced.subgraph(graph, vids = V(graph)[connectedNodes])
