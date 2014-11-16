@@ -26,7 +26,7 @@ calculateEle284 = function(element284Num, element284Symb,
     replaceIndex1 = with(data, which(replaceable(element284Symb)))
     data[replaceIndex1,
          `:=`(c("element284Num", "element284Symb"),
-              appendSymbol(computeRatio(element261Nu, 365) *
+              appendSymbol(computeRatio(element261Num, 365) *
                            computeRatio(1000, validPopulation), 
                            "C"))]
     data[, validPopulation := NULL]
