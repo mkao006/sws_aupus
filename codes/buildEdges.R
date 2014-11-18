@@ -7,11 +7,13 @@
 ##' @param param The parameter from the function getAupusParem
 ##'
 ##' @export
+##' 
 
 
 ## NOTE (Michael): The extraction rate should only apply to process
 ##                 commodity.
-buildEdgeRelation = function(aupusData, extractionRate, shareData,  param){
+
+buildEdges = function(aupusData, extractionRate, shareData,  param){
     extractionRateData = aupusData[, c(key(aupusData), extractionRate),
         with = FALSE]
     setnames(extractionRateData,
