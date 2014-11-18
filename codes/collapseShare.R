@@ -27,6 +27,7 @@ collapseShare = function(shareData, shares, param, verbose = FALSE){
     for(i in 1:length(shareData)){
         wildCardFill(finalBase, shareData[[i]], shares, verbose)
     }
+    setkeyv(finalBase, key(shareData[[1]]))
     finalBase[, timePointYearsSP := as.numeric(timePointYearsSP)]
     finalBase[finalBase[[shares]] != 0, ]
 }
