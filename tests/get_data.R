@@ -11,6 +11,25 @@ drv = JDBC(driverClass = "oracle.jdbc.driver.OracleDriver",
 conn = dbConnect(drv, "jdbc:oracle:thin:@lprdbwo1:3310:fstp",
     user = "demo", password = "demo")
 
+
+test = dbGetQuery(conn, "SELECT * FROM tsv_ics_work_yr
+                         LEFT JOIN item
+                         ON tsv_ics_work_yr.item = item.item
+                         WHERE area  = '100'")
+
+calorieConversion =
+    dbGetQuery(conn, "SELECT *
+                      FROM aupus_ratios WHERE item = '15'
+                      AND ELE = '261'")
+
+lossConversion =
+    dbGetQuery(conn, "SELECT *  FROM aupus_ratios
+                      WHERE item in ('16')
+                      AND ELE = '121'")
+
+
+
+
 ## Get item information
 swsItemTable = data.table(dbGetQuery(conn,
     "SELECT item, name_e, item_typ FROM item"))
