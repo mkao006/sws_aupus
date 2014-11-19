@@ -7,6 +7,9 @@
 ##' @export
 ##' 
 
+
+## TODO (Michael): Apply calculation of 11 and 21 here.
+
 getPopulationData = function(database = c("new", "old"), param, conn){
     database = match.arg(database)
     if(database == "old"){
