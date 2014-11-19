@@ -1,46 +1,29 @@
 ##' The function re-calculates the input from processing
 ##'
-##' @param aupus The aupus data from the function getAupus
-##' @param shareData The shares data from the function getShares
-##' @param inputData The input data from the function
-##' getInputFromProcessing.
-##' @param sharesNum The column corresponding to shares value.
-##' @param inputNum The column corresponding to input values.
-##' @param inputSymb The column corresponding to input symbol.
-##' @param element131Num The column corresponding to the value of
-##' element 131.
+##' @param nodes The nodes data returned by the function buildNodes
+##' @param edges The edge data returned by the function buildEdges
+##' @param param The parameters from the function getAupusParameter
+##' @param element131Num The column corresponding to element 131.
 ##' @export
 ##' 
 
-updateInputFromProcess = function(aupus, shareData, inputData, sharesNum,
-    inputNum, inputSymb, element131Num){
-    available = aupus[, c(key(aupus), element131Num), with = FALSE]
-    setnames(available, old = element131Num, new = "element131Num")
-    ## inputShare = Reduce(f = function(x, y){
-    ##     merge(x, y, all = TRUE, allow.cartesian = TRUE,
-    ##           by = intersect(colnames(x), colnames(y)))
-    ## }, x = share, init = available)
-    inputShare = merge(available, shareData, all = TRUE,
-        allow.cartesian = TRUE,
-        by = intersect(colnames(available), colnames(shareData)))
-    setnames(inputShare,
-             old = c("itemCode", "itemChildCode"),
-             new = c("itemParentCode", "itemCode"))
-    setkeyv(x = inputShare,
-            cols = c("areaCode", "itemParentCode", "itemCode", "Year"))
-    availableForInput = inputShare[!is.na(itemCode) & !is.na(Year), ]
-    ## print(str(availableForInput))
-    ## print(str(input))
-    newInput = merge(availableForInput, inputData, all = TRUE)
-    setnames(newInput,
-             old = c(sharesNum, inputNum, inputSymb),
-             new = c("sharesNum", "inputNum", "inputSymb"))
-    newInput[replaceable(inputSymb),
-             `:=`(c("inputNum", "inputSymb"),
-                  appendSymbol(element131Num * sharesNum/100, "C"))]
-    newInput[, element131Num := NULL]
-    setnames(newInput,
-             new = c(sharesNum, inputNum, inputSymb),
-             old = c("sharesNum", "inputNum","inputSymb"))
-    newInput
+updateInputFromProcessing = function(nodes, edges, param, element31Num){
+    setnames(nodes, old = element31Num, new = "element31Num")
+    aggregateKey = key(edges)
+    aggregateKey = aggregateKey[aggregateKey != param$keyNames$itemParentName]
+    aggregatedInput = edges[, list(Aggregated_input = sum(Value_input)),
+        by = aggregateKey]
+    setnames(aggregatedInput,
+             old = param$keyNames$itemChildName,
+             new = param$keyNames$itemName)
+    newInputKeys = aggregateKey
+    newInputKeys[newInputKeys == param$keyNames$itemChildName] =
+        param$keyNames$itemName
+
+    okey = key(nodes)
+    setkeyv(nodes, newInputKeys)
+    nodes[aggregatedInput, element31Num := Aggregated_input]
+    setkeyv(nodes, okey)
+    setnames(nodes, new = element31Num, old = "element31Num")
+
 }
