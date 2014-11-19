@@ -27,8 +27,8 @@ denormalizePopulation = function(data, element11Num, element21Num){
     setkeyv(population, key(data)[c(1, 3)])
     okey = key(data)
     setkeyv(data, key(population))
-    data[population, NUM_POP11 := i.NUM_POP11]
-    data[population, NUM_POP21 := i.NUM_POP21]
+    data[population, Value_population_11 := i.NUM_POP11]
+    data[population, Value_population_21:= i.NUM_POP21]
     setkeyv(data, okey)
     setnames(data,
              new = c(element11Num, element21Num),
