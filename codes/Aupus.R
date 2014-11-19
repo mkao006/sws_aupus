@@ -42,14 +42,13 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
                           element21Num = "Value_measuredElementFS_21",
                           data = aupusFinalData)
 
-
     ## Element 31
-    replaced31Index =
-        calculateEle31(element31Num = "Value_measuredElementFS_31",
-                       element31Symb = "flagFaostat_measuredElementFS_31",
-                       inputNum = inputNum,
-                       itemTypeCol = itemTypeCol,
-                       data = aupusFinalData)
+    ## replaced31Index =
+    ##     calculateEle31(element31Num = "Value_measuredElementFS_31",
+    ##                    element31Symb = "flagFaostat_measuredElementFS_31",
+    ##                    inputNum = inputNum,
+    ##                    itemTypeCol = itemTypeCol,
+    ##                    data = aupusFinalData)
     ## compareFunction(replaced31Index[[1]], 31)
     ## compareFunction(replaced31Index[[2]], 31)
 
@@ -104,13 +103,13 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
 
 
     ## Element 66
-    replaced66Index =
-        calculateEle66(element41Num = "Value_measuredElementFS_41",
-                       element61Num = "Value_measuredElementFS_61",
-                       element66Num = "Value_measuredElementFS_66",
-                       element66Symb = "flagFaostat_measuredElementFS_66",
-                       shares = shareNum, itemTypeCol = itemTypeCol,
-                       data = aupusFinalData, shareData = shareData)
+    ## replaced66Index =
+    ##     calculateEle66(element41Num = "Value_measuredElementFS_41",
+    ##                    element61Num = "Value_measuredElementFS_61",
+    ##                    element66Num = "Value_measuredElementFS_66",
+    ##                    element66Symb = "flagFaostat_measuredElementFS_66",
+    ##                    shares = shareNum, itemTypeCol = itemTypeCol,
+    ##                    data = aupusFinalData, shareData = shareData)
     ## compareFunction(replaced66Index, 66)
 
     ## Element71
@@ -146,12 +145,12 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
 
 
     ## Element 96
-    calculateEle96(element41Num = "Value_measuredElementFS_41",
-                   element91Num = "Value_measuredElementFS_91",
-                   element96Num = "Value_measuredElementFS_96",
-                   element96Symb = "flagFaostat_measuredElementFS_96",
-                   shares = shareNum, itemTypeCol = itemTypeCol,
-                   data = aupusFinalData, shareData = shareData)
+    ## calculateEle96(element41Num = "Value_measuredElementFS_41",
+    ##                element91Num = "Value_measuredElementFS_91",
+    ##                element96Num = "Value_measuredElementFS_96",
+    ##                element96Symb = "flagFaostat_measuredElementFS_96",
+    ##                shares = shareNum, itemTypeCol = itemTypeCol,
+    ##                data = aupusFinalData, shareData = shareData)
 
 
     ## Calculate total supply
@@ -231,7 +230,7 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
         calculateEle144(element144Num = "Value_measuredElementFS_144",
                         element144Symb = "flagFaostat_measuredElementFS_144",
                         element141Num = "Value_measuredElementFS_141",
-                        population11Num = "NUM_POP11",
+                        population11Num = "Value_population_11",
                         itemTypeCol = itemTypeCol,
                         data = aupusFinalData)
 
@@ -285,7 +284,7 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
         calculateEle174(element174Num = "Value_measuredElementFS_174",
                         element174Symb = "flagFaostat_measuredElementFS_174",
                         element171Num = "Value_measuredElementFS_171",
-                        population11Num = "NUM_POP11",
+                        population11Num = "Value_population_11",
                         data = aupusFinalData)
 
     ## compareFunction(replaced174Index, 174)
@@ -307,8 +306,8 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
     calculateEle264(element264Num = "Value_measuredElementFS_264",
                     element264Symb = "flagFaostat_measuredElementFS_264",
                     element261Num = "Value_measuredElementFS_261",
-                    population11 = "NUM_POP11",
-                    population21 = "NUM_POP21",
+                    population11 = "Value_population_11",
+                    population21 = "Value_population_21",
                     data = aupusFinalData)
 
     ## Element 271
@@ -322,8 +321,8 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
     calculateEle274(element274Num = "Value_measuredElementFS_274",
                     element274Symb = "flagFaostat_measuredElementFS_274",
                     element261Num = "Value_measuredElementFS_261",
-                    population11 = "NUM_POP11",
-                    population21 = "NUM_POP21", data = aupusFinalData)
+                    population11 = "Value_population_11",
+                    population21 = "Value_population_21", data = aupusFinalData)
 
     ## Element 281
     calculateEle281(element281Num = "Value_measuredElementFS_281",
@@ -336,8 +335,8 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
     calculateEle284(element284Num = "Value_measuredElementFS_284",
                     element284Symb = "flagFaostat_measuredElementFS_284",
                     element261Num = "Value_measuredElementFS_261",
-                    population11 = "NUM_POP11",
-                    population21 = "NUM_POP21",
+                    population11 = "Value_population_11",
+                    population21 = "Value_population_21",
                     data = aupusFinalData)
 
 
