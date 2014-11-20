@@ -17,7 +17,7 @@ getPopulationData = function(database = c("new", "old"), param, conn){
             paste0("SELECT *
                 FROM tsv_ics_work_yr
                 WHERE area =", countryCode,
-                AND item = '1')
+                "AND item = '1'")
         aupus =
             data.table(dbGetQuery(conn = conn, aupusQuery))
         meltedAupus =
