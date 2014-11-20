@@ -9,7 +9,7 @@
 ##' @export
 ##' 
 
-findProcessingLevel = function(edgeData, from, to, plot = FALSE){
+findProcessingLevel = function(edgeData, from, to, plot = FALSE, param){
     e = edgeData[, c(from, to), with = FALSE]
     v = unique(unlist(aupusEdges[, c(from, to), with = FALSE]))
     processingGraph = graph.data.frame(d = e, vertices = v, directed = TRUE)
@@ -27,4 +27,9 @@ findProcessingLevel = function(edgeData, from, to, plot = FALSE){
     finalLevels = apply(processingLevel, 1,
         FUN = function(x) max(x[is.finite(x)], na.rm = TRUE))
 
+    finalLevels.dt = data.table(names(finalLevels), finalLevels)
+    setnames(finalLevels.dt,
+             old = colnames(finalLevels.dt),
+             new = c(param$keyNames$itemName, "processingLevel"))
+    finalLevels.dt[order(processingLevel), ]
 }
