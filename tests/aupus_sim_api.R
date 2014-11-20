@@ -202,6 +202,11 @@ checkShareUnity = function(shareData, param){
 
 checkShareUnity(shareDataOld, param)
 
+
+test = by(aupusData, aupusData$timePointYearsSP, buildEdges, )
+
+
+
 aupus2005 = aupusData[timePointYearsSP == 2005, ]
 share2005 = shareDataOld[timePointYearsSP == 2005, ]
 input2005 = inputData[timePointYearsSP == 2005, ]
@@ -249,39 +254,103 @@ aupusNodes[, processingLevel :=
 
 
 
-             
-    
-             
+## This is a temporaryf solution for converting the population data
+## assuming we have used getPopulation
+library(faoswsAupus)
+library(faoswsUtil)
+library(data.table)
+library(igraph)
 
-for(i in range(aupusNodes$processingLevel)){
-    ## And also the population
+load(".RData")
+populationData =
+    aupusData[measuredItemFS == '1', c(key(aupusData),
+                  "Value_measuredElementFS_11", "Value_measuredElementFS_21"),
+              with = FALSE]
+setkeyv(populationData, c("geographicAreaFS", "timePointYearsSP"))
+## NOTE (Michael): Looks like the key eliminates the duplicates
+populationData[, measuredItemFS := NULL]
+aupusData = aupusData[measuredItemFS != '1', ]
 
-    ## NOTE (Michael): Maybe work on the whole aupus node, but the
-    ##                 calculation of all other element should be done
-    ##                 at processing level. So the updateEdges and
-    ##                 calculation of element 66 and 96 should be part
-    ##                 of the Aupus.
-    
-    ## Step (1): Run the aupus module at the primary level on the nodes
-    Aupus(aupusFinalData = aupusNodes[processingLevel == i, ],
-          shareData = share2005,
-          itemTypeCol = "measuredItemTypeFS",
-          balanceElementNum = "balanceElement")
-    
-    ## Step (2): Update the edges (extraction rate and input from processing)
-    updateEdges(nodes = aupusNodes[processingLevel == i, ],
-                edges = aupusEdges,
-                element41Num = "Value_measuredElementFS_41",
-                element131Num = "Value_measuredElementFS_131",
-                param = param)
 
-    ## Step (3): Propagate input from processing to the node
-    updateInputFromProcessing(nodes = aupusNodes,
-                              edges = aupusEdges,
-                              param = param,
-                              element31Num = "Value_measuredElementFS_31")    
-}
+okey = key(aupusData)
+setkeyv(aupusData, key(populationData))
+aupusData[populationData, `:=`(c("Value_population_11", "Value_population_21"),
+                               list(i.Value_measuredElementFS_11,
+                                    i.Value_measuredElementFS_21))]
+setkeyv(aupusData, okey)
 
+## This is the temporary solution before we update the share data
+load("share.RData")
+setnames(share, colnames(share), colnames(shareData))
+share[, `:=`(c("measuredItemParentFS", "measuredItemChildFS",
+               "geographicAreaFS"),
+             list(as.character(measuredItemParentFS),
+                  as.character(measuredItemChildFS),
+                  as.character(geographicAreaFS)))]
+shareDataOld = copy(share)
+setkeyv(shareDataOld, c("geographicAreaFS", "measuredItemParentFS",
+                        "measuredItemChildFS", "timePointYearsSP"))
+
+
+system.time({
+    aupusEdges =
+        buildEdges(aupusData = aupusData,
+                   extractionRate = "Value_measuredElementFS_41",
+                   shareData = shareDataOld,
+                   inputData = inputData,
+                   param = param)
+
+
+    aupusNodes =
+        buildNodes(aupusData = aupusData, ratioData = ratioData,
+                   balanceElementData = balanceElementData,
+                   itemInfoData = itemInfoData,
+                   balanceElementNum = "balanceElement")
+
+    ## findProcessingLevel(aupusEdges,
+    ##                     from = "measuredItemParentFS",
+    ##                     to = "measuredItemChildFS",
+    ##                     param = param)
+
+    processingLevelData =
+        aupusEdges[, findProcessingLevel(.SD, from = "measuredItemParentFS",
+                                         to = "measuredItemChildFS",
+                                         param = param),
+                   by = c("geographicAreaFS", "timePointYearsSP")]
+    setkeyv(processingLevelData, key(aupusNodes))
+
+    aupusNodes[processingLevelData, processingLevel := i.processingLevel]
+    aupusNodes[is.na(processingLevel), processingLevel := as.numeric(0)]
+
+    for(i in range(aupusNodes$processingLevel)){
+        ## And also the population
+
+        ## NOTE (Michael): Maybe work on the whole aupus node, but the
+        ##                 calculation of all other element should be done
+        ##                 at processing level. So the updateEdges and
+        ##                 calculation of element 66 and 96 should be part
+        ##                 of the Aupus.
+        
+        ## Step (1): Run the aupus module at the primary level on the nodes
+        Aupus(aupusFinalData = aupusNodes[processingLevel == i, ],
+              shareData = share2005,
+              itemTypeCol = "measuredItemTypeFS",
+              balanceElementNum = "balanceElement")
+        
+        ## Step (2): Update the edges (extraction rate and input from processing)
+        updateEdges(nodes = aupusNodes[processingLevel == i, ],
+                    edges = aupusEdges,
+                    element41Num = "Value_measuredElementFS_41",
+                    element131Num = "Value_measuredElementFS_131",
+                    param = param)
+
+        ## Step (3): Propagate input from processing to the node
+        updateInputFromProcessing(nodes = aupusNodes,
+                                  edges = aupusEdges,
+                                  param = param,
+                                  element31Num = "Value_measuredElementFS_31")    
+    }
+})
 
 
 
@@ -307,3 +376,8 @@ for(i in range(aupusNodes$processingLevel)){
 ## NOTE (Michael): The propagation of element 66 and 96 should be dont
 ##                 within Aupus after the update of element 41 and
 ##                 before the calculation of total supply.
+##
+## NOTE (Michael): The current implementation does not perform element
+##                 66 and 96 after the element 41 has been updated,
+##                 thus we can run element 69 and 99 before the Aupus
+##                 module.
