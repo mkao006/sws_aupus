@@ -46,15 +46,22 @@ calculateBalance = function(supply, utilization, element161Num,
          BALANCE := 0]
 
     ## Reverse the value if balance element is 71.
-    data[balanceElement == 71, BALANCE := -BALANCE]
+    data[Value_balanceElement == 71, BALANCE := -BALANCE]
 
-    data[!is.na(balanceElement),
-         `:=`(c(paste0(param$keyNames$valuePrefix, .BY[[1]]),
-                paste0(param$keyNames$flagPrefix, .BY[[1]]),
+    data[!is.na(Value_balanceElement),
+         `:=`(c(with(param$keyNames,
+                     paste0(valuePrefix, elementName, "_", .BY[[1]])),
+                with(param$keyNames,
+                     paste0(flagPrefix, elementName, "_", .BY[[1]])),
+                ## paste0(param$keyNames$flagPrefix, .BY[[1]]),
                 "element181Num", "element181Symb", "replaced"),
               fillBalance("BALANCE",
-                          paste0(param$keyNames$valuePrefix, .BY[[1]]),
-                          paste0(param$keyNames$flagPrefix, .BY[[1]]),
+                          with(param$keyNames,
+                               paste0(valuePrefix, elementName, "_", .BY[[1]])),
+                          with(param$keyNames,
+                               paste0(flagPrefix, elementName, "_", .BY[[1]])),
+                          ## paste0(param$keyNames$valuePrefix, .BY[[1]]),
+                          ## paste0(param$keyNames$flagPrefix, .BY[[1]]),
                           "element181Num", "element181Symb", .SD)),
          by = "Value_balanceElement"]
     replaceIndex1 = which(unlist(data[, replaced]))
