@@ -39,15 +39,20 @@ getAupusParameter = function(countryCode, assignGlobal = TRUE){
     ## Set key names
     ## --------------------------------------------------------------
     keyNames =
-        list(countryName = "geographicAreaFS",
+        list(areaName = "geographicAreaFS",
              itemName = "measuredItemFS",
              itemParentName = "measuredItemParentFS",
              itemChildName = "measuredItemChildFS",
+             itemTypeName = "measuredItemTypeFS",
              elementName = "measuredElementFS",
+             extractionRateName = "Value_extractionRate",
+             balanceElementName = "Value_balanceElement",
+             inputName = "Value_input",
+             shareName = "Value_share",
              yearName = "timePointYearsSP",
-             valuePrefix = "Value_measuredElementFS_",
-             flagPrefix = "flagFaostat_measuredElementFS_",
-             ratioPrefix = "Ratio_measuredElementFS_")
+             valuePrefix = "Value_",
+             flagPrefix = "flagFaostat_",
+             ratioPrefix = "Ratio_")
         
     tmp = list(countryCode = countryCode,
         itemCode = allItemCodes, elementCode = allElementCodes,
