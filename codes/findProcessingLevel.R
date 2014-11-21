@@ -11,7 +11,7 @@
 
 findProcessingLevel = function(edgeData, from, to, plot = FALSE){
     e = edgeData[, c(from, to), with = FALSE]
-    v = unique(unlist(aupusEdges[, c(from, to), with = FALSE]))
+    v = unique(unlist(edgeData[, c(from, to), with = FALSE]))
     processingGraph = graph.data.frame(d = e, vertices = v, directed = TRUE)
     if(plot == TRUE)
             plot(processingGraph, vertex.size = 6, edge.arrow.size = 0.5)    
