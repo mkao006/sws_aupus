@@ -292,69 +292,107 @@ setkeyv(shareDataOld, c("geographicAreaFS", "measuredItemParentFS",
                         "measuredItemChildFS", "timePointYearsSP"))
 
 
-system.time({
-    aupusEdges =
-        buildEdges(aupusData = aupusData,
-                   extractionRate = "Value_measuredElementFS_41",
+
+extractionRateData =
+    aupusData[, c(key(aupusData), "Value_measuredElementFS_41"), with = FALSE]
+setnames(x = extractionRateData,
+         old = c("measuredItemFS", "Value_measuredElementFS_41"),
+         new = c("measuredItemChildFS", "Value_extraction"))
+setkeyv(extractionRateData,
+        cols = c("geographicAreaFS", "measuredItemChildFS", "timePointYearsSP"))
+
+
+## These are temporary hacks for names before updated the data
+param$keyNames = list(areaName = "geographicAreaFS",
+             itemName = "measuredItemFS",
+             itemParentName = "measuredItemParentFS",
+             itemChildName = "measuredItemChildFS",
+             itemTypeName = "measuredItemTypeFS",
+             elementName = "measuredElementFS",
+             extractionRateName = "Value_extractionRate",
+             balanceElementName = "Value_balanceElement",
+             inputName = "Value_input",
+             shareName = "Value_share",
+             yearName = "timePointYearsSP",
+             valuePrefix = "Value_",
+             flagPrefix = "flagFaostat_",
+             ratioPrefix = "Ratio_")
+
+lapply(balanceElementData, function(x)
+    setnames(x, old = "balanceElement",
+             new = param$keyNames$balanceElementName))
+
+
+
+propagateSUANetwork = function(extractionRateData, shareData, inputData,
+    ratioData, balanceElementData, itemInfoData, from, to, FUN, ...){
+    FUN = match.fun(FUN)
+
+    edges =
+        buildEdges(extractionRateData = extractionRateData,
                    shareData = shareDataOld,
-                   inputData = inputData,
-                   param = param)
+                   inputData = inputData)
 
-
-    aupusNodes =
+    nodes =
         buildNodes(aupusData = aupusData, ratioData = ratioData,
                    balanceElementData = balanceElementData,
                    itemInfoData = itemInfoData,
-                   balanceElementNum = "balanceElement")
-
-    ## findProcessingLevel(aupusEdges,
-    ##                     from = "measuredItemParentFS",
-    ##                     to = "measuredItemChildFS",
-    ##                     param = param)
+                   balanceElementNum = param$keyNames$balanceElementName)
 
     processingLevelData =
-        aupusEdges[, findProcessingLevel(.SD, from = "measuredItemParentFS",
-                                         to = "measuredItemChildFS",
-                                         param = param),
-                   by = c("geographicAreaFS", "timePointYearsSP")]
-    setkeyv(processingLevelData, key(aupusNodes))
+        edges[, findProcessingLevel(.SD, from = from, to = to),
+                   by = c(param$keyNames$areaName, param$keyNames$yearName)]
+    setkeyv(processingLevelData, key(nodes))
 
-    aupusNodes[processingLevelData, processingLevel := i.processingLevel]
-    aupusNodes[is.na(processingLevel), processingLevel := as.numeric(0)]
+    nodes[processingLevelData, processingLevel := i.processingLevel]
+    nodes[is.na(processingLevel), processingLevel := as.numeric(0)]
 
-    for(i in range(aupusNodes$processingLevel)){
-        ## And also the population
-
-        ## NOTE (Michael): Maybe work on the whole aupus node, but the
-        ##                 calculation of all other element should be done
-        ##                 at processing level. So the updateEdges and
-        ##                 calculation of element 66 and 96 should be part
-        ##                 of the Aupus.
+    for(i in range(nodes$processingLevel)){
         
-        ## Step (1): Run the aupus module at the primary level on the nodes
-        Aupus(aupusFinalData = aupusNodes[processingLevel == i, ],
-              shareData = share2005,
-              itemTypeCol = "measuredItemTypeFS",
-              balanceElementNum = "balanceElement")
+        ## Run the function, can be AUPUS or standardization
+        FUN(nodes = nodes[processingLevel == i, ], edges = edges, ...)
         
-        ## Step (2): Update the edges (extraction rate and input from processing)
-        updateEdges(nodes = aupusNodes[processingLevel == i, ],
-                    edges = aupusEdges,
-                    element41Num = "Value_measuredElementFS_41",
-                    element131Num = "Value_measuredElementFS_131",
-                    param = param)
-
-        ## Step (3): Propagate input from processing to the node
-        updateInputFromProcessing(nodes = aupusNodes,
-                                  edges = aupusEdges,
-                                  param = param,
-                                  element31Num = "Value_measuredElementFS_31")    
     }
+    list(nodes, edges)
+}
+
+
+foo = function(nodes, edges, ...){
+
+
+    ## Step (1): Run the aupus module at the primary level on the nodes
+    Aupus(aupusFinalData = nodes,
+          itemTypeCol = param$keyNames$itemTypeName,
+          balanceElementNum = param$keyNames$balanceElementName)
+
+    ## Step (2): Update the edges (extraction rate and input from processing)
+    updateEdges(nodes = nodes, 
+                edges = edges,
+                element41Num = with(param$keyNames,
+                    paste0(valuePrefix, elementName, "_41")),
+                element131Num = with(param$keyNames,
+                    paste0(valuePrefix, elementName, "_131")))
+
+    ## Step (3): Propagate input from processing to the node
+    updateInputFromProcessing(nodes = nodes,
+                              edges = edges,
+                              element31Num = "Value_measuredElementFS_31")
+}
+
+
+system.time({
+    final =
+        propagateSUANetwork(extractionRateData = extractionRateData,
+                            shareData = shareDataOld,
+                            inputData = inputData,
+                            ratioData = ratioData,
+                            balanceElementData = balanceElementData,
+                            itemInfoData = itemInfoData,
+                            from = param$keyNames$itemParentName,
+                            to = param$keyNames$itemChildName, FUN = foo)
 })
 
 
-
-    
 ## NOTE (Michael): Looks like the tree is coded in the shares table,
 ##                 and the collapseShare or getShare function is
 ##                 losing some of the information.
@@ -381,3 +419,9 @@ system.time({
 ##                 66 and 96 after the element 41 has been updated,
 ##                 thus we can run element 69 and 99 before the Aupus
 ##                 module.
+##
+## NOTE (Michael): Should the functions for node and edge building be
+##                 specific or generic?
+##
+## NOTE (Michael): Set names for balance element, extraction rate etc
+##                 in the parameter.
