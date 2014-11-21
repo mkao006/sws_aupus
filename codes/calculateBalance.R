@@ -25,7 +25,7 @@
 
 calculateBalance = function(supply, utilization, element161Num,
     element171Num, element181Num, element181Symb, balanceElement,
-    itemTypeCol, param, data){
+    itemTypeCol, data){
     ## TODO (Michael): Need to check the replace column of this
     ##                 function.
     setnames(data,
@@ -33,7 +33,7 @@ calculateBalance = function(supply, utilization, element161Num,
                      element181Num, element181Symb, balanceElement),
              new = c("supply", "utilization", "element161Num",
                  "element171Num", "element181Num", "element181Symb",
-                 "balanceElement"))
+                 "Value_balanceElement"))
     ## Calculate the temporary value for balance
     data[!data[[itemTypeCol]] %in%
          c(04, 15, 16, 20, 21, 25, 32, 33, 37, 49, 50, 55, 56, 57),
@@ -56,7 +56,7 @@ calculateBalance = function(supply, utilization, element161Num,
                           paste0(param$keyNames$valuePrefix, .BY[[1]]),
                           paste0(param$keyNames$flagPrefix, .BY[[1]]),
                           "element181Num", "element181Symb", .SD)),
-         by = "balanceElement"]
+         by = "Value_balanceElement"]
     replaceIndex1 = which(unlist(data[, replaced]))
     ## data[, replaced := NULL]
     setnames(data,
@@ -64,6 +64,6 @@ calculateBalance = function(supply, utilization, element161Num,
                      element181Num, element181Symb, balanceElement),
              old = c("supply", "utilization", "element161Num",
                  "element171Num", "element181Num", "element181Symb",
-                 "balanceElement"))    
+                 "Value_balanceElement"))    
     replaceIndex1
 }

@@ -51,7 +51,7 @@ getAupusParameter = function(countryCode, assignGlobal = TRUE){
         
     tmp = list(countryCode = countryCode,
         itemCode = allItemCodes, elementCode = allElementCodes,
-        year = allYearCodes, keyNames = keyNames)
+        year = allYearCodes)
     if(assignGlobal){
         lapply(names(tmp), FUN = function(x)
             assign(x, tmp[[x]], envir = .GlobalEnv))

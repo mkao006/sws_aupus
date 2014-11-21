@@ -8,7 +8,6 @@
 ##' getBalanceElemetData.
 ##' @param shareData The data obtained from the getShareData
 ##' @param inputData the data obtained from getInputData.
-##' @param param The param set by getAupusParam
 ##' @param inputNum The column corresponding to input value in the
 ##' inputData.
 ##' @param balanceNum The column corresponding to balance element in
@@ -20,8 +19,8 @@
 ##' 
 
 mergeAll = function(aupusData, itemInfoData, balanceElementData,
-    shareData, inputData, param, inputNum = "Value_input",
-    balanceElementNum = "balanceElement", shares = "Value_share",
+    shareData, inputData, inputNum = "Value_input",
+    balanceElementNum = "Value_balanceElement", shares = "Value_share",
     element131Num){
     ## updatedInput =
     ##     updateInputFromProcess(aupusData = aupusData,

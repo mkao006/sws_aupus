@@ -7,7 +7,7 @@
 ##' @export
 ##' 
 
-collapseShare = function(shareData, shares, param, verbose = FALSE){
+collapseShare = function(shareData, shares, verbose = FALSE){
     uniquePath =
         unique.data.frame(Reduce(rbind,
                                  lapply(shareData, FUN = function(x)

@@ -1,35 +1,33 @@
 ##' Function to obtain all required data for the AUPUS module
 ##'
-##' @param param The parameter obtained from the getAupusParam
-##' function.
 ##' @param assignGlobal Whether the data should be assigned globally
 ##' or returned as a list. Default to TRUE, and assigned globally.
 ##' @export
 
-getAupusDataset = function(param, assignGlobal = TRUE){
+getAupusDataset = function(assignGlobal = TRUE){
     ## Get aupus data
     ## ----------------------------------------------------------------
-    aupusData = getAupusData(param = param, database = "new")
+    aupusData = getAupusData(database = "new")
 
 
     ## Get input from processing data
     ## ----------------------------------------------------------------
 
-    inputData = getInputFromProcessData(database = "new", param = param)
+    inputData = getInputFromProcessData(database = "new")
 
     ## Get ratio data
     ## ----------------------------------------------------------------
 
-    ratioData = getRatioData(database = "new", param = param)
+    ratioData = getRatioData(database = "new")
 
     ## Get share data
     ## ----------------------------------------------------------------
 
     shareData =
         collapseShare(
-            shareData = getShareData(database = "new", param = param),
-            shares = "Value_share", param = param, verbose = FALSE)
-            
+            shareData = getShareData(database = "new"),
+            shares = "Value_share", verbose = FALSE)
+    
 
     ## Get balancing item
     ##
@@ -37,7 +35,7 @@ getAupusDataset = function(param, assignGlobal = TRUE){
     ## ----------------------------------------------------------------
 
     balanceElementData  =
-        getBalanceElementData(database = "new", param = param)
+        getBalanceElementData(database = "new")
 
     ## Get item information table
     ## ---------------------------------------------------------------

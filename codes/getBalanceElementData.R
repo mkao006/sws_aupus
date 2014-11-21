@@ -3,14 +3,13 @@
 ##'
 ##' @param database Whether to use the new or the old statistical
 ##' working system.
-##' @param param The parameter file from getAupusParam
 ##' @param conn The RJDBS connection to the old working system.
 ##' @export
 ##' 
 
 
 
-getBalanceElementData = function(database = c("new", "old"), param,
+getBalanceElementData = function(database = c("new", "old"), 
     conn){
     database = match.arg(database)
     if(database == "old"){
@@ -67,7 +66,7 @@ getBalanceElementData = function(database = c("new", "old"), param,
                     pivoting = balanceElementPivot)
         setnames(fullBalanceElement,
                  old = "measuredElementFS",
-                 new = "balanceElement")
+                 new = "Value_balanceElement")
         balanceElement = fullBalanceElement[flagRatio == "Y",
             list(geographicAreaFS, measuredItemFS, timePointYearsSP,
                  balanceElement)]

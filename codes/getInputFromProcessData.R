@@ -3,13 +3,12 @@
 ##'
 ##' @param database Whether to use the new or the old statistical
 ##' working system.
-##' @param param The parameter file from getAupusParam
 ##' @param conn The RJDBS connection to the old working system.
 ##' @export
 ##' 
 
 
-getInputFromProcessData = function(database = c("new", "old"), param,
+getInputFromProcessData = function(database = c("new", "old"), 
     conn){
     database = match.arg(database)
     if(database == "old"){

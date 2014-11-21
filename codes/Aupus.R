@@ -390,7 +390,6 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
                      element181Symb = "flagFaostat_measuredElementFS_181",
                      balanceElement = balanceElementNum,
                      itemTypeCol = itemTypeCol,
-                     param = param,
                      data = aupusFinalData)
     ## compareFunction(1, "BALANCE")
 }

@@ -2,13 +2,12 @@
 ##'
 ##' @param database Whether to use the new or the old statistical
 ##' working system.
-##' @param param The parameter file from getAupusParam
 ##' @param conn The RJDBS connection to the old working system.
 ##' @export
 ##' 
 
 
-getRatioData = function(database = c("new", "old"), param, conn){
+getRatioData = function(database = c("new", "old"), conn){
     database = match.arg(database)
     if(database == "old"){
         ratioQuery =

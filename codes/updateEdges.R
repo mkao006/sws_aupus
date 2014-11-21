@@ -9,7 +9,7 @@
 ##'
 ##' @export
 
-updateEdges = function(nodes, edges, element41Num, element131Num, param){
+updateEdges = function(nodes, edges, element41Num, element131Num){
     ## Update input
     ##
     ## Element 131 is for parent, while input value is child

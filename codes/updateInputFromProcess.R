@@ -2,12 +2,11 @@
 ##'
 ##' @param nodes The nodes data returned by the function buildNodes
 ##' @param edges The edge data returned by the function buildEdges
-##' @param param The parameters from the function getAupusParameter
 ##' @param element131Num The column corresponding to element 131.
 ##' @export
 ##' 
 
-updateInputFromProcessing = function(nodes, edges, param, element31Num){
+updateInputFromProcessing = function(nodes, edges, element31Num){
     setnames(nodes, old = element31Num, new = "element31Num")
     aggregateKey = key(edges)
     aggregateKey = aggregateKey[aggregateKey != param$keyNames$itemParentName]

@@ -2,7 +2,6 @@
 ##'
 ##' @param database Whether to use the new or the old statistical
 ##' working system.
-##' @param param The parameter file from getAupusParam
 ##' @param conn The RJDBS connection to the old working system.
 ##' @export
 ##' 
@@ -10,7 +9,7 @@
 
 ## TODO (Michael): Apply calculation of 11 and 21 here.
 
-getPopulationData = function(database = c("new", "old"), param, conn){
+getPopulationData = function(database = c("new", "old"), conn){
     database = match.arg(database)
     if(database == "old"){
         aupusQuery =
