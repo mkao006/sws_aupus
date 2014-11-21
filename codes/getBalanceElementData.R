@@ -66,7 +66,7 @@ getBalanceElementData = function(database = c("new", "old"),
                     pivoting = balanceElementPivot)
         setnames(fullBalanceElement,
                  old = "measuredElementFS",
-                 new = "Value_balanceElement")
+                 new = param$keyNames$balanceElementName)
         balanceElement = fullBalanceElement[flagRatio == "Y",
             list(geographicAreaFS, measuredItemFS, timePointYearsSP,
                  balanceElement)]
