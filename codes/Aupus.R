@@ -14,15 +14,15 @@
 ##' @export
 ##' 
 
-Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
-    inputNum, balanceElementNum){
+Aupus = function(aupusFinalData, itemTypeCol, balanceElementNum){
     ## Element 11 - check the symbol, the value seems correct
     replaced11Index =
         calculateEle11(element11Num = "Value_measuredElementFS_11",
                        element11Symb = "flagFaostat_measuredElementFS_11",
                        element161Num = "Value_measuredElementFS_161",
                        element161Symb = "flagFaostat_measuredElementFS_161",
-                       itemTypeCol = itemTypeCol, data = aupusFinalData)
+                       itemTypeCol = param$keyNames$itemTypeName,
+                       data = aupusFinalData)
     ## compareFunction(replaced11Index, 11)
 
     ## Element 21
@@ -32,7 +32,7 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
                        element11Num = "Value_measuredElementFS_11",
                        element111Num = "Value_measuredElementFS_111",
                        ratio171Num = "Ratio_measuredElementFS_171",
-                       itemTypeCol = itemTypeCol,
+                       itemTypeCol = param$keyNames$itemTypeName,
                        data = aupusFinalData)
     ## compareFunction(replaced21Index[[1]], 21)
     ## compareFunction(replaced21Index[[2]], 21)
@@ -47,7 +47,7 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
     ##     calculateEle31(element31Num = "Value_measuredElementFS_31",
     ##                    element31Symb = "flagFaostat_measuredElementFS_31",
     ##                    inputNum = inputNum,
-    ##                    itemTypeCol = itemTypeCol,
+    ##                    itemTypeCol = param$keyNames$itemTypeName,
     ##                    data = aupusFinalData)
     ## compareFunction(replaced31Index[[1]], 31)
     ## compareFunction(replaced31Index[[2]], 31)
@@ -67,7 +67,7 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
         calculateEle51(element51Num = "Value_measuredElementFS_51",
                        element51Symb = "flagFaostat_measuredElementFS_51",
                        element58Num = "Value_measuredElementFS_58",
-                       itemTypeCol = itemTypeCol,
+                       itemTypeCol = param$keyNames$itemTypeName,
                        data = aupusFinalData)
     ## compareFunction(replaced51Index, 51)
 
@@ -81,13 +81,13 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
                            element41Symb = "flagFaostat_measuredElementFS_41",
                            element51Num = "Value_measuredElementFS_51",
                            element51Symb = "flagFaostat_measuredElementFS_51",
-                           itemTypeCol = itemTypeCol,
+                           itemTypeCol = param$keyNames$itemTypeName,
                            data = aupusFinalData)
 
 
     ## Element 58
     ## calculateEle58(element58Num = "Value_measuredElementFS_58", element58Symb = "flagFaostat_measuredElementFS_58",
-    ##                itemTypeCol = itemTypeCol, data = aupusFinalData)
+    ##                itemTypeCol = param$keyNames$itemTypeName, data = aupusFinalData)
 
 
 
@@ -108,7 +108,7 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
     ##                    element61Num = "Value_measuredElementFS_61",
     ##                    element66Num = "Value_measuredElementFS_66",
     ##                    element66Symb = "flagFaostat_measuredElementFS_66",
-    ##                    shares = shareNum, itemTypeCol = itemTypeCol,
+    ##                    shares = shareNum, itemTypeCol = param$keyNames$itemTypeName,
     ##                    data = aupusFinalData, shareData = shareData)
     ## compareFunction(replaced66Index, 66)
 
@@ -125,7 +125,7 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
                        element141Num = "Value_measuredElementFS_141",
                        element151Num = "Value_measuredElementFS_151",
                        element161Num = "Value_measuredElementFS_161",
-                       itemTypeCol = itemTypeCol,
+                       itemTypeCol = param$keyNames$itemTypeName,
                        data = aupusFinalData)
     ## compareFunction(replaced71Index[[1]], 71)
     ## compareFunction(replaced71Index[[2]], 71)
@@ -138,7 +138,7 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
                        element92Num = "Value_measuredElementFS_92",
                        element93Num = "Value_measuredElementFS_93",
                        element93Symb = "flagFaostat_measuredElementFS_93",
-                       itemTypeCol = itemTypeCol,
+                       itemTypeCol = param$keyNames$itemTypeName,
                        data = aupusFinalData)
     ## compareFunction(replaced93Index[[1]], 93)
     ## compareFunction(replaced93Index[[2]], 93)
@@ -149,7 +149,7 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
     ##                element91Num = "Value_measuredElementFS_91",
     ##                element96Num = "Value_measuredElementFS_96",
     ##                element96Symb = "flagFaostat_measuredElementFS_96",
-    ##                shares = shareNum, itemTypeCol = itemTypeCol,
+    ##                shares = shareNum, itemTypeCol = param$keyNames$itemTypeName,
     ##                data = aupusFinalData, shareData = shareData)
 
 
@@ -159,7 +159,7 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
                          element58Num = "Value_measuredElementFS_58",
                          element61Num = "Value_measuredElementFS_61",
                          element66Num = "Value_measuredElementFS_66",
-                         itemTypeCol = itemTypeCol,
+                         itemTypeCol = param$keyNames$itemTypeName,
                          data = aupusFinalData)
 
     ## Elemet 101
@@ -218,7 +218,7 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
                         element161Num = "Value_measuredElementFS_161",
                         ratio141Num = "Ratio_measuredElementFS_141",
                         stotal = "TOTAL_SUPPLY",
-                        itemTypeCol = itemTypeCol,
+                        itemTypeCol = param$keyNames$itemTypeName,
                         data = aupusFinalData)
 
     ## compareFunction(replaced141Index[[1]], 141)
@@ -231,7 +231,7 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
                         element144Symb = "flagFaostat_measuredElementFS_144",
                         element141Num = "Value_measuredElementFS_141",
                         population11Num = "Value_population_11",
-                        itemTypeCol = itemTypeCol,
+                        itemTypeCol = param$keyNames$itemTypeName,
                         data = aupusFinalData)
 
     ## compareFunction(replaced144Index[[1]], 144)
@@ -257,7 +257,7 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
                         element161Symb = "flagFaostat_measuredElementFS_161",
                         element11Num = "Value_measuredElementFS_11",
                         element71Num = "Value_measuredElementFS_71",
-                        itemTypeCol = itemTypeCol,
+                        itemTypeCol = param$keyNames$itemTypeName,
                         data = aupusFinalData)
 
     ## compareFunction(replaced161Index, 161)
@@ -377,7 +377,7 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
                               element151Num = "Value_measuredElementFS_151",
                               element161Num = "Value_measuredElementFS_161",
                               element546Num = "Value_measuredElementFS_546",
-                              itemTypeCol = itemTypeCol,
+                              itemTypeCol = param$keyNames$itemTypeName,
                               data = aupusFinalData)
     ## compareFunction(1, "TOTAL_UTILIZATION")
     
@@ -388,8 +388,8 @@ Aupus = function(aupusFinalData, shareData, itemTypeCol, shareNum,
                      element171Num = "Value_measuredElementFS_171",
                      element181Num = "Value_measuredElementFS_181",
                      element181Symb = "flagFaostat_measuredElementFS_181",
-                     balanceElement = balanceElementNum,
-                     itemTypeCol = itemTypeCol,
+                     balanceElement = param$keyNames$balanceElementName,
+                     itemTypeCol = param$keyNames$itemTypeName,
                      data = aupusFinalData)
     ## compareFunction(1, "BALANCE")
 }
