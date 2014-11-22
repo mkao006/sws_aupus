@@ -393,6 +393,145 @@ system.time({
 })
 
 
+
+
+foo2 = function(extractionRateData, shareData, inputData,
+    ratioData, balanceElementData, itemInfoData, from, to, ...){
+
+    edges =
+        buildEdges(extractionRateData = extractionRateData,
+                   shareData = shareDataOld,
+                   inputData = inputData)
+
+    nodes =
+        buildNodes(aupusData = aupusData, ratioData = ratioData,
+                   balanceElementData = balanceElementData,
+                   itemInfoData = itemInfoData,
+                   balanceElementNum = param$keyNames$balanceElementName)
+
+    ## CHECK (Michael): Add in nodes that are contained in the edges
+    ##                  list but not found in the node frame. Check
+    ##                  why they are missing.
+
+    uniqueEdgeNodes =
+        unique(unlist(edges[, c(param$keyNames$itemParentName,
+                                param$keyNames$itemChildName), with = FALSE]))
+
+    missingNodes = uniqueEdgeNodes[!uniqueEdgeNodes %in%
+        nodes[[param$keyNames$itemName]]]
+
+    missingKeyTable =
+        data.table(expand.grid(unlist(unique(nodes[, c(param$keyNames$areaName),
+                                                   with = FALSE])),
+                               unlist(unique(nodes[, c(param$keyNames$yearName),
+                                                   with = FALSE])),
+                               missingNodes, stringsAsFactors = FALSE))
+    with(param$keyNames,
+         setnames(missingKeyTable, c(areaName, yearName, itemName)))
+    nodes = rbind(nodes, missingKeyTable, fill = TRUE)
+    setkeyv(nodes, key(aupusData))
+    
+    
+    processingLevelData =
+        edges[, findProcessingLevel(.SD, from = from, to = to),
+                   by = c(param$keyNames$areaName, param$keyNames$yearName)]
+    setkeyv(processingLevelData, key(nodes))
+
+    nodes[processingLevelData, processingLevel := i.processingLevel]
+    nodes[is.na(processingLevel), processingLevel := as.numeric(0)]
+    list(nodes = nodes, edges = edges)
+}
+
+
+check = foo2(extractionRateData = extractionRateData,
+    shareData = shareDataOld,
+    inputData = inputData,
+    ratioData = ratioData,
+    balanceElementData = balanceElementData,
+    itemInfoData = itemInfoData,
+    from = param$keyNames$itemParentName,
+    to = param$keyNames$itemChildName)
+
+
+uniqueYears = unique(unique(check$nodes$timePointYearsSP),
+    unique(check$edges$timePointYearsSP))
+nodes.lst = split(check$nodes, uniqueYears)
+edges.lst = split(check$edges, uniqueYears)
+
+standardizeElement = c("Value_measuredElementFS_61", "Value_measuredElementFS_91")
+currentEdge = edges.lst[[1]]
+currentEdge[, geographicAreaFS := NULL]
+currentEdge[, timePointYearsSP := NULL]
+currentNode =
+    nodes.lst[[1]][, c("measuredItemFS", standardizeElement), with = FALSE]
+setnames(currentEdge, "measuredItemParentFS", "measuredItemFS")
+stnd.graph = graph.data.frame(d = currentEdge, vertices = currentNode)
+
+## Note (Michael): We will just standardize everything anyway.
+
+standardizeNode = function (graph, node, standardizeElement)
+{
+    outEdges = E(graph)[from(V(graph)[node])]
+    shareMatrix = get.adjacency(subgraph.edges(graph, outEdges), 
+        sparse = FALSE, attr = "Value_share")
+    rateMatrix = get.adjacency(subgraph.edges(graph, outEdges), 
+        sparse = FALSE, attr = "Value_extraction")
+    values = get.vertex.attribute(graph = graph, name = standardizeElement,
+        index = V(graph)[colnames(shareMatrix)])
+    ## values = V(graph)[colnames(shareMatrix)]$standardizeElement
+    reverseMatrix = t(shareMatrix)/t(rateMatrix)
+    reverseMatrix[is.na(reverseMatrix) | !is.finite(reverseMatrix)] = 0
+    standardized = reverseMatrix %*% matrix(values, nc = 1)
+
+    standardizedValues =
+        get.vertex.attribute(graph = graph, name = standardizeElement,
+                             index = V(graph)[rownames(standardized)]) +
+                                 standardized
+    set.vertex.attribute(graph = graph, name = standardizeElement,
+                         index = V(graph)[rownames(standardized)],
+                         value = standardizedValues)
+    ## V(graph)[rownames(standardized)]$standardizeElement =
+    ##     V(graph)[rownames(standardized)]$standardizeElement + standardized
+    intermediateValues = get.vertex.attribute(graph = graph,
+        name = standardizeElement, index = V(graph)[node])
+    names(intermediateValues) = node
+    graph = graph - vertices(node)
+    list(standardizedGraph = graph, intermediateValues = intermediateValues)
+}
+
+## NOTE (Michael): This only allows you to standardize one element,
+##                 think about how to standardize multiple elements
+system.time(
+    {
+        intermediateStandardization = c()
+        while (length(E(stnd.graph)) > 0) {
+            workingNode = names(which(degree(stnd.graph, mode = "in") == 
+                                          0 & degree(stnd.graph, mode = "out") > 0))
+            standardize = standardizeNode(graph = stnd.graph, 
+                node = workingNode,
+                standardizeElement = "Value_measuredElementFS_91")
+            stnd.graph = standardize$standardizedGraph
+            if (FALSE)
+                plot(stnd.graph, vertex.size = 3, edge.arrow.size = 0.5,
+                     vertex.label.cex = 0.5)
+            ## vertex.label = paste0(V(stnd.graph)$name, "\n(", 
+            ##     V(stnd.graph)$standardizeElement, ")"))
+            intermediateStandardization = c(intermediateStandardization, 
+                standardize$intermediateValues)
+        }
+
+        terminalValue = get.vertex.attribute(graph = stnd.graph,
+            name = "Value_measuredElementFS_91")
+        names(terminalValue) = V(stnd.graph)$name
+        fullStandardization = c(terminalValue, intermediateStandardization)
+
+    }
+    )
+
+
+
+
+
 ## NOTE (Michael): Looks like the tree is coded in the shares table,
 ##                 and the collapseShare or getShare function is
 ##                 losing some of the information.
@@ -411,7 +550,7 @@ system.time({
 ##
 ## NOTE (Michael): Remove population data from getAupusData
 ##
-## NOTE (Michael): The propagation of element 66 and 96 should be dont
+## NOTE (Michael): The propagation of element 66 and 96 should be done
 ##                 within Aupus after the update of element 41 and
 ##                 before the calculation of total supply.
 ##
@@ -423,5 +562,6 @@ system.time({
 ## NOTE (Michael): Should the functions for node and edge building be
 ##                 specific or generic?
 ##
-## NOTE (Michael): Set names for balance element, extraction rate etc
-##                 in the parameter.
+## NOTE (Michael): Doo not try to wrap the aupus and standardization
+##                 module together. Simply just use the foo2 function
+##                 to build the edge and node data structure.
