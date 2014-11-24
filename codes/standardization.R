@@ -6,10 +6,11 @@
 ##' @param graph The graph object
 ##' @param standardizeElement The node attribute in the graph to be
 ##' standardized.
+##' @param plot Whether the network should be plotted.
 ##' @export
 ##' 
 
-standardization = function(graph, standardizeElement){
+standardization = function(graph, standardizeElement, plot){
     intermediateStandardization = c()
     while (length(E(graph)) > 0) {
         workingNode =
@@ -19,7 +20,7 @@ standardization = function(graph, standardizeElement){
             workingNode = workingNode,
             standardizeAttributes = standardizeElement)
         graph = standardize$standardizedGraph
-        if (FALSE)
+        if (plot)
             plot(graph, vertex.size = 3, edge.arrow.size = 0.5,
                  vertex.label.cex = 0.5)
         intermediateStandardization = rbind(intermediateStandardization, 
