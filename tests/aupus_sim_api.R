@@ -325,7 +325,7 @@ lapply(balanceElementData, function(x)
 
 
 
-
+ 
 foo = function(nodes, edges, ...){
 
 
@@ -398,24 +398,6 @@ foo2 = function(extractionRateData, shareData, inputData,
     list(nodes = nodes, edges = edges)
 }
 
-
-check = foo2(extractionRateData = extractionRateData,
-    shareData = shareDataOld,
-    inputData = inputData,
-    ratioData = ratioData,
-    balanceElementData = balanceElementData,
-    itemInfoData = itemInfoData,
-    from = param$keyNames$itemParentName,
-    to = param$keyNames$itemChildName)
-
-
-
-system.time(
-    {
-        for(i in range(check$nodes$processingLevel)){
-            with(check, foo(nodes = nodes[processingLevel == i, ], edges = edges))
-        }
-    })
     
 
 constructStandardizationGraph = function(nodes, edges,
@@ -461,29 +443,44 @@ constructStandardizationGraph = function(nodes, edges,
 }
 
 
-allGraph = with(check, constructStandardizationGraph(nodes = nodes, edges = edges))
-
-## Note (Michael): We will just standardize everything anyway.
-
-
-
-## stnd.graph = allGraph[[1]]
-## workingNode =
-##     names(which(degree(stnd.graph, mode = "in") == 
-##                     0 & degree(stnd.graph, mode = "out") > 0))
-## standardize = standardizeNode(graph = stnd.graph, 
-##     node = workingNode,
-##     standardizeElement = c("Value_measuredElementFS_61",
-##         "Value_measuredElementFS_91"))
-
 system.time({
-    standardizationTest =
-        lapply(allGraph, FUN = function(x){
-            standardization(graph = x,
-                 standardizeElement = c("Value_measuredElementFS_61",
-                     "Value_measuredElementFS_91"))
-        })
+test = foo2(extractionRateData = extractionRateData,
+    shareData = shareDataOld,
+    inputData = inputData,
+    ratioData = ratioData,
+    balanceElementData = balanceElementData,
+    itemInfoData = itemInfoData,
+    from = param$keyNames$itemParentName,
+    to = param$keyNames$itemChildName)
+
+
+
+
+for(i in range(test$nodes$processingLevel)){
+    with(test, foo(nodes = nodes[processingLevel == i, ], edges = edges))
+}
+
+
+allGraph = with(test, constructStandardizationGraph(nodes = nodes, edges = edges))
+
+standardizationTest =
+    lapply(allGraph, FUN = function(x){
+        standardization(graph = x,
+                        standardizeElement = c("Value_measuredElementFS_61",
+                            "Value_measuredElementFS_91"))
+    })
+
 })
+
+
+## system.time({
+##     standardizationTest =
+##         lapply(allGraph, FUN = function(x){
+##             standardization(graph = x,
+##                  standardizeElement = c("Value_measuredElementFS_61",
+##                      "Value_measuredElementFS_91"))
+##         })
+## })
 
 
 
