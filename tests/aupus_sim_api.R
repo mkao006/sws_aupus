@@ -254,7 +254,7 @@ aupusNodes[, processingLevel :=
 
 
 
-## This is a temporaryf solution for converting the population data
+## This is a temporary solution for converting the population data
 ## assuming we have used getPopulation
 library(faoswsAupus)
 library(faoswsUtil)
@@ -324,37 +324,6 @@ lapply(balanceElementData, function(x)
 
 
 
-propagateSUANetwork = function(extractionRateData, shareData, inputData,
-    ratioData, balanceElementData, itemInfoData, from, to, FUN, ...){
-    FUN = match.fun(FUN)
-
-    edges =
-        buildEdges(extractionRateData = extractionRateData,
-                   shareData = shareDataOld,
-                   inputData = inputData)
-
-    nodes =
-        buildNodes(aupusData = aupusData, ratioData = ratioData,
-                   balanceElementData = balanceElementData,
-                   itemInfoData = itemInfoData,
-                   balanceElementNum = param$keyNames$balanceElementName)
-
-    processingLevelData =
-        edges[, findProcessingLevel(.SD, from = from, to = to),
-                   by = c(param$keyNames$areaName, param$keyNames$yearName)]
-    setkeyv(processingLevelData, key(nodes))
-
-    nodes[processingLevelData, processingLevel := i.processingLevel]
-    nodes[is.na(processingLevel), processingLevel := as.numeric(0)]
-
-    for(i in range(nodes$processingLevel)){
-        
-        ## Run the function, can be AUPUS or standardization
-        FUN(nodes = nodes[processingLevel == i, ], edges = edges, ...)
-        
-    }
-    list(nodes, edges)
-}
 
 
 foo = function(nodes, edges, ...){
@@ -378,19 +347,6 @@ foo = function(nodes, edges, ...){
                               edges = edges,
                               element31Num = "Value_measuredElementFS_31")
 }
-
-
-system.time({
-    final =
-        propagateSUANetwork(extractionRateData = extractionRateData,
-                            shareData = shareDataOld,
-                            inputData = inputData,
-                            ratioData = ratioData,
-                            balanceElementData = balanceElementData,
-                            itemInfoData = itemInfoData,
-                            from = param$keyNames$itemParentName,
-                            to = param$keyNames$itemChildName, FUN = foo)
-})
 
 
 
@@ -453,19 +409,63 @@ check = foo2(extractionRateData = extractionRateData,
     to = param$keyNames$itemChildName)
 
 
-uniqueYears = unique(unique(check$nodes$timePointYearsSP),
-    unique(check$edges$timePointYearsSP))
-nodes.lst = split(check$nodes, uniqueYears)
-edges.lst = split(check$edges, uniqueYears)
 
-standardizeElement = c("Value_measuredElementFS_61", "Value_measuredElementFS_91")
-currentEdge = edges.lst[[1]]
-currentEdge[, geographicAreaFS := NULL]
-currentEdge[, timePointYearsSP := NULL]
-currentNode =
-    nodes.lst[[1]][, c("measuredItemFS", standardizeElement), with = FALSE]
-setnames(currentEdge, "measuredItemParentFS", "measuredItemFS")
-stnd.graph = graph.data.frame(d = currentEdge, vertices = currentNode)
+system.time(
+    {
+        for(i in range(check$nodes$processingLevel)){
+            with(check, foo(nodes = nodes[processingLevel == i, ], edges = edges))
+        }
+    })
+    
+
+constructStandardizationGraph = function(nodes, edges,
+    standardizeElement = c("Value_measuredElementFS_61",
+        "Value_measuredElementFS_91"), ...){
+
+    nodeCopy = copy(nodes)
+    edgeCopy = copy(edges)
+    setnames(edgeCopy, "measuredItemParentFS", "measuredItemFS")
+    
+    uniqueYears = unique(unique(nodeCopy$timePointYearsSP),
+        unique(edgeCopy$timePointYearsSP))
+    edgeCopy[, `:=`("geographicAreaFS", NULL)]
+    edgeCopy[, `:=`("timePointYearsSP", NULL)]
+    nodes.lst = split(nodeCopy, uniqueYears)
+    edges.lst = split(edgeCopy, uniqueYears)
+
+    print(str(nodes.lst[[1]]))
+    print(str(edges.lst[[1]]))
+
+    
+    ## edges.lst =
+    ##     lapply(edges.lst,
+    ##            FUN = function(x){
+    ##                print(str(x))
+    ##                setnames(x, "measuredItemParentFS", "measuredItemFS")
+    ##            }
+    ##            )    
+    ## currentEdge = edges.lst[[1]]
+    ## currentEdge[, geographicAreaFS := NULL]
+    ## currentEdge[, timePointYearsSP := NULL]
+
+    nodes.lst =
+        lapply(nodes.lst,
+               FUN = function(x){
+                   x[, c("measuredItemFS", standardizeElement), with = FALSE]
+               })
+    
+    ## currentNode =
+    ##     nodes.lst[[1]][, c("measuredItemFS", standardizeElement), with = FALSE]
+    
+    ## stnd.graph = graph.data.frame(d = currentEdge, vertices = currentNode)
+    ## stnd.graph
+    graph.lst = mapply(graph.data.frame, d = edges.lst, vertices = nodes.lst,
+        SIMPLIFY = FALSE)
+    graph.lst
+}
+
+
+allGraph = with(check, constructStandardizationGraph(nodes = nodes, edges = edges))
 
 ## Note (Michael): We will just standardize everything anyway.
 
@@ -476,28 +476,63 @@ standardizeNode = function (graph, node, standardizeElement)
         sparse = FALSE, attr = "Value_share")
     rateMatrix = get.adjacency(subgraph.edges(graph, outEdges), 
         sparse = FALSE, attr = "Value_extraction")
-    values = get.vertex.attribute(graph = graph, name = standardizeElement,
-        index = V(graph)[colnames(shareMatrix)])
-    ## values = V(graph)[colnames(shareMatrix)]$standardizeElement
     reverseMatrix = t(shareMatrix)/t(rateMatrix)
     reverseMatrix[is.na(reverseMatrix) | !is.finite(reverseMatrix)] = 0
-    standardized = reverseMatrix %*% matrix(values, nc = 1)
+    
+    valueMatrix =
+        matrix(unlist(lapply(X = standardizeElement,
+                             FUN = function(x){
+                                 get.vertex.attribute(graph = graph, name = x,
+                                                      index = V(graph)[colnames(shareMatrix)])
+                             }
+                             )),
+               nc = length(standardizeElement))
+    
+    standardized = reverseMatrix %*% valueMatrix
 
-    standardizedValues =
-        get.vertex.attribute(graph = graph, name = standardizeElement,
-                             index = V(graph)[rownames(standardized)]) +
-                                 standardized
-    set.vertex.attribute(graph = graph, name = standardizeElement,
-                         index = V(graph)[rownames(standardized)],
-                         value = standardizedValues)
-    ## V(graph)[rownames(standardized)]$standardizeElement =
-    ##     V(graph)[rownames(standardized)]$standardizeElement + standardized
-    intermediateValues = get.vertex.attribute(graph = graph,
-        name = standardizeElement, index = V(graph)[node])
-    names(intermediateValues) = node
+    targetValueMatrix =
+        matrix(unlist(lapply(X = standardizeElement,
+                             FUN = function(x){
+                                 get.vertex.attribute(graph = graph, name = x,
+                                                      index = V(graph)[rownames(standardized)])
+                             }
+                             )),
+               nc = length(standardizeElement))
+    
+    ## Need to convert the na to zeros for addition
+    standardizedValues = targetValueMatrix  + standardized
+
+    for(i in 1:NCOL(standardizedValues)){
+        set.vertex.attribute(graph = graph, name = standardizeElement[i],
+                             index = V(graph)[rownames(standardized)],
+                             value = standardizedValues[, i])
+
+        intermediateValuesMatrix =
+            matrix(unlist(lapply(X = standardizeElement,
+                                 FUN = function(x){
+                                     get.vertex.attribute(graph = graph, name = x,
+                                                          index = V(graph)[node])
+                                 }
+                                 )),
+                   nc = length(standardizeElement))
+        rownames(intermediateValuesMatrix) = node
+    }
     graph = graph - vertices(node)
-    list(standardizedGraph = graph, intermediateValues = intermediateValues)
+    list(standardizedGraph = graph, intermediateValues = intermediateValuesMatrix)
+    
 }
+
+stnd.graph = allGraph[[1]]
+workingNode =
+    names(which(degree(stnd.graph, mode = "in") == 
+                    0 & degree(stnd.graph, mode = "out") > 0))
+standardize = standardizeNode(graph = stnd.graph, 
+    node = workingNode,
+    standardizeElement = c("Value_measuredElementFS_61",
+        "Value_measuredElementFS_91"))
+
+
+
 
 ## NOTE (Michael): This only allows you to standardize one element,
 ##                 think about how to standardize multiple elements
@@ -505,30 +540,50 @@ system.time(
     {
         intermediateStandardization = c()
         while (length(E(stnd.graph)) > 0) {
-            workingNode = names(which(degree(stnd.graph, mode = "in") == 
-                                          0 & degree(stnd.graph, mode = "out") > 0))
+            workingNode =
+                names(which(degree(stnd.graph, mode = "in") == 
+                                0 & degree(stnd.graph, mode = "out") > 0))
             standardize = standardizeNode(graph = stnd.graph, 
                 node = workingNode,
-                standardizeElement = "Value_measuredElementFS_91")
+                standardizeElement = c("Value_measuredElementFS_61",
+                    "Value_measuredElementFS_91"))
             stnd.graph = standardize$standardizedGraph
             if (FALSE)
                 plot(stnd.graph, vertex.size = 3, edge.arrow.size = 0.5,
                      vertex.label.cex = 0.5)
             ## vertex.label = paste0(V(stnd.graph)$name, "\n(", 
             ##     V(stnd.graph)$standardizeElement, ")"))
-            intermediateStandardization = c(intermediateStandardization, 
+            intermediateStandardization = rbind(intermediateStandardization, 
                 standardize$intermediateValues)
         }
+        terminalValueMatrix =
+            matrix(unlist(lapply(X = c("Value_measuredElementFS_61",
+                                     "Value_measuredElementFS_91"),
+                                 FUN = function(x){
+                                     get.vertex.attribute(graph = stnd.graph,
+                                                          name = x)
+                                 }
+                                 )),
+                   nc = 2)
+        ## terminalValue = get.vertex.attribute(graph = stnd.graph,
+        ##     name = "Value_measuredElementFS_91")
+        rownames(terminalValueMatrix) = V(stnd.graph)$name
+        fullStandardization =
+            rbind(terminalValueMatrix,
+                  intermediateStandardization)
+    })
 
-        terminalValue = get.vertex.attribute(graph = stnd.graph,
-            name = "Value_measuredElementFS_91")
-        names(terminalValue) = V(stnd.graph)$name
-        fullStandardization = c(terminalValue, intermediateStandardization)
-
-    }
-    )
+str(check$nodes)
 
 
+test.nodes = data.table(name = letters[1:5], values = 1:5, value2 = rnorm(5))
+test.edges = data.table(from = letters[c(1, 3, 5)], to = letters[1], value = 1:3)
+
+test.graph = graph.data.frame(d = test.edges, vertices = test.nodes)
+
+matrix(unlist(lapply(list.vertex.attributes(test.graph), function(x) get.vertex.attribute(test.graph, x))[2:3]), nc = 2)
+
+Reduce(function(x, y) cbind(data.frame(x), data.frame(y)), lapply(list.vertex.attributes(test.graph), FUN = function(x) get.vertex.attribute(test.graph, x)))
 
 
 
