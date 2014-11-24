@@ -32,13 +32,17 @@ standardization = function(graph, standardizeElement){
                                                       name = x)
                              }
                              )),
-               nc = 2)
+               nc = length(standardizeElement))
     ## terminalValue = get.vertex.attribute(graph = graph,
     ##     name = "Value_measuredElementFS_91")
     rownames(terminalValueMatrix) = V(graph)$name
     fullStandardization =
         rbind(terminalValueMatrix,
               intermediateStandardization)
-    colnames(fullStandardization) = standardizeElement
-    data.table(fullStandardization)
+    fullStandardization = data.table(cbind(rownames(fullStandardization),
+        fullStandardization))
+    setnames(fullStandardization, old = colnames(fullStandardization),
+             new = c(param$keyNames$itemName, standardizeElement))
+    fullStandardization
+
 }
