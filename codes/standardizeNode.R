@@ -4,31 +4,60 @@
 ##'
 ##' @param graph The graph object created by the function
 ##' constructGraph.
-##' @param node The nodes to be standardized
+##' @param workingNodes The nodes to be standardized
+##' @param standardizeAttributes The attribute of the nodes to be
+##' standardized.
 ##' @export
 ##' 
 
-standardizeNode = function(graph, node){
+standardizeNode = function (graph, workingNode, standardizeAttributes)
+{
     outEdges = E(graph)[from(V(graph)[node])]
-    shareMatrix =
-        get.adjacency(subgraph.edges(graph, outEdges), sparse = FALSE,
-                      attr = "shares")
-    rateMatrix =
-        get.adjacency(subgraph.edges(graph, outEdges), sparse = FALSE,
-                      attr = "extractionRate")
-    ## print(t(shareMatrix))
-    ## print(t(rateMatrix))
-    values = V(graph)[colnames(shareMatrix)]$standardizeElement
-    ## print(values)
+    shareMatrix = get.adjacency(subgraph.edges(graph, outEdges), 
+        sparse = FALSE, attr = "Value_share")
+    rateMatrix = get.adjacency(subgraph.edges(graph, outEdges), 
+        sparse = FALSE, attr = "Value_extraction")
     reverseMatrix = t(shareMatrix)/t(rateMatrix)
     reverseMatrix[is.na(reverseMatrix) | !is.finite(reverseMatrix)] = 0
-    standardized = reverseMatrix %*% matrix(values, nc = 1)
-    V(graph)[rownames(standardized)]$standardizeElement =
-        V(graph)[rownames(standardized)]$standardizeElement +
-            standardized
-    intermediateValues = V(graph)[node]$standardizeElement
-    names(intermediateValues) = node
+    
+    valueMatrix =
+        matrix(unlist(lapply(X = standardizeAttributes,
+                             FUN = function(x){
+                                 get.vertex.attribute(graph = graph, name = x,
+                                                      index = V(graph)[colnames(shareMatrix)])
+                             }
+                             )),
+               nc = length(standardizeAttributes))
+    
+    standardized = reverseMatrix %*% valueMatrix
+
+    targetValueMatrix =
+        matrix(unlist(lapply(X = standardizeAttributes,
+                             FUN = function(x){
+                                 get.vertex.attribute(graph = graph, name = x,
+                                                      index = V(graph)[rownames(standardized)])
+                             }
+                             )),
+               nc = length(standardizeAttributes))
+    
+    ## Need to convert the na to zeros for addition
+    standardizedValues = targetValueMatrix  + standardized
+
+    for(i in 1:NCOL(standardizedValues)){
+        set.vertex.attribute(graph = graph, name = standardizeAttributes[i],
+                             index = V(graph)[rownames(standardized)],
+                             value = standardizedValues[, i])
+
+        intermediateValuesMatrix =
+            matrix(unlist(lapply(X = standardizeAttributes,
+                                 FUN = function(x){
+                                     get.vertex.attribute(graph = graph, name = x,
+                                                          index = V(graph)[node])
+                                 }
+                                 )),
+                   nc = length(standardizeAttributes))
+        rownames(intermediateValuesMatrix) = node
+    }
     graph = graph - vertices(node)
-    list(standardizedGraph = graph,
-         intermediateValues = intermediateValues)
+    list(standardizedGraph = graph, intermediateValues = intermediateValuesMatrix)   
 }
