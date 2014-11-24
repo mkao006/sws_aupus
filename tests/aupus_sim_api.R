@@ -461,26 +461,34 @@ for(i in range(test$nodes$processingLevel)){
 }
 
 
-allGraph = with(test, constructStandardizationGraph(nodes = nodes, edges = edges))
+FBSelements = c("Value_measuredElementFS_61", "Value_measuredElementFS_91",
+    "Value_measuredElementFS_111",
+    "Value_measuredElementFS_121", "Value_measuredElementFS_141")
+
+## FBSelements = c("Value_measuredElementFS_61", "Value_measuredElementFS_91")
+
+allGraph = with(test,
+    constructStandardizationGraph(nodes = nodes, edges = edges,
+                                  standardizeElement = FBSelements))
 
 standardizationTest =
     lapply(allGraph, FUN = function(x){
         standardization(graph = x,
-                        standardizeElement = c("Value_measuredElementFS_61",
-                            "Value_measuredElementFS_91"))
+                        standardizeElement = FBSelements)
     })
+
 
 })
 
 
-## system.time({
-##     standardizationTest =
-##         lapply(allGraph, FUN = function(x){
-##             standardization(graph = x,
-##                  standardizeElement = c("Value_measuredElementFS_61",
-##                      "Value_measuredElementFS_91"))
-##         })
-## })
+
+lapply(names(standardizationTest),
+       FUN = function(x){
+           standardizationTest[[x]][, `:=`(c("timePointYearsSP"), as.numeric(x))]
+       })
+
+
+standardizationFinal = Reduce(rbind, standardizationTest)
 
 
 
