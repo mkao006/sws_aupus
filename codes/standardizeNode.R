@@ -22,15 +22,25 @@ standardizeNode = function (graph, workingNode, standardizeAttributes){
     reverseMatrix[is.na(reverseMatrix) | !is.finite(reverseMatrix)] = 0
 
     ## Get the value which is to be standardized
-    valueMatrix =
-        matrix(unlist(lapply(X = standardizeAttributes,
-                             FUN = function(x){
-                                 get.vertex.attribute(graph = graph, name = x,
-                                                      index = V(graph)[colnames(shareMatrix)])
-                             }
-                             )),
-               nc = length(standardizeAttributes))
+    ## valueMatrix =
+    ##     matrix(unlist(lapply(X = standardizeAttributes,
+    ##                          FUN = function(x){
+    ##                              get.vertex.attribute(graph = graph, name = x,
+    ##                                                   index = V(graph)[colnames(shareMatrix)])
+    ##                          }
+    ##                          )),
+    ##            nc = length(standardizeAttributes))
 
+    valueMatrix =
+        matrix(unlist(
+            lapply(X = standardizeAttributes,
+                   FUN = function(x){
+                       get.vertex.attribute(graph = graph, name = x,
+                                            index = V(graph)[colnames(shareMatrix)])
+                   }
+                   )),
+               nc = length(standardizeAttributes))
+    
     ## Standardization
     standardized = reverseMatrix %*% valueMatrix
 
