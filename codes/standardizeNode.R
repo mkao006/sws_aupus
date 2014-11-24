@@ -13,7 +13,7 @@
 standardizeNode = function (graph, workingNode, standardizeAttributes){
 
     ## Get the edges and the construct the reverse matrix
-    outEdges = E(graph)[from(V(graph)[node])]
+    outEdges = E(graph)[from(V(graph)[workingNode])]
     shareMatrix = get.adjacency(subgraph.edges(graph, outEdges), 
         sparse = FALSE, attr = "Value_share")
     rateMatrix = get.adjacency(subgraph.edges(graph, outEdges), 
@@ -60,15 +60,15 @@ standardizeNode = function (graph, workingNode, standardizeAttributes){
             matrix(unlist(lapply(X = standardizeAttributes,
                                  FUN = function(x){
                                      get.vertex.attribute(graph = graph, name = x,
-                                                          index = V(graph)[node])
+                                                          index = V(graph)[workingNode])
                                  }
                                  )),
                    nc = length(standardizeAttributes))
-        rownames(intermediateValuesMatrix) = node
+        rownames(intermediateValuesMatrix) = workingNode
     }
 
-    ## Delete the standardized nodes
-    graph = graph - vertices(node)
+    ## Delete the standardized workingNodes
+    graph = graph - vertices(workingNode)
 
     ## Return the objects
     list(standardizedGraph = graph, intermediateValues = intermediateValuesMatrix)   

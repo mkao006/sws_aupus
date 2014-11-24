@@ -16,8 +16,8 @@ standardization = function(graph, standardizeElement){
             names(which(degree(graph, mode = "in") == 
                             0 & degree(graph, mode = "out") > 0))
         standardize = standardizeNode(graph = graph, 
-            node = workingNode,
-            standardizeElement = standardizeElement)
+            workingNode = workingNode,
+            standardizeAttributes = standardizeElement)
         graph = standardize$standardizedGraph
         if (FALSE)
             plot(graph, vertex.size = 3, edge.arrow.size = 0.5,
