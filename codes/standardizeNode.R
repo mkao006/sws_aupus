@@ -10,8 +10,9 @@
 ##' @export
 ##' 
 
-standardizeNode = function (graph, workingNode, standardizeAttributes)
-{
+standardizeNode = function (graph, workingNode, standardizeAttributes){
+
+    ## Get the edges and the construct the reverse matrix
     outEdges = E(graph)[from(V(graph)[node])]
     shareMatrix = get.adjacency(subgraph.edges(graph, outEdges), 
         sparse = FALSE, attr = "Value_share")
@@ -19,7 +20,8 @@ standardizeNode = function (graph, workingNode, standardizeAttributes)
         sparse = FALSE, attr = "Value_extraction")
     reverseMatrix = t(shareMatrix)/t(rateMatrix)
     reverseMatrix[is.na(reverseMatrix) | !is.finite(reverseMatrix)] = 0
-    
+
+    ## Get the value which is to be standardized
     valueMatrix =
         matrix(unlist(lapply(X = standardizeAttributes,
                              FUN = function(x){
@@ -28,9 +30,11 @@ standardizeNode = function (graph, workingNode, standardizeAttributes)
                              }
                              )),
                nc = length(standardizeAttributes))
-    
+
+    ## Standardization
     standardized = reverseMatrix %*% valueMatrix
 
+    ## Get the target value of the standardization
     targetValueMatrix =
         matrix(unlist(lapply(X = standardizeAttributes,
                              FUN = function(x){
@@ -39,10 +43,14 @@ standardizeNode = function (graph, workingNode, standardizeAttributes)
                              }
                              )),
                nc = length(standardizeAttributes))
-    
-    ## Need to convert the na to zeros for addition
+
+    ## Add the standardized value to the target value
+    ##
+    ## TODO (Michael): Need to convert the na to zeros for addition
     standardizedValues = targetValueMatrix  + standardized
 
+    ## Save the target value back to the graph, and the intermediave
+    ## to the intermediate value matrix
     for(i in 1:NCOL(standardizedValues)){
         set.vertex.attribute(graph = graph, name = standardizeAttributes[i],
                              index = V(graph)[rownames(standardized)],
@@ -58,6 +66,10 @@ standardizeNode = function (graph, workingNode, standardizeAttributes)
                    nc = length(standardizeAttributes))
         rownames(intermediateValuesMatrix) = node
     }
+
+    ## Delete the standardized nodes
     graph = graph - vertices(node)
+
+    ## Return the objects
     list(standardizedGraph = graph, intermediateValues = intermediateValuesMatrix)   
 }
