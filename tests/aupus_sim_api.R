@@ -351,62 +351,19 @@ foo = function(nodes, edges, ...){
 
 
 
-foo2 = function(extractionRateData, shareData, inputData,
-    ratioData, balanceElementData, itemInfoData, from, to, ...){
 
-    edges =
-        buildEdges(extractionRateData = extractionRateData,
-                   shareData = shareDataOld,
-                   inputData = inputData)
-
-    nodes =
-        buildNodes(aupusData = aupusData, ratioData = ratioData,
-                   balanceElementData = balanceElementData,
-                   itemInfoData = itemInfoData,
-                   balanceElementNum = param$keyNames$balanceElementName)
-
-    ## CHECK (Michael): Add in nodes that are contained in the edges
-    ##                  list but not found in the node frame. Check
-    ##                  why they are missing.
-
-    uniqueEdgeNodes =
-        unique(unlist(edges[, c(param$keyNames$itemParentName,
-                                param$keyNames$itemChildName), with = FALSE]))
-
-    missingNodes = uniqueEdgeNodes[!uniqueEdgeNodes %in%
-        nodes[[param$keyNames$itemName]]]
-
-    missingKeyTable =
-        data.table(expand.grid(unlist(unique(nodes[, c(param$keyNames$areaName),
-                                                   with = FALSE])),
-                               unlist(unique(nodes[, c(param$keyNames$yearName),
-                                                   with = FALSE])),
-                               missingNodes, stringsAsFactors = FALSE))
-    with(param$keyNames,
-         setnames(missingKeyTable, c(areaName, yearName, itemName)))
-    nodes = rbind(nodes, missingKeyTable, fill = TRUE)
-    setkeyv(nodes, key(aupusData))
-    
-    
-    processingLevelData =
-        edges[, findProcessingLevel(.SD, from = from, to = to),
-                   by = c(param$keyNames$areaName, param$keyNames$yearName)]
-    setkeyv(processingLevelData, key(nodes))
-
-    nodes[processingLevelData, processingLevel := i.processingLevel]
-    nodes[is.na(processingLevel), processingLevel := as.numeric(0)]
-    list(nodes = nodes, edges = edges)
-}
 
     
 
 constructStandardizationGraph = function(nodes, edges,
     standardizeElement = c("Value_measuredElementFS_61",
-        "Value_measuredElementFS_91"), ...){
+        "Value_measuredElementFS_91"), from, to, ...){
 
     nodeCopy = copy(nodes)
     edgeCopy = copy(edges)
-    setnames(edgeCopy, "measuredItemParentFS", "measuredItemFS")
+    edgeCopy = edgeCopy[, c(from, to, colnames(edgeCopy)[!colnames(edgeCopy) %in%
+        c(from, to)]), with = FALSE]
+    setnames(edgeCopy, to, param$keyNames$itemName)
     
     uniqueYears = unique(unique(nodeCopy$timePointYearsSP),
         unique(edgeCopy$timePointYearsSP))
@@ -414,17 +371,6 @@ constructStandardizationGraph = function(nodes, edges,
     edgeCopy[, `:=`("timePointYearsSP", NULL)]
     nodes.lst = split(nodeCopy, uniqueYears)
     edges.lst = split(edgeCopy, uniqueYears)
-    
-    ## edges.lst =
-    ##     lapply(edges.lst,
-    ##            FUN = function(x){
-    ##                print(str(x))
-    ##                setnames(x, "measuredItemParentFS", "measuredItemFS")
-    ##            }
-    ##            )    
-    ## currentEdge = edges.lst[[1]]
-    ## currentEdge[, geographicAreaFS := NULL]
-    ## currentEdge[, timePointYearsSP := NULL]
 
     nodes.lst =
         lapply(nodes.lst,
@@ -432,11 +378,6 @@ constructStandardizationGraph = function(nodes, edges,
                    x[, c("measuredItemFS", standardizeElement), with = FALSE]
                })
     
-    ## currentNode =
-    ##     nodes.lst[[1]][, c("measuredItemFS", standardizeElement), with = FALSE]
-    
-    ## stnd.graph = graph.data.frame(d = currentEdge, vertices = currentNode)
-    ## stnd.graph
     graph.lst = mapply(graph.data.frame, d = edges.lst, vertices = nodes.lst,
         SIMPLIFY = FALSE)
     graph.lst
@@ -444,15 +385,15 @@ constructStandardizationGraph = function(nodes, edges,
 
 
 system.time({
-test = foo2(extractionRateData = extractionRateData,
-    shareData = shareDataOld,
-    inputData = inputData,
-    ratioData = ratioData,
-    balanceElementData = balanceElementData,
-    itemInfoData = itemInfoData,
-    from = param$keyNames$itemParentName,
-    to = param$keyNames$itemChildName)
-
+test =
+    suaToNetworkStructure(extractionRateData = extractionRateData,
+                          shareData = shareDataOld,
+                          inputData = inputData,
+                          ratioData = ratioData,
+                          balanceElementData = balanceElementData,
+                          itemInfoData = itemInfoData,
+                          from = param$keyNames$itemParentName,
+                          to = param$keyNames$itemChildName)
 
 
 
@@ -465,21 +406,19 @@ FBSelements = c("Value_measuredElementFS_61", "Value_measuredElementFS_91",
     "Value_measuredElementFS_111",
     "Value_measuredElementFS_121", "Value_measuredElementFS_141")
 
-## FBSelements = c("Value_measuredElementFS_61", "Value_measuredElementFS_91")
-
 allGraph = with(test,
     constructStandardizationGraph(nodes = nodes, edges = edges,
-                                  standardizeElement = FBSelements))
+                                  standardizeElement = FBSelements,
+                                  from = param$keyNames$itemChildName,
+                                  to = param$keyNames$itemParentName))
 
+## The edge should be reversed for standardization.
 standardizationTest =
     lapply(allGraph, FUN = function(x){
         standardization(graph = x,
-                        standardizeElement = FBSelements)
+                        standardizeElement = FBSelements,
+                        plot = FALSE)
     })
-
-
-})
-
 
 
 lapply(names(standardizationTest),
@@ -489,6 +428,12 @@ lapply(names(standardizationTest),
 
 
 standardizationFinal = Reduce(rbind, standardizationTest)
+
+})
+
+
+
+
 
 
 
@@ -507,19 +452,12 @@ Reduce(function(x, y) cbind(data.frame(x), data.frame(y)), lapply(list.vertex.at
 ##                 and the collapseShare or getShare function is
 ##                 losing some of the information.
 ##
-## TODO (Michael): Need to get items which AUPUS applies
-##
 ## NOTE (Michael): To make everything clean and understandable, we
 ##                 only replicate those that are essential and well
 ##                 understood.
 ##
 ## NOTE (Michael): Do not make modification to the get data related
 ##                 functions unless they can be tested.
-##
-## NOTE (Michael): Maybe get population and process separately as
-##                 before.
-##
-## NOTE (Michael): Remove population data from getAupusData
 ##
 ## NOTE (Michael): The propagation of element 66 and 96 should be done
 ##                 within Aupus after the update of element 41 and
@@ -536,3 +474,4 @@ Reduce(function(x, y) cbind(data.frame(x), data.frame(y)), lapply(list.vertex.at
 ## NOTE (Michael): Doo not try to wrap the aupus and standardization
 ##                 module together. Simply just use the foo2 function
 ##                 to build the edge and node data structure.
+##
