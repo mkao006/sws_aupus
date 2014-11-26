@@ -7,27 +7,25 @@
 ##' @export
 ##' 
 
-collapseShare = function(shareData, shares, verbose = FALSE){
-    uniquePath =
-        unique.data.frame(Reduce(rbind,
-                                 lapply(shareData, FUN = function(x)
-                                     x[, c(param$keyNames$itemParentName,
-                                           param$keyNames$itemChildName),
-                                       with = FALSE]
-                          )))
-    uniqueYear = param$year
-    uniqueArea = param$countryCode
+collapseShare = function (shareData, shares, verbose = FALSE){
+    uniquePath = unique.data.frame(Reduce(rbind, lapply(shareData, 
+        FUN = function(x){
+            x[, c(param$keyNames$itemParentName, 
+                  param$keyNames$itemChildName),
+              with = FALSE]
+        })))
+    uniqueYear = as.numeric(param$year)
+    uniqueArea = param$areaCode
     tmp = lapply(uniquePath, rep, times = length(uniqueYear))
-    tmp[[param$keyNames$yearName]] =
-        rep(uniqueYear, each = NROW(uniquePath))
-    tmp[[param$keyNames$countryName]] = uniqueArea
+    tmp[[param$keyNames$yearName]] = rep(uniqueYear, each = NROW(uniquePath))
+    tmp[[param$keyNames$areaName]] = uniqueArea
     tmp[[shares]] = as.numeric(NA)
     finalBase = as.data.table(tmp)
     setkeyv(finalBase, key(shareData[[1]]))
-    for(i in 1:length(shareData)){
+    for(i in 1:length(shareData)) {
         wildCardFill(finalBase, shareData[[i]], shares, verbose)
     }
     setkeyv(finalBase, key(shareData[[1]]))
-    finalBase[, timePointYearsSP := as.numeric(timePointYearsSP)]
+    finalBase[, `:=`(timePointYearsSP, as.numeric(timePointYearsSP))]
     finalBase[finalBase[[shares]] != 0, ]
 }
