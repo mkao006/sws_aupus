@@ -40,13 +40,23 @@ getAupusDataset = function(assignGlobal = TRUE){
     ## Get item information table
     ## ---------------------------------------------------------------
     itemInfoData = getItemInfoData()
+
+    ## Get population data
+    populationData = getPopulationData(database = "new")
+
+    ## Get extraction rate
+    extractionRateData =
+        getExtractionRateData(aupusData = aupusData,
+                              element41Num = "Value_measuredElementFS_41")
         
 
     ## Return the data
-    dataList = list(aupusData = aupusData, inputData = inputData,
-        ratioData = ratioData, shareData = shareData,
-        balanceElementData = balanceElementData,
-        itemInfoData = itemInfoData)
+    dataList =
+        list(aupusData = aupusData, inputData = inputData,
+             ratioData = ratioData, shareData = shareData,
+             balanceElementData = balanceElementData,
+             itemInfoData = itemInfoData, populationData = populationData,
+             extractionRateData = extractionRateData)
     
     if(assignGlobal){
         lapply(names(dataList), FUN = function(x)
