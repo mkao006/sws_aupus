@@ -12,7 +12,7 @@ getAupusData = function(database = c("new", "old"), conn){
         aupusQuery =
             paste0("SELECT *
                 FROM tsv_ics_work_yr
-                WHERE area =", countryCode)
+                WHERE area =", areaCode)
         aupus =
             data.table(dbGetQuery(conn = conn, aupusQuery))
         meltedAupus =
@@ -37,11 +37,14 @@ getAupusData = function(database = c("new", "old"), conn){
                  new = c("areaCode", "itemCode"))
         setkeyv(finalAupus, cols = c("areaCode", "itemCode", "Year"))
     } else if(database == "new"){
+        ## NOTE (Michael): Population is not included in this set, use
+        ##                 getPopulationData.
         aupusDimension =
             list(Dimension(name = "geographicAreaFS",
-                           keys = as.character(param$countryCode)),
+                           keys = as.character(param$areaCode)),
                  Dimension(name = "measuredItemFS",
-                           keys = as.character(param$itemCode)),
+                           keys =
+                               as.character(param$itemCode[param$itemCode != 1])),
                  Dimension(name = "timePointYears",
                            keys = as.character(param$year)),
                  Dimension(name = "measuredElementFS",
