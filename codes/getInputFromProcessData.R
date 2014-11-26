@@ -15,7 +15,7 @@ getInputFromProcessData = function(database = c("new", "old"),
         inputQuery =
             paste0("SELECT *
                 FROM input_from_procv
-                WHERE area = ", countryCode)
+                WHERE area = ", areaCode)
         input =
             data.table(dbGetQuery(conn, inputQuery))
         meltedInput =
@@ -43,7 +43,7 @@ getInputFromProcessData = function(database = c("new", "old"),
         
         inputDimension =
             list(Dimension(name = "geographicAreaFS",
-                           keys = as.character(param$countryCode)),
+                           keys = as.character(param$areaCode)),
                  Dimension(name = "measuredItemParentFS",
                            keys = as.character(param$itemCode)),
                  Dimension(name = "measuredItemChildFS",

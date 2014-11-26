@@ -13,7 +13,7 @@ getRatioData = function(database = c("new", "old"), conn){
         ratioQuery =
             paste0("SELECT area, item, ele, yr, ratio
                 FROM aupus_ratios
-                WHERE area in (0, ", countryCode, ")")
+                WHERE area in (0, ", areaCode, ")")
         ratio =
             data.table(dbGetQuery(conn = conn, ratioQuery))
         ratio[, ELE := paste0("RATIO_", ELE)]
@@ -41,7 +41,7 @@ getRatioData = function(database = c("new", "old"), conn){
         ratioDimension =
             list(Dimension(name = "geographicAreaFS",
                            keys = as.character(c("0",
-                               param$countryCode))),
+                               param$areaCode))),
                  Dimension(name = "measuredItemFS",
                            keys = as.character(param$itemCode)),
                  Dimension(name = "timePointYearsSP",
