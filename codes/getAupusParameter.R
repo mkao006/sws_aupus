@@ -1,12 +1,12 @@
 ##' This function gets all the parameter in order to query the data
 ##'
-##' @param countryCode The country code of the country of interest
+##' @param areaCode The country code of the country of interest
 ##' @param assignGlobal logical, default to FALSE, where a list is
 ##' returned. If TRUE, then the result will be assigned globally.
 ##' @export
 ##' 
 
-getAupusParameter = function(countryCode, assignGlobal = TRUE){
+getAupusParameter = function(areaCode, assignGlobal = TRUE){
 
     ## Get all item Code
     ## --------------------------------------------------------------
@@ -19,7 +19,7 @@ getAupusParameter = function(countryCode, assignGlobal = TRUE){
     ## Get all year
     ## --------------------------------------------------------------
     ## NOTE (Michael): This is temporary just to speed up the computation
-    allYearCodes = as.character(2005:2013)    
+    allYearCodes = as.character(2005:2013)
     ## yearCodeList = GetCodeList(domain = "faostat_one",
     ##     dataset = "FS1_SUA",
     ##     dimension = "timePointYears")
@@ -53,10 +53,11 @@ getAupusParameter = function(countryCode, assignGlobal = TRUE){
              valuePrefix = "Value_",
              flagPrefix = "flagFaostat_",
              ratioPrefix = "Ratio_")
+
         
-    tmp = list(countryCode = countryCode,
+    tmp = list(areaCode = areaCode,
         itemCode = allItemCodes, elementCode = allElementCodes,
-        year = allYearCodes)
+        year = allYearCodes, keyNames = keyNames)
     if(assignGlobal){
         lapply(names(tmp), FUN = function(x)
             assign(x, tmp[[x]], envir = .GlobalEnv))
