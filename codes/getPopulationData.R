@@ -25,21 +25,21 @@ getPopulationData = function(database = c("new", "old"), conn){
         meltedAupus[, Year := as.numeric(gsub("[^0-9]", "", variable))]
         meltedAupus[, type := gsub("[0-9|_]", "", variable)]
         meltedAupus[, `:=`(c("variable", "ITEM"), NULL)]
-        finalAupus =
+        finalPopulation =
             dcast.data.table(meltedAupus, AREA + Year ~ type + ELE,
                              value.var = "value")
-        valueCol = grep("NUM", colnames(finalAupus), value = TRUE)
-        finalAupus[, (valueCol) :=
+        valueCol = grep("NUM", colnames(finalPopulation), value = TRUE)
+        finalPopulation[, (valueCol) :=
                        lapply(valueCol, function(x)
-                           as.numeric(finalAupus[[x]]))]
+                           as.numeric(finalPopulation[[x]]))]
         for(i in valueCol){
-            remove0M(data = finalAupus, value = i,
+            remove0M(data = finalPopulation, value = i,
                      flag = gsub("NUM", "SYMB", i), naFlag = "M")
         }
-        setnames(finalAupus,
+        setnames(finalPopulation,
                  old = c("AREA"),
                  new = c("areaCode"))
-        setkeyv(finalAupus, cols = c("areaCode", "Year"))
+        setkeyv(finalPopulation, cols = c("areaCode", "Year"))
     } else if(database == "new"){
         populationDimension =
             list(Dimension(name = "geographicAreaFS",
@@ -49,7 +49,7 @@ getPopulationData = function(database = c("new", "old"), conn){
                  Dimension(name = "timePointYears",
                            keys = as.character(param$year)),
                  Dimension(name = "measuredElementFS",
-                           keys = as.character(param$elementCode)))
+                           keys = as.character(c(11, 21))))
 
         populationDataContext =
             DatasetKey(domain = "faostat_one",
@@ -67,19 +67,28 @@ getPopulationData = function(database = c("new", "old"), conn){
                     normalized = FALSE, pivoting = populationPivot)
 
         ## Convert list of NULL to vector of NA
-        for(i in colnames(finalAupus)){
-            if(typeof(finalAupus[, i, with = FALSE]) == "list"){
-                finalAupus[, eval(parse(text =
+        for(i in colnames(finalPopulation)){
+            if(typeof(finalPopulation[, i, with = FALSE]) == "list"){
+                finalPopulation[, eval(parse(text =
                                    paste0(i, " := NULLtoNA(", i, ")")))]
             }
             if(grepl("Value", i)){
-                finalAupus[, eval(parse(text =
+                finalPopulation[, eval(parse(text =
                                    paste0(i, " := as.numeric(", i, ")")))]
             } else if(grepl("flag", i)){
-                finalAupus[, eval(parse(text =
+                finalPopulation[, eval(parse(text =
                                 paste0(i, " := as.character(", i, ")")))]
             }
         }
+
+        setnames(finalPopulation,
+                 old = c("timePointYears",
+                     grep(param$keyNames$elementName, colnames(finalPopulation),
+                          value = TRUE)),
+                 new = c("timePointYearsSP",
+                     gsub(param$keyNames$elementName, "population",
+                          grep(param$keyNames$elementName,
+                               colnames(finalPopulation), value = TRUE))))
         finalPopulation[, measuredItemFS := NULL]
         finalPopulation[, timePointYearsSP := as.numeric(timePointYearsSP)]
         finalPopulationKey = c("geographicAreaFS", "timePointYearsSP")
