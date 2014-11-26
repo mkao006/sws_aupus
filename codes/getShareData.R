@@ -12,7 +12,7 @@ getShareData = function(database = c("new", "old"), conn){
         shareQuery =
             paste0("SELECT area, item_parent, item_child, yr, aupus_share
                 FROM aupus_item_tree_shares
-                WHERE area in (0, ", countryCode, ")")
+                WHERE area in (0, ", areaCode, ")")
         share =
             data.table(dbGetQuery(conn = conn, shareQuery))
         setnames(share,

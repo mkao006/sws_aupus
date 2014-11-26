@@ -15,7 +15,7 @@ getPopulationData = function(database = c("new", "old"), conn){
         aupusQuery =
             paste0("SELECT *
                 FROM tsv_ics_work_yr
-                WHERE area =", countryCode,
+                WHERE area =", areaCode,
                 "AND item = '1'")
         aupus =
             data.table(dbGetQuery(conn = conn, aupusQuery))
@@ -43,7 +43,7 @@ getPopulationData = function(database = c("new", "old"), conn){
     } else if(database == "new"){
         populationDimension =
             list(Dimension(name = "geographicAreaFS",
-                           keys = as.character(param$countryCode)),
+                           keys = as.character(param$areaCode)),
                  Dimension(name = "measuredItemFS",
                            keys = as.character(1)),
                  Dimension(name = "timePointYears",
