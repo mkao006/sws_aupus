@@ -16,7 +16,7 @@ getBalanceElementData = function(database = c("new", "old"),
         balanceElementQuery =
             paste0("SELECT area, item, ele, yr
                 FROM aupus_ratios
-                WHERE area in (0, ", countryCode, ")
+                WHERE area in (0, ", areaCode, ")
                 AND balance_ind = 'Y'")
         balanceElement =
             data.table(dbGetQuery(conn = conn, balanceElementQuery))
@@ -40,7 +40,7 @@ getBalanceElementData = function(database = c("new", "old"),
         balanceElementDimension =
             list(Dimension(name = "geographicAreaFS",
                            keys = as.character(c("0",
-                               param$countryCode))),
+                               param$areaCode))),
                  Dimension(name = "measuredItemFS",
                            keys = as.character(param$itemCode)),
                  Dimension(name = "timePointYearsSP",
@@ -67,9 +67,11 @@ getBalanceElementData = function(database = c("new", "old"),
         setnames(fullBalanceElement,
                  old = "measuredElementFS",
                  new = param$keyNames$balanceElementName)
-        balanceElement = fullBalanceElement[flagRatio == "Y",
-            list(geographicAreaFS, measuredItemFS, timePointYearsSP,
-                 balanceElement)]
+        balanceElement =
+            with(param$keyNames,
+                 fullBalanceElement[flagRatio == "Y",
+                                    c(areaName, itemName, yearName,
+                                      balanceElementName), with = FALSE])
 
         balanceElement[, timePointYearsSP := as.numeric(timePointYearsSP)]
         ## tmp = lapply(balanceElement[, colnames(balanceElement),
