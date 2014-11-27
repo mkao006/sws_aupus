@@ -19,7 +19,8 @@ getAupusParameter = function(areaCode, assignGlobal = TRUE){
     ## Get all year
     ## --------------------------------------------------------------
     ## NOTE (Michael): This is temporary just to speed up the computation
-    allYearCodes = as.character(2005:2013)
+    allYearCodes = swsContext.datasets[[1]]@dimensions$timePointYears@keys
+    ## allYearCodes = as.character(2005:2013)
     ## yearCodeList = GetCodeList(domain = "faostat_one",
     ##     dataset = "FS1_SUA",
     ##     dimension = "timePointYears")
