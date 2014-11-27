@@ -2,30 +2,41 @@
 ## testCountryCode = 100
 ## source("test_get_api_data.R")
 
+library(faosws)
 library(faoswsAupus)
 library(faoswsUtil)
 library(data.table)
 library(igraph)
 
-FBSelements = c("Value_measuredElementFS_61", "Value_measuredElementFS_91",
-    "Value_measuredElementFS_111",
-    "Value_measuredElementFS_121", "Value_measuredElementFS_141")
+
+## Connection detail to the new working system R API
+if(Sys.getenv("USER") == "mk"){
+    GetTestEnvironment(
+        baseUrl = "https://hqlqasws1.hq.un.fao.org:8181/sws",
+        token = "5d9b8d4a-0989-4b50-869f-cd0bc566fd18"
+        )
+}
+
+FBSelements =
+    c("Value_measuredElementFS_51", "Value_measuredElementFS_61",
+      "Value_measuredElementFS_91", "Value_measuredElementFS_101",
+      "Value_measuredElementFS_111", "Value_measuredElementFS_121",
+      "Value_measuredElementFS_141", "Value_measuredElementFS_151")
 
 ## Get the parameter
 param = getAupusParameter(areaCode = "100", assignGlobal = FALSE)
 
 ## Get the data sets
-getAupusDataset()
+system.time(getAupusDataset())
 
 ## This is a hack to fill in the missing columns
 missingColumns =
     c(paste0("Value_measuredElementFS_", c(541, 546)),
       paste0("flagFaostat_measuredElementFS_", c(541, 546)))
-
 aupusData[, `:=`(c(missingColumns),
-                 list(as.numeric(NA), as.numeric(NA), as.character(NA),
-                      as.character(NA)))]
-   
+                 list(as.numeric(NA), as.numeric(NA),
+                      as.character(NA), as.character(NA)))]
+
 ## Construct the aupus network representation
 aupusNetwork =
     suaToNetworkRepresentation(extractionRateData = extractionRateData,
@@ -53,27 +64,12 @@ standardizationGraph =
                                        from = param$keyNames$itemChildName,
                                        to = param$keyNames$itemParentName))
 
-## Standardize the data
+## Standardize the graph to get the FBS
 fbs =
     fbsStandardization(graph = standardizationGraph,
                        standardizeElement = FBSelements,
                        plot = FALSE)
 
-
-
-
-
-
-
-
-## test.nodes = data.table(name = letters[1:5], values = 1:5, value2 = rnorm(5))
-## test.edges = data.table(from = letters[c(1, 3, 5)], to = letters[1], value = 1:3)
-
-## test.graph = graph.data.frame(d = test.edges, vertices = test.nodes)
-
-## matrix(unlist(lapply(list.vertex.attributes(test.graph), function(x) get.vertex.attribute(test.graph, x))[2:3]), nc = 2)
-
-## Reduce(function(x, y) cbind(data.frame(x), data.frame(y)), lapply(list.vertex.attributes(test.graph), FUN = function(x) get.vertex.attribute(test.graph, x)))
 
 
 
