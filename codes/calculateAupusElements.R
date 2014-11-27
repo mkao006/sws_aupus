@@ -38,9 +38,9 @@ calculateAupusElements = function(aupusFinalData, itemTypeCol, balanceElementNum
     ## compareFunction(replaced21Index[[2]], 21)
 
     ## Denormalize population
-    denormalizePopulation(element11Num = "Value_measuredElementFS_11",
-                          element21Num = "Value_measuredElementFS_21",
-                          data = aupusFinalData)
+    ## denormalizePopulation(element11Num = "Value_measuredElementFS_11",
+    ##                       element21Num = "Value_measuredElementFS_21",
+    ##                       data = aupusFinalData)
 
     ## Element 31
     ## replaced31Index =
