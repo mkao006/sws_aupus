@@ -56,14 +56,16 @@ getAupusParameter = function(areaCode, assignGlobal = TRUE){
              ratioPrefix = "Ratio_")
 
         
-    tmp = list(areaCode = areaCode,
-        itemCode = allItemCodes, elementCode = allElementCodes,
-        year = allYearCodes, keyNames = keyNames)
+    parameters =
+        list(areaCode = areaCode,
+             itemCode = allItemCodes, elementCode = allElementCodes,
+             year = allYearCodes, keyNames = keyNames)
+    
     if(assignGlobal){
-        lapply(names(tmp), FUN = function(x)
-            assign(x, tmp[[x]], envir = .GlobalEnv))
-        invisible(tmp)
+        lapply(names(parameters), FUN = function(x)
+            assign(x, parameters[[x]], envir = .GlobalEnv))
+        invisible(parameters)
     } else {
-        return(tmp)
+        return(parameters)
     }
 }
