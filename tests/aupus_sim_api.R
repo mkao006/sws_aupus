@@ -13,7 +13,7 @@ library(igraph)
 if(Sys.getenv("USER") == "mk"){
     GetTestEnvironment(
         baseUrl = "https://hqlqasws1.hq.un.fao.org:8181/sws",
-        token = "5d9b8d4a-0989-4b50-869f-cd0bc566fd18"
+        token = "7fe7cbec-2346-46de-9a3a-8437eca18e2a"
         )
 }
 
@@ -100,3 +100,5 @@ fbs =
 ##                 module together. Simply just use the foo2 function
 ##                 to build the edge and node data structure.
 ##
+##
+## NOTE (Michael): Ask Nick why the name for year is different.
