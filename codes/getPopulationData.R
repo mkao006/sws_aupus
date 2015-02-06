@@ -9,9 +9,11 @@
 
 ## TODO (Michael): Apply calculation of 11 and 21 here.
 
-getPopulationData = function(database = c("new", "old"), conn){
+getPopulationData = function(database = c("new", "old"), conn, aupusParam){
     database = match.arg(database)
     if(database == "old"){
+        if(missing(conn))
+            stop("Connection details are required but missing")
         aupusQuery =
             paste0("SELECT *
                 FROM tsv_ics_work_yr
@@ -41,6 +43,8 @@ getPopulationData = function(database = c("new", "old"), conn){
                  new = c("areaCode"))
         setkeyv(finalPopulation, cols = c("areaCode", "Year"))
     } else if(database == "new"){
+        if(missing(param))
+            stop("Aupus parameters are missing but required")
         populationDimension =
             list(Dimension(name = "geographicAreaFS",
                            keys = as.character(param$areaCode)),
@@ -68,10 +72,6 @@ getPopulationData = function(database = c("new", "old"), conn){
 
         ## Convert list of NULL to vector of NA
         for(i in colnames(finalPopulation)){
-            if(typeof(finalPopulation[, i, with = FALSE]) == "list"){
-                finalPopulation[, eval(parse(text =
-                                   paste0(i, " := NULLtoNA(", i, ")")))]
-            }
             if(grepl("Value", i)){
                 finalPopulation[, eval(parse(text =
                                    paste0(i, " := as.numeric(", i, ")")))]

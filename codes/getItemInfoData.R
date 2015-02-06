@@ -11,8 +11,6 @@ getItemInfoData = function(){
         GetCodeList(domain = "faostat_one",
                     dataset = "FS1_SUA",
                     dimension = "measuredItemFS")
-    itemCodeList[, startDate := as.Date(NULLtoNA(startDate))]
-    itemCodeList[, endDate := as.Date(NULLtoNA(endDate))]
     setnames(itemCodeList,
              old = c("code", "description", "type"),
              new = c("measuredItemFS", "measuredItemNameFS",

@@ -6,9 +6,11 @@
 ##' @export
 ##' 
 
-getAupusData = function(database = c("new", "old"), conn){
+getAupusData = function(database = c("new", "old"), conn, aupusParam){
     database = match.arg(database)
     if(database == "old"){
+        if(missing(conn))
+            stop("Connection details are required but missing")
         aupusQuery =
             paste0("SELECT *
                 FROM tsv_ics_work_yr
@@ -37,6 +39,8 @@ getAupusData = function(database = c("new", "old"), conn){
                  new = c("areaCode", "itemCode"))
         setkeyv(finalAupus, cols = c("areaCode", "itemCode", "Year"))
     } else if(database == "new"){
+        if(missing(param))
+            stop("Aupus parameters are missing but required")
         ## NOTE (Michael): Population is not included in this set, use
         ##                 getPopulationData.
         aupusDimension =
@@ -67,10 +71,6 @@ getAupusData = function(database = c("new", "old"), conn){
 
         ## Convert list of NULL to vector of NA
         for(i in colnames(finalAupus)){
-            if(typeof(finalAupus[, i, with = FALSE]) == "list"){
-                finalAupus[, eval(parse(text =
-                                   paste0(i, " := NULLtoNA(", i, ")")))]
-            }
             if(grepl("Value", i)){
                 finalAupus[, eval(parse(text =
                                    paste0(i, " := as.numeric(", i, ")")))]
