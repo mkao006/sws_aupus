@@ -41,7 +41,7 @@ getExtractionRateData = function(database = c("new", "old"), conn, aupusParam){
                  new = c("areaCode"))
         setkeyv(finalExtractionRate, cols = c("areaCode", "Year"))
     } else if(database == "new"){
-        if(missing(param))
+        if(missing(aupusParam))
             stop("Aupus parameters are missing but required")
         extractionRateDimension =
             list(Dimension(name = "geographicAreaFS",

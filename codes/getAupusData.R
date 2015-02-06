@@ -39,7 +39,7 @@ getAupusData = function(database = c("new", "old"), conn, aupusParam){
                  new = c("areaCode", "itemCode"))
         setkeyv(finalAupus, cols = c("areaCode", "itemCode", "Year"))
     } else if(database == "new"){
-        if(missing(param))
+        if(missing(aupusParam))
             stop("Aupus parameters are missing but required")
         ## NOTE (Michael): Population is not included in this set, use
         ##                 getPopulationData.

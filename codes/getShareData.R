@@ -6,9 +6,11 @@
 ##' @export
 ##' 
 
-getShareData = function(database = c("new", "old"), conn){
+getShareData = function(database = c("new", "old"), conn, aupusParam){
     database = match.arg(database)
     if(database == "old"){
+        if(missing(conn))
+            stop("Connection details are required but missing")
         shareQuery =
             paste0("SELECT area, item_parent, item_child, yr, aupus_share
                 FROM aupus_item_tree_shares
@@ -33,6 +35,8 @@ getShareData = function(database = c("new", "old"), conn){
             yearWildCard = yearWildCard,
             areaYearWildCard = areaYearWildCard)
     } else if(database == "new"){
+        if(missing(aupusParam))
+            stop("Aupus parameters are missing but required")
         shareDimension =
             list(Dimension(name = "geographicAreaFS",
                            keys = as.character(c("0", param$areaCode))),

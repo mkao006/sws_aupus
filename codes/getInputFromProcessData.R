@@ -9,9 +9,11 @@
 
 
 getInputFromProcessData = function(database = c("new", "old"), 
-    conn){
+    conn, aupusParam){
     database = match.arg(database)
     if(database == "old"){
+        if(missing(conn))
+            stop("Connection details are required but missing")        
         inputQuery =
             paste0("SELECT *
                 FROM input_from_procv
@@ -40,7 +42,8 @@ getInputFromProcessData = function(database = c("new", "old"),
                     "Year"))
         finalInput
     } else if(database == "new"){
-        
+        if(missing(aupusParam))
+            stop("Aupus parameters are missing but required")        
         inputDimension =
             list(Dimension(name = "geographicAreaFS",
                            keys = as.character(param$areaCode)),

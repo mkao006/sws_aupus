@@ -7,9 +7,11 @@
 ##' 
 
 
-getRatioData = function(database = c("new", "old"), conn){
+getRatioData = function(database = c("new", "old"), conn, aupusParam){
     database = match.arg(database)
     if(database == "old"){
+        if(missing(conn))
+            stop("Connection details are required but missing")
         ratioQuery =
             paste0("SELECT area, item, ele, yr, ratio
                 FROM aupus_ratios
@@ -37,7 +39,8 @@ getRatioData = function(database = c("new", "old"), conn){
             yearWildCard = yearWildCard,
             areaYearWildCard = areaYearWildCard)
     } else if(database == "new"){
-
+        if(missing(aupusParam))
+            stop("Aupus parameters are missing but required")
         ratioDimension =
             list(Dimension(name = "geographicAreaFS",
                            keys = as.character(c("0",
