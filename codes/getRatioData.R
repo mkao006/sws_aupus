@@ -40,17 +40,17 @@ getRatioData = function(database = c("new", "old"), conn, aupusParam){
             areaYearWildCard = areaYearWildCard)
     } else if(database == "new"){
         if(missing(aupusParam))
-            stop("Aupus parameters are missing but required")
+            stop("Aupus aupusParameters are missing but required")
         ratioDimension =
             list(Dimension(name = "geographicAreaFS",
                            keys = as.character(c("0",
-                               param$areaCode))),
+                               aupusParam$areaCode))),
                  Dimension(name = "measuredItemFS",
-                           keys = as.character(param$itemCode)),
+                           keys = as.character(aupusParam$itemCode)),
                  Dimension(name = "timePointYearsSP",
-                           keys = as.character(c("0", param$year))),
+                           keys = as.character(c("0", aupusParam$year))),
                  Dimension(name = "measuredElementFS",
-                           keys = as.character(param$elementCode)))
+                           keys = as.character(aupusParam$elementCode)))
 
         ratioDataContext =
             DatasetKey(domain = "faostat_one",

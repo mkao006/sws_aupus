@@ -27,26 +27,26 @@ suaToNetworkRepresentation = function(extractionRateData, shareData, inputData,
                    balanceElementData = balanceElementData,
                    itemInfoData = itemInfoData,
                    populationData = populationData,
-                   balanceElementNum = param$keyNames$balanceElementName)
+                   balanceElementNum = aupusParam$keyNames$balanceElementName)
 
     ## CHECK (Michael): Add in nodes that are contained in the edges
     ##                  list but not found in the node frame. Check
     ##                  why they are missing.
 
     uniqueEdgeNodes =
-        unique(unlist(edges[, c(param$keyNames$itemParentName,
-                                param$keyNames$itemChildName), with = FALSE]))
+        unique(unlist(edges[, c(aupusParam$keyNames$itemParentName,
+                                aupusParam$keyNames$itemChildName), with = FALSE]))
 
     missingNodes = uniqueEdgeNodes[!uniqueEdgeNodes %in%
-        nodes[[param$keyNames$itemName]]]
+        nodes[[aupusParam$keyNames$itemName]]]
 
     missingKeyTable =
-        data.table(expand.grid(unlist(unique(nodes[, c(param$keyNames$areaName),
+        data.table(expand.grid(unlist(unique(nodes[, c(aupusParam$keyNames$areaName),
                                                    with = FALSE])),
-                               unlist(unique(nodes[, c(param$keyNames$yearName),
+                               unlist(unique(nodes[, c(aupusParam$keyNames$yearName),
                                                    with = FALSE])),
                                missingNodes, stringsAsFactors = FALSE))
-    with(param$keyNames,
+    with(aupusParam$keyNames,
          setnames(missingKeyTable, c(areaName, yearName, itemName)))
     nodes = rbind(nodes, missingKeyTable, fill = TRUE)
     setkeyv(nodes, key(aupusData))

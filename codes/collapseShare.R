@@ -10,15 +10,15 @@
 collapseShare = function (shareData, shares, verbose = FALSE){
     uniquePath = unique.data.frame(Reduce(rbind, lapply(shareData, 
         FUN = function(x){
-            x[, c(param$keyNames$itemParentName, 
-                  param$keyNames$itemChildName),
+            x[, c(aupusParam$keyNames$itemParentName, 
+                  aupusParam$keyNames$itemChildName),
               with = FALSE]
         })))
-    uniqueYear = as.numeric(param$year)
-    uniqueArea = param$areaCode
+    uniqueYear = as.numeric(aupusParam$year)
+    uniqueArea = aupusParam$areaCode
     tmp = lapply(uniquePath, rep, times = length(uniqueYear))
-    tmp[[param$keyNames$yearName]] = rep(uniqueYear, each = NROW(uniquePath))
-    tmp[[param$keyNames$areaName]] = uniqueArea
+    tmp[[aupusParam$keyNames$yearName]] = rep(uniqueYear, each = NROW(uniquePath))
+    tmp[[aupusParam$keyNames$areaName]] = uniqueArea
     tmp[[shares]] = as.numeric(NA)
     finalBase = as.data.table(tmp)
     setkeyv(finalBase, key(shareData[[1]]))

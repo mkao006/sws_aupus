@@ -1,4 +1,4 @@
-##' This function gets all the parameter in order to query the data
+##' This function gets all the aupusParameter in order to query the data
 ##'
 ##' @param areaCode The country code of the country of interest
 ##' @param assignGlobal logical, default to FALSE, where a list is
@@ -56,16 +56,16 @@ getAupusParameter = function(areaCode, assignGlobal = TRUE){
              ratioPrefix = "Ratio_")
 
         
-    parameters =
+    aupusParameters =
         list(areaCode = areaCode,
              itemCode = allItemCodes, elementCode = allElementCodes,
              year = allYearCodes, keyNames = keyNames)
     
     if(assignGlobal){
-        lapply(names(parameters), FUN = function(x)
-            assign(x, parameters[[x]], envir = .GlobalEnv))
-        invisible(parameters)
+        lapply(names(aupusParameters), FUN = function(x)
+            assign(x, aupusParameters[[x]], envir = .GlobalEnv))
+        invisible(aupusParameters)
     } else {
-        return(parameters)
+        return(aupusParameters)
     }
 }

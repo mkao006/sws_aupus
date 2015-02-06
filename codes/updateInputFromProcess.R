@@ -9,15 +9,15 @@
 updateInputFromProcessing = function(nodes, edges, element31Num){
     setnames(nodes, old = element31Num, new = "element31Num")
     aggregateKey = key(edges)
-    aggregateKey = aggregateKey[aggregateKey != param$keyNames$itemParentName]
+    aggregateKey = aggregateKey[aggregateKey != aupusParam$keyNames$itemParentName]
     aggregatedInput = edges[, list(Aggregated_input = sum(Value_input)),
         by = aggregateKey]
     setnames(aggregatedInput,
-             old = param$keyNames$itemChildName,
-             new = param$keyNames$itemName)
+             old = aupusParam$keyNames$itemChildName,
+             new = aupusParam$keyNames$itemName)
     newInputKeys = aggregateKey
-    newInputKeys[newInputKeys == param$keyNames$itemChildName] =
-        param$keyNames$itemName
+    newInputKeys[newInputKeys == aupusParam$keyNames$itemChildName] =
+        aupusParam$keyNames$itemName
 
     okey = key(nodes)
     setkeyv(nodes, newInputKeys)

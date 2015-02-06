@@ -39,17 +39,17 @@ getBalanceElementData = function(database = c("new", "old"),
             areaYearWildCard = areaYearWildCard)
     } else if(database == "new"){
         if(missing(aupusParam))
-            stop("Aupus parameters are missing but required")
+            stop("Aupus aupusParameters are missing but required")
         balanceElementDimension =
             list(Dimension(name = "geographicAreaFS",
                            keys = as.character(c("0",
-                               param$areaCode))),
+                               aupusParam$areaCode))),
                  Dimension(name = "measuredItemFS",
-                           keys = as.character(param$itemCode)),
+                           keys = as.character(aupusParam$itemCode)),
                  Dimension(name = "timePointYearsSP",
-                           keys = as.character(c("0", param$year))),
+                           keys = as.character(c("0", aupusParam$year))),
                  Dimension(name = "measuredElementFS",
-                           keys = as.character(param$elementCode)))
+                           keys = as.character(aupusParam$elementCode)))
 
         balanceElementDataContext =
             DatasetKey(domain = "faostat_one",
@@ -69,9 +69,9 @@ getBalanceElementData = function(database = c("new", "old"),
                     pivoting = balanceElementPivot)
         setnames(fullBalanceElement,
                  old = "measuredElementFS",
-                 new = param$keyNames$balanceElementName)
+                 new = aupusParam$keyNames$balanceElementName)
         balanceElement =
-            with(param$keyNames,
+            with(aupusParam$keyNames,
                  fullBalanceElement[flagRatio == "Y",
                                     c(areaName, itemName, yearName,
                                       balanceElementName), with = FALSE])

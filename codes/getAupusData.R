@@ -40,19 +40,19 @@ getAupusData = function(database = c("new", "old"), conn, aupusParam){
         setkeyv(finalAupus, cols = c("areaCode", "itemCode", "Year"))
     } else if(database == "new"){
         if(missing(aupusParam))
-            stop("Aupus parameters are missing but required")
+            stop("Aupus aupusParameters are missing but required")
         ## NOTE (Michael): Population is not included in this set, use
         ##                 getPopulationData.
         aupusDimension =
             list(Dimension(name = "geographicAreaFS",
-                           keys = as.character(param$areaCode)),
+                           keys = as.character(aupusParam$areaCode)),
                  Dimension(name = "measuredItemFS",
                            keys =
-                               as.character(param$itemCode[param$itemCode != 1])),
+                               as.character(aupusParam$itemCode[aupusParam$itemCode != 1])),
                  Dimension(name = "timePointYears",
-                           keys = as.character(param$year)),
+                           keys = as.character(aupusParam$year)),
                  Dimension(name = "measuredElementFS",
-                           keys = as.character(param$elementCode)))
+                           keys = as.character(aupusParam$elementCode)))
 
         aupusDataContext =
             DatasetKey(domain = "faostat_one",
@@ -88,11 +88,11 @@ getAupusData = function(database = c("new", "old"), conn, aupusParam){
         ## fillMissingColumn(finalAupus,
         ##                   allColumn =
         ##                       paste0("Value_measuredElementFS_",
-        ##                              param$elementCode))
+        ##                              aupusParam$elementCode))
         ## fillMissingColumn(finalAupus,
         ##                   allColumn =
         ##                       paste0("flagFaostat_measuredElementFS_",
-        ##                              param$elementCode))
+        ##                              aupusParam$elementCode))
         setkeyv(finalAupus, cols = finalAupusKey)        
     }
     finalAupus

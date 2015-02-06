@@ -43,7 +43,7 @@ standardization = function(graph, standardizeElement, plot){
     fullStandardization = data.table(cbind(rownames(fullStandardization),
         fullStandardization))
     setnames(fullStandardization, old = colnames(fullStandardization),
-             new = c(param$keyNames$itemName, standardizeElement))
+             new = c(aupusParam$keyNames$itemName, standardizeElement))
     fullStandardization
 
 }

@@ -17,8 +17,8 @@ buildEdges = function(extractionRateData, shareData, inputData){
     ## extractionRateData = aupusData[, c(key(aupusData), extractionRate),
     ##     with = FALSE]
     ## setnames(extractionRateData,
-    ##          old = param$keyNames$itemName,
-    ##          new = param$keyNames$itemChildName)
+    ##          old = aupusParam$keyNames$itemName,
+    ##          new = aupusParam$keyNames$itemChildName)
     
     ## TODO (Michael): Need to check this, if there are no extraction
     ##                 rates then probably the defaults are filled

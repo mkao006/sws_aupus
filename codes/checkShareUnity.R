@@ -6,8 +6,8 @@
 checkShareUnity = function(shareData){
     checkShare =
         shareData[, list(sum_check = sum(Value_share)),
-                  by = c(param$keyNames$countryName,
-                      param$keyNames$itemChildName,
-                      param$keyNames$yearName)]
+                  by = c(aupusParam$keyNames$countryName,
+                      aupusParam$keyNames$itemChildName,
+                      aupusParam$keyNames$yearName)]
     checkShare[sum_check != 100, ]
 }

@@ -18,7 +18,7 @@ constructStandardizationGraph = function(nodes, edges,
     ## NOTE (Michael): Can use set column order here! (setcolorder)
     edgeCopy = edgeCopy[, c(from, to, colnames(edgeCopy)[!colnames(edgeCopy) %in%
         c(from, to)]), with = FALSE]
-    setnames(edgeCopy, to, param$keyNames$itemName)
+    setnames(edgeCopy, to, aupusParam$keyNames$itemName)
 
 
     uniqueYears = unique(unique(nodeCopy$timePointYearsSP),

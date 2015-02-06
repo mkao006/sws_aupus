@@ -36,16 +36,16 @@ getShareData = function(database = c("new", "old"), conn, aupusParam){
             areaYearWildCard = areaYearWildCard)
     } else if(database == "new"){
         if(missing(aupusParam))
-            stop("Aupus parameters are missing but required")
+            stop("Aupus aupusParameters are missing but required")
         shareDimension =
             list(Dimension(name = "geographicAreaFS",
-                           keys = as.character(c("0", param$areaCode))),
+                           keys = as.character(c("0", aupusParam$areaCode))),
                  Dimension(name = "measuredItemParentFS",
-                           keys = as.character(param$itemCode)),
+                           keys = as.character(aupusParam$itemCode)),
                  Dimension(name = "measuredItemChildFS",
-                           keys = as.character(param$itemCode)),
+                           keys = as.character(aupusParam$itemCode)),
                  Dimension(name = "timePointYearsSP",
-                           keys = as.character(c("0", param$year))))
+                           keys = as.character(c("0", aupusParam$year))))
 
         shareDataContext =
             DatasetKey(domain = "faostat_one",
@@ -63,8 +63,8 @@ getShareData = function(database = c("new", "old"), conn, aupusParam){
             GetData(key = shareDataContext, flags = TRUE,
                     normalized = TRUE, pivoting = sharePivot)
         fullShare[, flagShare := NULL]
-        fullShare[, `:=`(c(param$keyNames$yearName),
-                         as.numeric(get(param$keyNames$yearName)))]
+        fullShare[, `:=`(c(aupusParam$keyNames$yearName),
+                         as.numeric(get(aupusParam$keyNames$yearName)))]
         setnames(fullShare,
                  old = c("Value"),
                  new = c("Value_share"))

@@ -43,16 +43,16 @@ getInputFromProcessData = function(database = c("new", "old"),
         finalInput
     } else if(database == "new"){
         if(missing(aupusParam))
-            stop("Aupus parameters are missing but required")        
+            stop("Aupus aupusParameters are missing but required")        
         inputDimension =
             list(Dimension(name = "geographicAreaFS",
-                           keys = as.character(param$areaCode)),
+                           keys = as.character(aupusParam$areaCode)),
                  Dimension(name = "measuredItemParentFS",
-                           keys = as.character(param$itemCode)),
+                           keys = as.character(aupusParam$itemCode)),
                  Dimension(name = "measuredItemChildFS",
-                           keys = as.character(param$itemCode)),
+                           keys = as.character(aupusParam$itemCode)),
                  Dimension(name = "timePointYearsSP",
-                           keys = as.character(param$year)))
+                           keys = as.character(aupusParam$year)))
 
         inputDataContext =
             DatasetKey(domain = "faostat_one",

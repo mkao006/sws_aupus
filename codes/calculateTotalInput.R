@@ -6,8 +6,8 @@
 ##' @export
 ##' 
 
-calculateTotalInput = function(inputData, inputNum, param){
-    newKey = with(param$keyNames,
+calculateTotalInput = function(inputData, inputNum, aupusParam){
+    newKey = with(aupusParam$keyNames,
         c(countryName, itemChildName, yearName))
     evalString = paste0("list(", inputNum, " = sum(", inputNum, "))")
     aggregatedInput =
@@ -15,7 +15,7 @@ calculateTotalInput = function(inputData, inputNum, param){
                   by = newKey]
     setkeyv(aggregatedInput, newKey)
     setnames(aggregatedInput,
-             old = param$keyNames$itemChildName,
-             new = param$keyNames$itemName)
+             old = aupusParam$keyNames$itemChildName,
+             new = aupusParam$keyNames$itemName)
     aggregatedInput
 }

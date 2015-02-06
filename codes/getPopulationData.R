@@ -44,14 +44,14 @@ getPopulationData = function(database = c("new", "old"), conn, aupusParam){
         setkeyv(finalPopulation, cols = c("areaCode", "Year"))
     } else if(database == "new"){
         if(missing(aupusParam))
-            stop("Aupus parameters are missing but required")
+            stop("Aupus aupusParameters are missing but required")
         populationDimension =
             list(Dimension(name = "geographicAreaFS",
-                           keys = as.character(param$areaCode)),
+                           keys = as.character(aupusParam$areaCode)),
                  Dimension(name = "measuredItemFS",
                            keys = as.character(1)),
                  Dimension(name = "timePointYears",
-                           keys = as.character(param$year)),
+                           keys = as.character(aupusParam$year)),
                  Dimension(name = "measuredElementFS",
                            keys = as.character(c(11, 21))))
 
@@ -83,11 +83,11 @@ getPopulationData = function(database = c("new", "old"), conn, aupusParam){
 
         setnames(finalPopulation,
                  old = c("timePointYears",
-                     grep(param$keyNames$elementName, colnames(finalPopulation),
+                     grep(aupusParam$keyNames$elementName, colnames(finalPopulation),
                           value = TRUE)),
                  new = c("timePointYearsSP",
-                     gsub(param$keyNames$elementName, "population",
-                          grep(param$keyNames$elementName,
+                     gsub(aupusParam$keyNames$elementName, "population",
+                          grep(aupusParam$keyNames$elementName,
                                colnames(finalPopulation), value = TRUE))))
         finalPopulation[, measuredItemFS := NULL]
         finalPopulation[, timePointYearsSP := as.numeric(timePointYearsSP)]

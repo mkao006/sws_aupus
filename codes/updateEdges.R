@@ -15,11 +15,11 @@ updateEdges = function(nodes, edges, element41Num, element131Num){
     ## Element 131 is for parent, while input value is child
     newInputs = na.omit(nodes[, c(key(nodes), element131Num), with = FALSE])
     setnames(newInputs,
-             old = c(param$keyNames$itemName, element131Num),
-             new = c(param$keyNames$itemParentName, "inputFromParent"))
+             old = c(aupusParam$keyNames$itemName, element131Num),
+             new = c(aupusParam$keyNames$itemParentName, "inputFromParent"))
     newInputKeys = key(nodes)
-    newInputKeys[newInputKeys == param$keyNames$itemName] =
-        param$keyNames$itemParentName
+    newInputKeys[newInputKeys == aupusParam$keyNames$itemName] =
+        aupusParam$keyNames$itemParentName
     setkeyv(newInputs, newInputKeys)
 
     ## Update extraction rates
@@ -27,11 +27,11 @@ updateEdges = function(nodes, edges, element41Num, element131Num){
     ## Extraction rate is for children
     newExtraction = na.omit(nodes[, c(key(nodes), element41Num), with = FALSE])
     setnames(newExtraction,
-             old = c(param$keyNames$itemName, element41Num),
-             new = c(param$keyNames$itemChildName, "newExtractionRates"))
+             old = c(aupusParam$keyNames$itemName, element41Num),
+             new = c(aupusParam$keyNames$itemChildName, "newExtractionRates"))
     newExtractionKeys = key(nodes)
-    newExtractionKeys[newExtractionKeys == param$keyNames$itemName] =
-        param$keyNames$itemChildName
+    newExtractionKeys[newExtractionKeys == aupusParam$keyNames$itemName] =
+        aupusParam$keyNames$itemChildName
     setkeyv(newExtraction, newExtractionKeys)
 
     okey = key(edges)
