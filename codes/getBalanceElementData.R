@@ -10,9 +10,11 @@
 
 
 getBalanceElementData = function(database = c("new", "old"), 
-    conn){
+    conn, aupusParam){
     database = match.arg(database)
     if(database == "old"){
+        if(missing(conn))
+            stop("Connection details are required but missing")
         balanceElementQuery =
             paste0("SELECT area, item, ele, yr
                 FROM aupus_ratios
@@ -36,7 +38,8 @@ getBalanceElementData = function(database = c("new", "old"),
             yearWildCard = yearWildCard,
             areaYearWildCard = areaYearWildCard)
     } else if(database == "new"){
-
+        if(missing(aupusParam))
+            stop("Aupus parameters are missing but required")
         balanceElementDimension =
             list(Dimension(name = "geographicAreaFS",
                            keys = as.character(c("0",
