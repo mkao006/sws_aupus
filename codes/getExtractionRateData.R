@@ -42,16 +42,16 @@ getExtractionRateData = function(database = c("new", "old"), conn, aupusParam){
         setkeyv(finalExtractionRate, cols = c("areaCode", "Year"))
     } else if(database == "new"){
         if(missing(aupusParam))
-            stop("Aupus parameters are missing but required")
+            stop("Aupus aupusParameters are missing but required")
         extractionRateDimension =
             list(Dimension(name = "geographicAreaFS",
-                           keys = as.character(param$areaCode)),
+                           keys = as.character(aupusParam$areaCode)),
                  Dimension(name = "measuredItemFS",
-                           keys = as.character(1)),
+                           keys = aupusParam$itemCode),
                  Dimension(name = "timePointYears",
-                           keys = as.character(param$year)),
+                           keys = as.character(aupusParam$year)),
                  Dimension(name = "measuredElementFS",
-                           keys = as.character(c(11, 21))))
+                           keys = "41"))
 
         extractionRateDataContext =
             DatasetKey(domain = "faostat_one",
@@ -81,10 +81,10 @@ getExtractionRateData = function(database = c("new", "old"), conn, aupusParam){
 
         setnames(finalExtractionRate,
                  old = c("timePointYears",
-                     grep(param$keyNames$elementName,
+                     grep(aupusParam$keyNames$elementName,
                           colnames(finalExtractionRate),
                           value = TRUE)),
-                 new = c("timePointYearsSP", param$extractionRateName))
+                 new = c("timePointYearsSP", aupusParam$extractionRateName))
         finalExtractionRate[, measuredItemFS := NULL]
         finalExtractionRate[, timePointYearsSP := as.numeric(timePointYearsSP)]
         finalExtractionRateKey = c("geographicAreaFS", "timePointYearsSP")
