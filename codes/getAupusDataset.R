@@ -4,28 +4,28 @@
 ##' or returned as a list. Default to TRUE, and assigned globally.
 ##' @export
 
-getAupusDataset = function(assignGlobal = TRUE){
+getAupusDataset = function(assignGlobal = TRUE, aupusParam){
     ## Get aupus data
     ## ----------------------------------------------------------------
-    aupusData = getAupusData(database = "new")
+    aupusData = getAupusData(database = "new", aupusParam = aupusParam)
 
 
     ## Get input from processing data
     ## ----------------------------------------------------------------
 
-    inputData = getInputFromProcessData(database = "new")
+    inputData = getInputFromProcessData(database = "new", aupusParam = aupusParam)
 
     ## Get ratio data
     ## ----------------------------------------------------------------
 
-    ratioData = getRatioData(database = "new")
+    ratioData = getRatioData(database = "new", aupusParam = aupusParam)
 
     ## Get share data
     ## ----------------------------------------------------------------
 
     shareData =
         collapseShare(
-            shareData = getShareData(database = "new"),
+            shareData = getShareData(database = "new", aupusParam = aupusParam),
             shares = "Value_share", verbose = FALSE)
     
 
@@ -35,23 +35,28 @@ getAupusDataset = function(assignGlobal = TRUE){
     ## ----------------------------------------------------------------
 
     balanceElementData  =
-        getBalanceElementData(database = "new")
+        getBalanceElementData(database = "new", aupusParam = aupusParam)
 
     ## Get item information table
     ## ---------------------------------------------------------------
+    ## NOTE (Michael): This function only works for the new data base
     itemInfoData = getItemInfoData()
 
     ## Get population data
-    populationData = getPopulationData(database = "new")
+    populationData = getPopulationData(database = "new", aupusParam = aupusParam)
 
     ## Get extraction rate
+    ## ---------------------------------------------------------------
+    ##
+    ## NOTE (Michael): This function only works for the new data base
+    ##                 as well, since there is restructing of the
+    ##                 data.
     extractionRateData =
-        getExtractionRateData(aupusData = aupusData,
-                              element41Num = "Value_measuredElementFS_41")
+        getExtractionRateData(database = "new", aupusParam = aupusParam)
         
 
     ## Return the data
-    dataList =
+    dataset =
         list(aupusData = aupusData, inputData = inputData,
              ratioData = ratioData, shareData = shareData,
              balanceElementData = balanceElementData,
@@ -59,11 +64,11 @@ getAupusDataset = function(assignGlobal = TRUE){
              extractionRateData = extractionRateData)
     
     if(assignGlobal){
-        lapply(names(dataList), FUN = function(x)
-            assign(x, dataList[[x]], envir = .GlobalEnv))
-        invisible(dataList)
+        lapply(names(dataset), FUN = function(x)
+            assign(x, dataset[[x]], envir = .GlobalEnv))
+        invisible(dataset)
     } else {
-        return(dataList)
+        return(dataset)
     }
 }
 
