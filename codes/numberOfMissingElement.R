@@ -6,10 +6,12 @@
 ##' 
 numberOfMissingElement = function(...){
     listOfElements = list(...)
-    rowSums(sapply(listOfElements,
-                   FUN = function(x){
-                       as.numeric(is.na(x))
-                                     }
-                   )
-            )
+
+    isMiss = sapply(listOfElements, FUN = function(x){ as.numeric(is.na(x))})
+
+    if(is.null(nrow(isMiss))){
+        return(sum(isMiss))
+    } else {
+        return(rowSums(isMiss))
+    }
 }

@@ -5,10 +5,10 @@
 
 numberOfTrendingElement = function(...){
     listOfElements = list(...)
-    rowSums(sapply(listOfElements,
-                   FUN = function(x){
-                       as.numeric(x == "T")
-                                     }
-                   )
-            )
+    isTrended = sapply(listOfElements, FUN = function(x){as.numeric(x == "T")})
+    if(is.null(nrow(isTrended))){
+        return(sum(isTrended))
+    } else {
+        return(rowSums(isTrended))
+    }
 }
