@@ -6,11 +6,12 @@
 ##' @param plot Whether the graph/network should be plotted
 ##' @export
 
-fbsStandardization = function(graph, standardizeElement, plot){
+fbsStandardization = function(graph, standardizeElement, aupusParam, plot){
     standardized =
         lapply(graph, FUN = function(x){
             standardization(graph = x,
                             standardizeElement = standardizeElement,
+                            aupusParam = aupusParam,
                             plot = plot)
         })
     
@@ -19,7 +20,7 @@ fbsStandardization = function(graph, standardizeElement, plot){
         Reduce(rbind,
                lapply(names(standardized),
                       FUN = function(x){
-                          standardized[[x]][, `:=`(c("timePointYearsSP"),
+                          standardized[[x]][, `:=`(c(aupusParam$keyNames$yearName),
                                                    as.numeric(x))]
                       })
                )

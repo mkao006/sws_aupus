@@ -81,19 +81,16 @@ getExtractionRateData = function(database = c("new", "old"), conn, aupusParam){
 
         setnames(finalExtractionRate,
                  old = c("timePointYears",
-                     grep(aupusParam$keyNames$elementName,
-                          colnames(finalExtractionRate),
+                     grep("measuredItemFS", colnames(finalExtractionRate),
                           value = TRUE)),
-                 new = c("timePointYearsSP", aupusParam$extractionRateName))
+                 new = c("timePointYearsSP",
+                     gsub(aupusParam$keyNames$elementName, "extractionRate",
+                          grep("measuredItemFS", colnames(finalExtractionRate),
+                               value = TRUE))))
         finalExtractionRate[, measuredItemFS := NULL]
         finalExtractionRate[, timePointYearsSP := as.numeric(timePointYearsSP)]
         finalExtractionRateKey = c("geographicAreaFS", "timePointYearsSP")
-        setnames(finalExtractionRate,
-                 old = grep("measuredItemFS", colnames(finalExtractionRate),
-                     value = TRUE),
-                 new = gsub("measuredItemFS", "extractionRate",
-                     grep("measuredItemFS", colnames(finalExtractionRate),
-                          value = TRUE)))
+
         setkeyv(finalExtractionRate, finalExtractionRateKey)
     }
     finalExtractionRate

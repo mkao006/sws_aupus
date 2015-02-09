@@ -14,7 +14,8 @@
 ##' @export
 ##' 
 
-calculateAupusElements = function(aupusFinalData, itemTypeCol, balanceElementNum){
+calculateAupusElements = function(aupusFinalData, itemTypeCol, balanceElementNum,
+                                  aupusParam){
     ## Element 11 - check the symbol, the value seems correct
     replaced11Index =
         calculateEle11(element11Num = "Value_measuredElementFS_11",
@@ -390,6 +391,7 @@ calculateAupusElements = function(aupusFinalData, itemTypeCol, balanceElementNum
                      element181Symb = "flagFaostat_measuredElementFS_181",
                      balanceElement = aupusParam$keyNames$balanceElementName,
                      itemTypeCol = aupusParam$keyNames$itemTypeName,
+                     aupusParam = aupusParam,
                      data = aupusFinalData)
     ## compareFunction(1, "BALANCE")
 }

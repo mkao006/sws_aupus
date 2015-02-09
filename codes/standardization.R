@@ -10,7 +10,7 @@
 ##' @export
 ##' 
 
-standardization = function(graph, standardizeElement, plot){
+standardization = function(graph, standardizeElement, aupusParam, plot){
     intermediateStandardization = c()
     while (length(E(graph)) > 0) {
         workingNode =

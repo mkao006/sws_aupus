@@ -7,7 +7,7 @@
 ##' @export
 ##' 
 
-collapseShare = function (shareData, shares, verbose = FALSE){
+collapseShare = function (shareData, shares, aupusParam, verbose = FALSE){
     uniquePath = unique.data.frame(Reduce(rbind, lapply(shareData, 
         FUN = function(x){
             x[, c(aupusParam$keyNames$itemParentName, 

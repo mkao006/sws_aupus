@@ -9,7 +9,7 @@
 ##' @export
 ##' 
 
-findProcessingLevel = function(edgeData, from, to, plot = FALSE){
+findProcessingLevel = function(edgeData, from, to, aupusParam, plot = FALSE){
     e = edgeData[, c(from, to), with = FALSE]
     v = unique(unlist(edgeData[, c(from, to), with = FALSE]))
     processingGraph = graph.data.frame(d = e, vertices = v, directed = TRUE)

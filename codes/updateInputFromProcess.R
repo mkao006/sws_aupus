@@ -6,7 +6,7 @@
 ##' @export
 ##' 
 
-updateInputFromProcessing = function(nodes, edges, element31Num){
+updateInputFromProcessing = function(nodes, edges, element31Num, aupusParam){
     setnames(nodes, old = element31Num, new = "element31Num")
     aggregateKey = key(edges)
     aggregateKey = aggregateKey[aggregateKey != aupusParam$keyNames$itemParentName]

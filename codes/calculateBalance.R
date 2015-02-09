@@ -25,7 +25,7 @@
 
 calculateBalance = function(supply, utilization, element161Num,
     element171Num, element181Num, element181Symb, balanceElement,
-    itemTypeCol, data){
+    itemTypeCol, aupusParam, data){
     ## TODO (Michael): Need to check the replace column of this
     ##                 function.
     setnames(data,

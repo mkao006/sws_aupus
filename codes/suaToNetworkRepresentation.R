@@ -15,8 +15,7 @@
 
 
 suaToNetworkRepresentation = function(extractionRateData, shareData, inputData,
-    ratioData, balanceElementData, itemInfoData, populationData){
-
+    ratioData, balanceElementData, itemInfoData, populationData, aupusParam){
     edges =
         buildEdges(extractionRateData = extractionRateData,
                    shareData = shareData,

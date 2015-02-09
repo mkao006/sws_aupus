@@ -26,7 +26,7 @@ getAupusDataset = function(assignGlobal = TRUE, aupusParam){
     shareData =
         collapseShare(
             shareData = getShareData(database = "new", aupusParam = aupusParam),
-            shares = "Value_share", verbose = FALSE)
+            shares = "Value_share", aupusParam = aupusParam, verbose = FALSE)
     
 
     ## Get balancing item

@@ -10,7 +10,7 @@
 
 
 constructStandardizationGraph = function(nodes, edges,
-    standardizeElement, from, to){
+    standardizeElement, from, to, aupusParam){
 
     nodeCopy = copy(nodes)
     edgeCopy = copy(edges)

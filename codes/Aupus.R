@@ -10,10 +10,11 @@
 ##' 
 
 
-Aupus = function(nodes, edges, from, to){
+Aupus = function(nodes, edges, from, to, aupusParam){
 
     processingLevelData =
-        edges[, findProcessingLevel(.SD, from = from, to = to),
+        edges[, findProcessingLevel(.SD, from = from, to = to,
+                                    aupusParam = aupusParam),
                    by = c(aupusParam$keyNames$areaName, aupusParam$keyNames$yearName)]
     setkeyv(processingLevelData, key(nodes))
 
@@ -28,7 +29,8 @@ Aupus = function(nodes, edges, from, to){
                                    nodes[processingLevel == currentLevel, ],
                                itemTypeCol = aupusParam$keyNames$itemTypeName,
                                balanceElementNum =
-                                   aupusParam$keyNames$balanceElementName)
+                                   aupusParam$keyNames$balanceElementName,
+                               aupusParam = aupusParam)
 
         ## Step (2): Update the edges (extraction rate and input from processing)
         updateEdges(nodes = nodes[processingLevel == currentLevel, ], 
@@ -36,12 +38,14 @@ Aupus = function(nodes, edges, from, to){
                     element41Num = with(aupusParam$keyNames,
                         paste0(valuePrefix, elementName, "_41")),
                     element131Num = with(aupusParam$keyNames,
-                        paste0(valuePrefix, elementName, "_131")))
+                        paste0(valuePrefix, elementName, "_131")),
+                    aupusParam = aupusParam)
 
         ## Step (3): Propagate input from processing to the node
         updateInputFromProcessing(nodes = nodes[processingLevel == currentLevel, ],
                                   edges = edges,
-                                  element31Num = "Value_measuredElementFS_31")
+                                  element31Num = "Value_measuredElementFS_31",
+                                  aupusParam = aupusParam)
     }
 
     nodes[,processingLevel := NULL]
