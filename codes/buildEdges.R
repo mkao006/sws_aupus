@@ -24,9 +24,11 @@ buildEdges = function(extractionRateData, shareData, inputData){
     ##                 rates then probably the defaults are filled
     ##                 in. Also need to check how the input from
     ##                 processing data base is built.
+
     edgeData =
         Reduce(function(x, y){
-            merge(x, y, all = FALSE, by = intersect(colnames(x), colnames(y)))
+            merge(x, y, all = FALSE, by = intersect(colnames(x), colnames(y)),
+                  allow.cartesian = TRUE)
           }, x = list(shareData, extractionRateData, inputData))
     ## edgeData =
     ##     merge(shareData, extractionRateData,
